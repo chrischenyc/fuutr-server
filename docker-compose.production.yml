@@ -3,6 +3,6 @@ services:
   server:
     env_file: .env.production
     build: .
-    image: "otg-api-server_production"
+    image: "otg-ride-api-production"
     ports:
       - "4040:4040"

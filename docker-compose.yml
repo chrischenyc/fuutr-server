@@ -3,7 +3,7 @@ services:
   server:
     env_file: .env
     build: .
-    image: "otg-api-server_development"
+    image: "otg-ride-api-development"
     ports:
       - "4040:4040"
     depends_on:
