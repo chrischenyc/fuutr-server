@@ -1,0 +1,19 @@
+version: "3"
+services:
+  server:
+    env_file: .env
+    build: .
+    image: "otg-api-server_development"
+    ports:
+      - "4040:4040"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/otg-server
+
+  mongo:
+    image: mongo:4.0.3
+    volumes:
+      - /usr/local/var/mongodb:/otg-server
+    ports:
+      - "27017:27017"

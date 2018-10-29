@@ -1,0 +1,8 @@
+version: "3"
+services:
+  server:
+    env_file: .env.production
+    build: .
+    image: "otg-api-server_production"
+    ports:
+      - "4040:4040"

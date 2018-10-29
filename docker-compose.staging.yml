@@ -1,0 +1,8 @@
+version: "3"
+services:
+  server:
+    env_file: .env.staging
+    build: .
+    image: "otg-api-server_staging"
+    ports:
+      - "4040:4040"

@@ -42,11 +42,15 @@ jspm_packages
 
 # Docker
 Dockerfile
+docker-compose*.yml
+.dockerignore
 
 # ignore secrets
-*.env
+*.env*
 *.aws
 
 # misc
 .eslintrc
 README*.md
+.editorconfig
+**/.DS_Store
