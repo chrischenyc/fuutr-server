@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const util = require('util');
 
 // config should be imported before importing any other file
-const config = require('./config/config');
-const app = require('./config/express');
+const config = require('./config');
+const app = require('./express');
 
 // debug output with nice prefix
 const databaseDebug = require('debug')('otg:database');

@@ -1,8 +1,7 @@
 const express = require('express');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const compress = require('compression');
+const compression = require('compression');
 const cors = require('cors');
 const helmet = require('helmet');
 const winston = require('winston');
@@ -10,9 +9,9 @@ const expressWinston = require('express-winston');
 const httpStatus = require('http-status');
 const expressValidation = require('express-validation');
 
-const routes = require('../routes');
+const routes = require('./routes');
 const config = require('./config');
-const APIError = require('../helpers/APIError');
+const APIError = require('./helpers/APIError');
 
 const app = express();
 
@@ -21,11 +20,11 @@ if (config.env === 'development') {
 }
 
 // parse body params and attache them to req.body
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // support Content-Type = application/json
+app.use(bodyParser.urlencoded({ extended: true })); // support form data
 
-app.use(cookieParser());
-app.use(compress());
+// compress response body
+app.use(compression());
 
 // secure apps by setting various HTTP headers
 app.use(helmet());
