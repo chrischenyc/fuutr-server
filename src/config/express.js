@@ -10,7 +10,7 @@ const expressWinston = require('express-winston');
 const httpStatus = require('http-status');
 const expressValidation = require('express-validation');
 
-const routes = require('../route');
+const routes = require('../routes');
 const config = require('./config');
 const APIError = require('../helpers/APIError');
 
@@ -82,12 +82,7 @@ if (config.env !== 'test') {
 }
 
 // error handler, send stacktrace only during development
-app.use((
-  err,
-  req,
-  res,
-  next, // eslint-disable-line no-unused-vars
-) =>
+app.use((err, req, res, next) =>
   res.status(err.status).json({
     message: err.isPublic ? err.message : httpStatus[err.status],
     stack: config.env === 'development' ? err.stack : {},

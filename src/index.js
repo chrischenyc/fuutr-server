@@ -9,7 +9,7 @@ const app = require('./config/express');
 const databaseDebug = require('debug')('otg:database');
 
 // make bluebird default Promise
-Promise = require('bluebird'); // eslint-disable-line no-global-assign
+Promise = require('bluebird');
 
 // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;
@@ -37,7 +37,7 @@ if (config.mongooseDebug) {
 if (!module.parent) {
   // listen on port config.port
   app.listen(config.port, () => {
-    console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
+    console.info(`server started on port ${config.port} (${config.env})`);
   });
 }
 
