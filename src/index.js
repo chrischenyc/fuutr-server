@@ -3,7 +3,7 @@ const util = require('util');
 
 // config should be imported before importing any other file
 const config = require('./config');
-const app = require('./express');
+const app = require('./app');
 
 // debug output with nice prefix
 const databaseDebug = require('debug')('otg:database');

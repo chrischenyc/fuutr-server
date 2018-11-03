@@ -1,5 +1,5 @@
 const express = require('express');
-const logger = require('morgan');
+const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
@@ -16,7 +16,7 @@ const APIError = require('./helpers/APIError');
 const app = express();
 
 if (config.env === 'development') {
-  app.use(logger('dev'));
+  app.use(morgan('dev'));
 }
 
 // parse body params and attache them to req.body
@@ -32,17 +32,12 @@ app.use(helmet());
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors());
 
-// enable detailed API logging in dev env
-if (config.env === 'development') {
-  expressWinston.requestWhitelist.push('body');
-
+// express-winston logger BEFORE the router
+if (config.env !== 'production') {
   app.use(
-    expressWinston.errorLogger({
+    expressWinston.logger({
       transports: [new winston.transports.Console()],
-      format: winston.format.combine(winston.format.colorize(), winston.format.json()),
-      meta: true, // optional: log meta data about request (defaults to true)
-      msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
-      colorize: true, // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
     }),
   );
 }
@@ -70,22 +65,29 @@ app.use((req, res, next) => {
   return next(err);
 });
 
-// log error in winston transports except when executing test suite
+// express-winston error logger AFTER the router
 if (config.env !== 'test') {
+  let format = winston.format.combine(winston.format.colorize(), winston.format.simple());
+
+  if (config.env === 'development') {
+    expressWinston.requestWhitelist.push('body');
+    format = winston.format.combine(winston.format.colorize(), winston.format.prettyPrint());
+  }
+
   app.use(
     expressWinston.errorLogger({
       transports: [new winston.transports.Console()],
-      format: winston.format.combine(winston.format.colorize(), winston.format.json()),
+      format,
+      colorize: true,
     }),
   );
 }
 
-// error handler, send stacktrace only during development
-app.use((err, req, res, next) =>
+// error handler
+app.use((err, req, res, next) => {
   res.status(err.status).json({
     message: err.isPublic ? err.message : httpStatus[err.status],
-    stack: config.env === 'development' ? err.stack : {},
-  }),
-);
+  });
+});
 
 module.exports = app;
