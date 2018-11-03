@@ -39,8 +39,8 @@
     "express-winston": "^3.0.1",
     "helmet": "^3.14.0",
     "http-status": "^1.2.0",
-    "joi": "^14.0.1",
-    "mongoose": "^5.3.7",
+    "joi": "^14.0.3",
+    "mongoose": "^5.3.9",
     "morgan": "^1.9.1",
     "winston": "^3.1.0"
   },
