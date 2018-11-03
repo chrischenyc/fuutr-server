@@ -62,7 +62,7 @@ app.use((err, req, res, next) => {
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
   const err = new APIError('API not found', httpStatus.NOT_FOUND);
-  return next(err);
+  next(err);
 });
 
 // express-winston error logger AFTER the router
@@ -86,7 +86,7 @@ if (config.env !== 'test') {
 // error handler
 app.use((err, req, res, next) => {
   res.status(err.status).json({
-    message: err.isPublic ? err.message : httpStatus[err.status],
+    error: err.isPublic ? err.message : httpStatus[err.status],
   });
 });
 
