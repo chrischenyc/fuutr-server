@@ -14,8 +14,8 @@ RUN npm install --only=production && npm cache clean --force
 # copy source files
 COPY . .
 
-# expose port 4040
-EXPOSE 4040
+# expose port 3000
+EXPOSE 3000
 
 # cmd to start service
 CMD [ "node", "src/index.js" ]

@@ -46,7 +46,7 @@ npm run start
 npm run start:debug
 
 # verify local server
-http://localhost:4040/api/health-check
+http://localhost:3000/api/health-check
 ```
 
 ## Docker

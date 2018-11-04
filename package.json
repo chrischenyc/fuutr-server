@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node src/index.js",
     "start:debug": "DEBUG=otg:* nodemon src/index.js",
-    "predeploy:staging": "echo pre-staging",
+    "predeploy:staging": "docker build -t otg-ride-api-staging . && docker tag otg-ride-api-staging:latest 257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest && docker push 257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest",
     "deploy:staging": "echo staging",
     "predeploy:production": "echo pre-production",
     "deploy:production": "echo production"

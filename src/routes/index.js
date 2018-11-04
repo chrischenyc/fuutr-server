@@ -8,7 +8,7 @@ const scooters = require('./scooters');
 
 // FIXME: temp API to check service is up, remove in production deploy
 router.get('/health-check', (req, res) =>
-  res.json({ message: `${process.env.NODE_ENV} server is OK` }),
+  res.json({ message: `${process.env.NODE_ENV} API server is up ⬆` }),
 );
 
 router.use('/auth', auth);

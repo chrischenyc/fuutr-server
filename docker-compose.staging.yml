@@ -5,4 +5,4 @@ services:
     build: .
     image: "otg-ride-api-staging"
     ports:
-      - "4040:4040"
+      - "3000:3000"
