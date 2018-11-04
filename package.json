@@ -16,7 +16,7 @@
     "docker:push:staging": "docker push 257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest",
     "aws:cloudformation:staging": "aws cloudformation update-stack --stack-name OTG-Rider-API-Server-Staging --use-previous-template --capabilities CAPABILITY_IAM --parameters ParameterKey=DockerImageURL,ParameterValue=257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest ParameterKey=DesiredCapacity,UsePreviousValue=true ParameterKey=InstanceType,UsePreviousValue=true ParameterKey=MaxSize,UsePreviousValue=true ParameterKey=SubnetIDs,UsePreviousValue=true ParameterKey=VpcId,UsePreviousValue=true",
     "deploy:staging": "npm run docker:build:staging && npm run docker:tag:staging && npm run docker:push:staging",
-    "postdeploy:staing": "echo TRIGGER NEW ECS TASK ON AWS!!!",
+    "postdeploy:staging": "echo TRIGGER NEW ECS TASK ON AWS!!!",
     "deploy:production": "echo production"
   },
   "repository": {
