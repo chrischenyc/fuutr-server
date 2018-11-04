@@ -21,7 +21,7 @@ if (config.env === 'development') {
 
 // parse body params and attache them to req.body
 app.use(bodyParser.json()); // support Content-Type = application/json
-app.use(bodyParser.urlencoded({ extended: true })); // support form data
+app.use(bodyParser.urlencoded({ extended: false })); // support form data
 
 // compress response body
 app.use(compression());
