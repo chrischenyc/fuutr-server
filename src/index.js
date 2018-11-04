@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const util = require('util');
 
 // config should be imported before importing any other file
-const config = require('./config');
+require('./config');
+
 const app = require('./app');
 
 // debug output with nice prefix
@@ -15,7 +16,7 @@ Promise = require('bluebird');
 mongoose.Promise = Promise;
 
 // connect to mongo db
-const mongoUri = config.mongoURI;
+const mongoUri = process.env.MONGO_URI;
 mongoose.connect(
   mongoUri,
   { useNewUrlParser: true },
@@ -26,7 +27,7 @@ mongoose.connection.on('error', () => {
 });
 
 // print mongoose logs in dev env
-if (config.mongooseDebug) {
+if (process.env.NODE_ENV === 'development') {
   mongoose.set('debug', (collectionName, method, query, doc) => {
     databaseDebug(`${collectionName}.${method}`, util.inspect(query, false, 20), doc);
   });
@@ -35,9 +36,9 @@ if (config.mongooseDebug) {
 // module.parent check is required to support mocha watch
 // src: https://github.com/mochajs/mocha/issues/1912
 if (!module.parent) {
-  // listen on port config.port
-  app.listen(config.port, () => {
-    console.info(`server started on port ${config.port} (${config.env})`);
+  const port = process.env.PORT;
+  app.listen(port, () => {
+    console.info(`server started on port ${port}`);
   });
 }
 

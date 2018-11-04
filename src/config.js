@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-// require and configure dotenv, will load vars in .env in PROCESS.ENV
+// require and configure dotenv, will load vars in .env into PROCESS.ENV and validate them
 require('dotenv').config();
 
 // define validation for all the env vars
@@ -9,32 +9,21 @@ const envVarsSchema = Joi.object({
     .allow(['development', 'production', 'staging'])
     .default('development'),
   PORT: Joi.number().default(3000),
-  MONGOOSE_DEBUG: Joi.boolean().when('NODE_ENV', {
-    is: Joi.string().equal('development'),
-    then: Joi.boolean().default(true),
-    otherwise: Joi.boolean().default(false),
-  }),
   JWT_SECRET: Joi.string()
     .required()
     .description('JWT Secret required to sign'),
   MONGO_URI: Joi.string()
     .required()
     .description('Mongo DB host url'),
+  TWILIO_API_KEY: Joi.string()
+    .required()
+    .description('Twilio app api key'),
 })
   .unknown()
   .required();
 
-const { error, value: envVars } = Joi.validate(process.env, envVarsSchema);
+const { error } = Joi.validate(process.env, envVarsSchema);
+
 if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
-
-const config = {
-  env: envVars.NODE_ENV,
-  port: envVars.PORT,
-  mongooseDebug: envVars.MONGOOSE_DEBUG,
-  jwtSecret: envVars.JWT_SECRET,
-  mongoURI: envVars.MONGO_URI,
-};
-
-module.exports = config;

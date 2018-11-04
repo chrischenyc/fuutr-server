@@ -9,12 +9,11 @@ const httpStatus = require('http-status');
 const expressValidation = require('express-validation');
 
 const routes = require('./routes');
-const config = require('./config');
 const APIError = require('./helpers/APIError');
 
 const app = express();
 
-if (config.env === 'development') {
+if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
@@ -32,7 +31,7 @@ app.use(helmet());
 app.use(cors());
 
 // express-winston logger BEFORE the router
-if (config.env !== 'production') {
+if (process.env.NODE_ENV !== 'production') {
   app.use(
     expressWinston.logger({
       transports: [new winston.transports.Console()],
@@ -65,10 +64,10 @@ app.use((req, res, next) => {
 });
 
 // express-winston error logger AFTER the router
-if (config.env !== 'test') {
+if (process.env.NODE_ENV !== 'test') {
   let format = winston.format.combine(winston.format.colorize(), winston.format.simple());
 
-  if (config.env === 'development') {
+  if (process.env.NODE_ENV === 'development') {
     expressWinston.requestWhitelist.push('body');
     format = winston.format.combine(winston.format.colorize(), winston.format.prettyPrint());
   }
