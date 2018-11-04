@@ -1,6 +1,5 @@
 const express = require('express');
 const morgan = require('morgan');
-const bodyParser = require('body-parser');
 const compression = require('compression');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -20,8 +19,8 @@ if (config.env === 'development') {
 }
 
 // parse body params and attache them to req.body
-app.use(bodyParser.json()); // support Content-Type = application/json
-app.use(bodyParser.urlencoded({ extended: false })); // support form data
+app.use(express.json()); // support Content-Type = application/json
+app.use(express.urlencoded({ extended: false })); // support form data
 
 // compress response body
 app.use(compression());

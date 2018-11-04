@@ -10,7 +10,11 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "start:debug": "DEBUG=otg:* nodemon src/index.js"
+    "start:debug": "DEBUG=otg:* nodemon src/index.js",
+    "predeploy:staging": "echo pre-staging",
+    "deploy:staging": "echo staging",
+    "predeploy:production": "echo pre-production",
+    "deploy:production": "echo production"
   },
   "repository": {
     "type": "git",
@@ -28,7 +32,6 @@
   ],
   "dependencies": {
     "bluebird": "^3.5.2",
-    "body-parser": "^1.18.3",
     "compression": "^1.7.3",
     "cors": "^2.8.4",
     "debug": "^4.1.0",
