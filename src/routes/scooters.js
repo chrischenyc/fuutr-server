@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 
-const Scooter = require('../models/scooters');
+const Scooter = require('../models/scooter');
 const { databaseDebug } = require('../helpers/debug-loggers');
 
 /**
