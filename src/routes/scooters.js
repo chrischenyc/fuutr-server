@@ -2,13 +2,23 @@ const express = require('express');
 
 const router = express.Router();
 
+const Scooter = require('../models/scooters');
+const { databaseDebug } = require('../helpers/debug-loggers');
+
 /**
  * Public routes to discover scooters
  */
 
 // TODO: /scooters/{gps} GET - search scooters nearby
 router.get('/', (req, res) => {
-  res.json({ message: 'not implemented' });
+  Scooter.find()
+    .exec()
+    .then((scooters) => {
+      res.json(scooters);
+    })
+    .catch((error) => {
+      databaseDebug(error);
+    });
 });
 
 // TODO: /scooters/{id} GET - retrieve detail of a scooter
