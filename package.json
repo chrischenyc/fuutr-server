@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "start:debug": "DEBUG=otg:* nodemon src/index.js",
+    "start:debug": "DEBUG=OTGRide:* nodemon src/index.js",
     "docker:build:staging": "docker build -t otg-ride-api-staging .",
     "docker:tag:staging": "docker tag otg-ride-api-staging:latest 257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest",
     "docker:push:staging": "docker push 257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest",
@@ -34,6 +34,7 @@
     "API"
   ],
   "dependencies": {
+    "axios": "^0.18.0",
     "bluebird": "^3.5.2",
     "compression": "^1.7.3",
     "cors": "^2.8.4",
@@ -44,9 +45,11 @@
     "express-winston": "^3.0.1",
     "helmet": "^3.14.0",
     "http-status": "^1.2.0",
+    "install": "^0.12.2",
     "joi": "^14.0.4",
     "mongoose": "^5.3.9",
     "morgan": "^1.9.1",
+    "npm": "^6.4.1",
     "winston": "^3.1.0"
   },
   "license": "UNLICENSED",

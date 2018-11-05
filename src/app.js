@@ -9,7 +9,7 @@ const httpStatus = require('http-status');
 const expressValidation = require('express-validation');
 
 const routes = require('./routes');
-const APIError = require('./helpers/APIError');
+const APIError = require('./helpers/api-error');
 
 const app = express();
 
@@ -69,7 +69,7 @@ if (process.env.NODE_ENV !== 'test') {
 
   if (process.env.NODE_ENV === 'development') {
     expressWinston.requestWhitelist.push('body');
-    format = winston.format.combine(winston.format.colorize(), winston.format.prettyPrint());
+    format = winston.format.combine(winston.format.colorize(), winston.format.simple());
   }
 
   app.use(

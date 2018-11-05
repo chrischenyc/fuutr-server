@@ -7,7 +7,7 @@ require('./config');
 const app = require('./app');
 
 // debug output with nice prefix
-const databaseDebug = require('debug')('otg:database');
+const { databaseDebug } = require('./helpers/debug-loggers');
 
 // make bluebird default Promise
 Promise = require('bluebird');
