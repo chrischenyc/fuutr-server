@@ -118,39 +118,59 @@ router.post('/email/signup', (req, res, next) => {
     .exec()
     .then(user => {
       if (user) {
-        const apiError = new APIError('Email is taken', httpStatus.UNPROCESSABLE_ENTITY, true);
-        next(apiError);
+        next(new APIError('Email is taken', httpStatus.CONFLICT, true));
       } else {
         bcrypt.hash(password, 10, (error, hash) => {
           if (error) {
-            const apiError = new APIError(error, httpStatus.INTERNAL_SERVER_ERROR, false);
-            next(apiError);
+            next(new APIError(error, httpStatus.INTERNAL_SERVER_ERROR));
           } else {
             const user = new User({ email, password: hash });
             user
               .save()
               .then(result => {
-                // JWT
                 const token = jwt.sign({ id: result._id, email }, process.env.JWT_SECRET, {
                   expiresIn: '1h',
                 });
                 res.status(httpStatus.CREATED).json({ token });
               })
               .catch(error => {
-                const apiError = new APIError(error, httpStatus.INTERNAL_SERVER_ERROR, false);
-                next(apiError);
+                next(new APIError(error, httpStatus.INTERNAL_SERVER_ERROR));
               });
           }
         });
       }
     })
     .catch(error => {
-      const apiError = new APIError('Cannot query user', httpStatus.INTERNAL_SERVER_ERROR, false);
-      next(apiError);
+      next(new APIError('Cannot query user', httpStatus.INTERNAL_SERVER_ERROR));
     });
 });
 
 // email log in
-router.post('/email/login', (req, res, next) => {});
+router.post('/email/login', (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email })
+    .exec()
+    .then(user => {
+      if (user) {
+        bcrypt.compare(password, user.password, (err, same) => {
+          if (same) {
+            const token = jwt.sign({ id: user._id, email }, process.env.JWT_SECRET, {
+              expiresIn: '1h',
+            });
+
+            res.json({ token });
+          } else {
+            next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
+          }
+        });
+      } else {
+        next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
+      }
+    })
+    .catch(err => {
+      next(new APIError('Cannot query user', httpStatus.INTERNAL_SERVER_ERROR));
+    });
+});
 
 module.exports = router;
