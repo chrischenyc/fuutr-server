@@ -1,11 +1,13 @@
 const express = require('express');
 const httpStatus = require('http-status');
 const axios = require('axios');
+const bcrypt = require('bcrypt');
+
+const router = express.Router();
 
 const { twilioDebug } = require('../helpers/debug-loggers');
 const APIError = require('../helpers/api-error');
-
-const router = express.Router();
+const User = require('../models/user');
 
 // request a verification code to be sent to mobile number
 // twilio doc: https://www.twilio.com/docs/verify/api/verification
@@ -68,7 +70,27 @@ router.get('/phone-verification/check', (req, res, next) => {
       twilioDebug(`response: ${JSON.stringify(twilioResponse.data)}`);
 
       if (twilioResponse.data.success) {
-        res.sendStatus(httpStatus.OK);
+        // return matched User record or create a new one
+        User.findOne({ mobile: phone_number })
+          .exec()
+          .then(user => {
+            if (user) {
+              res.json(user);
+            } else {
+              const user = new User({ mobile: phone_number });
+              user
+                .save()
+                .then(doc => {
+                  res.json(doc);
+                })
+                .catch(error => {
+                  throw `couldn't create new User with mobile ${phone_number}`;
+                });
+            }
+          })
+          .catch(error => {
+            throw `couldn't query User with mobile ${phone_number}`;
+          });
       } else {
         // fall through to catch
         throw 'response is not successful';
@@ -86,5 +108,44 @@ router.get('/phone-verification/check', (req, res, next) => {
       next(apiError);
     });
 });
+
+// email sign up
+router.post('/email/signup', (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email })
+    .exec()
+    .then(user => {
+      if (user) {
+        const apiError = new APIError('Email is taken', httpStatus.UNPROCESSABLE_ENTITY, true);
+        next(apiError);
+      } else {
+        bcrypt.hash(password, 10, (error, hash) => {
+          if (error) {
+            const apiError = new APIError(error, httpStatus.INTERNAL_SERVER_ERROR, false);
+            next(apiError);
+          } else {
+            const user = new User({ email, password: hash });
+            user
+              .save()
+              .then(result => {
+                res.status(httpStatus.CREATED).json(result);
+              })
+              .catch(error => {
+                const apiError = new APIError(error, httpStatus.INTERNAL_SERVER_ERROR, false);
+                next(apiError);
+              });
+          }
+        });
+      }
+    })
+    .catch(error => {
+      const apiError = new APIError('Cannot query user', httpStatus.INTERNAL_SERVER_ERROR, false);
+      next(apiError);
+    });
+});
+
+// email log in
+router.post('/email/login', (req, res, next) => {});
 
 module.exports = router;

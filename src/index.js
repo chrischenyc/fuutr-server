@@ -19,7 +19,7 @@ mongoose.Promise = Promise;
 const mongoUri = process.env.MONGO_URI;
 mongoose.connect(
   mongoUri,
-  { useNewUrlParser: true },
+  { useNewUrlParser: true, useCreateIndex: true },
 );
 
 mongoose.connection.on('error', () => {
