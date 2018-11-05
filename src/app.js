@@ -31,11 +31,15 @@ app.use(helmet());
 app.use(cors());
 
 // express-winston logger BEFORE the router
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'test') {
   app.use(
     expressWinston.logger({
       transports: [new winston.transports.Console()],
-      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.json(),
+        winston.format.simple(),
+      ),
     }),
   );
 }
@@ -65,18 +69,19 @@ app.use((req, res, next) => {
 
 // express-winston error logger AFTER the router
 if (process.env.NODE_ENV !== 'test') {
-  let format = winston.format.combine(winston.format.colorize(), winston.format.simple());
-
   if (process.env.NODE_ENV === 'development') {
     expressWinston.requestWhitelist.push('body');
-    format = winston.format.combine(winston.format.colorize(), winston.format.simple());
   }
 
   app.use(
     expressWinston.errorLogger({
       transports: [new winston.transports.Console()],
-      format,
-      colorize: true,
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.json(),
+        winston.format.simple(),
+      ),
+      msg: 'HTTP {{req.method}} {{req.url}}',
     }),
   );
 }
