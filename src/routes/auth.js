@@ -2,6 +2,7 @@ const express = require('express');
 const httpStatus = require('http-status');
 const axios = require('axios');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
@@ -129,7 +130,11 @@ router.post('/email/signup', (req, res, next) => {
             user
               .save()
               .then(result => {
-                res.status(httpStatus.CREATED).json(result);
+                // JWT
+                const token = jwt.sign({ id: result._id, email }, process.env.JWT_SECRET, {
+                  expiresIn: '1h',
+                });
+                res.status(httpStatus.CREATED).json({ token });
               })
               .catch(error => {
                 const apiError = new APIError(error, httpStatus.INTERNAL_SERVER_ERROR, false);
