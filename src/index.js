@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const util = require('util');
+const axios = require('axios');
 
 // config should be imported before importing any other file
 require('./config');
@@ -7,7 +8,7 @@ require('./config');
 const app = require('./app');
 
 // debug output with nice prefix
-const { databaseDebug } = require('./helpers/debug-loggers');
+const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
 
 // make bluebird default Promise
 Promise = require('bluebird'); // eslint-disable-line no-global-assign
@@ -26,10 +27,17 @@ mongoose.connection.on('error', () => {
   throw new Error(`unable to connect to database: ${mongoUri}`);
 });
 
-// print mongoose logs in dev env
 if (process.env.NODE_ENV === 'development') {
+  // print mongoose logs in dev env
   mongoose.set('debug', (collectionName, method, query, doc) => {
     databaseDebug(`${collectionName}.${method}`, util.inspect(query, false, 20), doc);
+  });
+
+  // print axios requests in dev env
+  axios.interceptors.request.use((request) => {
+    axiosDebug(`${request.url} ${JSON.stringify(request.data)}`);
+
+    return request;
   });
 }
 
