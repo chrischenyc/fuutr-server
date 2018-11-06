@@ -42,9 +42,11 @@ router.post(
         .email()
         .required(),
       password: Joi.string()
-        .regex(/^[a-zA-Z0-9]{6,30}$/)
+        .regex(/^(?=.*\d).{6,16}$/)
         .required()
-        .error(() => 'password should be at least...'),
+        .error(
+          () => 'password must be between 4-8 characters long and include at least one numeric digit.'
+        ),
     },
   }),
   UserController.signupWithEmail
@@ -58,10 +60,7 @@ router.post(
       email: Joi.string()
         .email()
         .required(),
-      password: Joi.string()
-        .regex(/^[a-zA-Z0-9]{6,30}$/)
-        .required()
-        .error(() => 'password should be at least...'),
+      password: Joi.string().required(),
     },
   }),
   UserController.loginWithEmail
