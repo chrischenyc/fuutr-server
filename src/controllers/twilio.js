@@ -6,7 +6,7 @@ const APIError = require('../helpers/api-error');
 module.exports = {
   // twilio doc: https://www.twilio.com/docs/verify/api/verification
   startPhoneVerification: (req, res, next) => {
-    const { phone_number, country_code } = req.query;
+    const { phone_number, country_code } = req.body;
 
     axios({
       method: 'post',
@@ -38,7 +38,7 @@ module.exports = {
 
   // twilio doc: https://www.twilio.com/docs/verify/api/verification
   checkPhoneVerification: (req, res, next) => {
-    const { phone_number, country_code, verification_code } = req.query;
+    const { phone_number, country_code, verification_code } = req.body;
 
     axios({
       method: 'get',

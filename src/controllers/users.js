@@ -7,7 +7,7 @@ const APIError = require('../helpers/api-error');
 
 module.exports = {
   signupWithPhone: (req, res, next) => {
-    const { phone_number, country_code } = req.query;
+    const { phone_number, country_code } = req.body;
 
     // return matched User record or create a new one
     User.findOne({ phone_number, country_code })
@@ -18,7 +18,7 @@ module.exports = {
         } else {
           const newUser = new User({ phone_number, country_code });
           newUser.save().then((result) => {
-            res.status(httpStatus.CREATED).json(result);
+            res.status(httpStatus.CREATED).json(result.jwtToken);
           });
         }
       })
