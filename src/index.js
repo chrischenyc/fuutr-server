@@ -10,7 +10,7 @@ const app = require('./app');
 const { databaseDebug } = require('./helpers/debug-loggers');
 
 // make bluebird default Promise
-Promise = require('bluebird');
+Promise = require('bluebird'); // eslint-disable-line no-global-assign
 
 // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;
@@ -19,7 +19,7 @@ mongoose.Promise = Promise;
 const mongoUri = process.env.MONGO_URI;
 mongoose.connect(
   mongoUri,
-  { useNewUrlParser: true, useCreateIndex: true },
+  { useNewUrlParser: true, useCreateIndex: true }
 );
 
 mongoose.connection.on('error', () => {
@@ -33,13 +33,9 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// module.parent check is required to support mocha watch
-// src: https://github.com/mochajs/mocha/issues/1912
-if (!module.parent) {
-  const port = process.env.PORT;
-  app.listen(port, () => {
-    console.info(`server started on port ${port}`);
-  });
-}
+const port = process.env.PORT;
+app.listen(port, () => {
+  console.info(`server started on port ${port}`); // eslint-disable-line no-console
+});
 
 module.exports = app;
