@@ -28,7 +28,7 @@ module.exports = {
       .catch(() => {
         next(
           new APIError(
-            "Couldn't send SMS message, please try again",
+            "Couldn't send SMS message. Please try again.",
             httpStatus.INTERNAL_SERVER_ERROR,
             true
           )
@@ -57,10 +57,10 @@ module.exports = {
           throw Error('twilio response is not successful');
         }
       })
-      .catch(() => {
+      .catch((err) => {
         next(
           new APIError(
-            "Couldn't verify your phone, please try again",
+            `${err.response.data.message || "Couldn't verify your code."} Please try again.`,
             httpStatus.UNAUTHORIZED,
             true
           )
