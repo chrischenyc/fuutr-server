@@ -66,4 +66,17 @@ router.post(
   UserController.loginWithEmail
 );
 
+// facebook log in
+router.post(
+  '/facebook/login',
+  validate({
+    body: {
+      token: Joi.string()
+        .required()
+        .error(() => "couldn't finish your request"),
+    },
+  }),
+  UserController.loginWithFacebook
+);
+
 module.exports = router;

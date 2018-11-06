@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const util = require('util');
 const axios = require('axios');
+const Promise = require('bluebird');
 
 // config should be imported before importing any other file
 require('./config');
@@ -9,9 +10,6 @@ const app = require('./app');
 
 // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
-
-// make bluebird default Promise
-Promise = require('bluebird'); // eslint-disable-line no-global-assign
 
 // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;

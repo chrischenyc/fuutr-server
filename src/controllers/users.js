@@ -12,15 +12,16 @@ module.exports = {
     // return matched User record or create a new one
     User.findOne({ phone_number, country_code })
       .exec()
-      .then((user) => {
-        if (user) {
-          res.json(user.jwtToken);
-        } else {
-          const newUser = new User({ phone_number, country_code });
-          newUser.save().then((result) => {
-            res.status(httpStatus.CREATED).json(result.jwtToken);
-          });
+      .then((existingUser) => {
+        if (existingUser) {
+          return res.json(existingUser.jwtToken);
         }
+
+        const newUser = new User({ phone_number, country_code });
+        return newUser.save();
+      })
+      .then((newUser) => {
+        res.status(httpStatus.CREATED).json(newUser.jwtToken);
       })
       .catch(() => {
         next(
@@ -38,21 +39,30 @@ module.exports = {
 
     User.findOne({ email })
       .exec()
-      .then((user) => {
-        if (user) {
-          next(new APIError('Email is taken', httpStatus.CONFLICT, true));
-        } else {
+      .then((existingUser) => {
+        if (existingUser) {
+          return next(new APIError('Email is taken', httpStatus.CONFLICT, true));
+        }
+
+        // hash password
+        return new Promise((resolve, reject) => {
           bcrypt.hash(password, 10, (error, hash) => {
             if (error) {
-              throw error;
+              reject(error);
             } else {
-              const newUser = new User({ email, password: hash });
-              newUser.save().then((result) => {
-                res.status(httpStatus.CREATED).json(result.jwtToken);
-              });
+              resolve(hash);
             }
           });
-        }
+        });
+      })
+      .then((hash) => {
+        const newUser = new User({ email, password: hash });
+        return newUser.save();
+      })
+      .then((newUser) => {
+        // TODO: send out email verification email
+
+        res.status(httpStatus.CREATED).json(newUser.jwtToken);
       })
       .catch(() => {
         next(
@@ -68,13 +78,22 @@ module.exports = {
       .exec()
       .then((user) => {
         if (user) {
-          bcrypt.compare(password, user.password, (err, same) => {
-            if (same) {
-              res.json(user.jwtToken);
-            } else {
-              next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
-            }
+          return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, samePassword) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({ user, samePassword });
+              }
+            });
           });
+        }
+
+        return next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
+      })
+      .then(({ user, samePassword }) => {
+        if (samePassword) {
+          res.json(user.jwtToken);
         } else {
           next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
         }
@@ -85,5 +104,28 @@ module.exports = {
           true
         );
       });
+  },
+
+  loginWithFacebook: (req, res, next) => {
+    const { token } = req.body;
+
+    next(new APIError('not implemented', httpStatus.NOT_IMPLEMENTED, true));
+
+    // return matched User record or create a new one
+    // User.findOne({ facebook_id })
+    //   .exec()
+    //   .then((user) => {
+    //     if (user) {
+    //       res.json(user.jwtToken);
+    //     } else {
+    //       const newUser = new User({ facebook_id });
+    //       newUser.save().then((result) => {
+    //         res.status(httpStatus.CREATED).json(result.jwtToken);
+    //       });
+    //     }
+    //   })
+    //   .catch(() => {
+    //     next(new APIError("Couldn't log in with facebook", httpStatus.INTERNAL_SERVER_ERROR, true));
+    //   });
   },
 };

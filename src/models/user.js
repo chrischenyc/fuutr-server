@@ -7,9 +7,12 @@ const userSchema = new mongoose.Schema(
     password: { type: String },
     phone_number: { type: String },
     country_code: { type: Number },
-    facebook: {
-      id: { type: String },
-      name: { type: String },
+    facebook_provider: {
+      type: {
+        id: String,
+        token: String,
+      },
+      select: false,
     },
   },
   { timestamps: true }
