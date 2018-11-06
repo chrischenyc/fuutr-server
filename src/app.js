@@ -101,7 +101,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // error handler
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   res.status(err.status).json({
     error: err.isPublic ? err.message : httpStatus[err.status],
   });
