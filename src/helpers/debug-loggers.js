@@ -1,4 +1,4 @@
 const databaseDebug = require('debug')('OTGRide:database');
-const twilioDebug = require('debug')('OTGRide:twilio');
+const axiosDebug = require('debug')('OTGRide:axios');
 
-module.exports = { databaseDebug, twilioDebug };
+module.exports = { databaseDebug, axiosDebug };

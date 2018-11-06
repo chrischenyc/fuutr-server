@@ -28,7 +28,7 @@ const scooterSchema = new mongoose.Schema(
     altitude: Number,
     gpsUtcTime: Date, // GPS get the location's UTC time
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model('Scooter', scooterSchema);

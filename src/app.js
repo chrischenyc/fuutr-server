@@ -38,9 +38,9 @@ if (process.env.NODE_ENV !== 'test') {
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.json(),
-        winston.format.simple(),
+        winston.format.simple()
       ),
-    }),
+    })
   );
 }
 
@@ -54,10 +54,13 @@ app.use((err, req, res, next) => {
     const unifiedErrorMessage = err.errors.map(error => error.messages.join('. ')).join(' and ');
     const error = new APIError(unifiedErrorMessage, err.status, true);
     return next(error);
-  } else if (!(err instanceof APIError)) {
+  }
+
+  if (!(err instanceof APIError)) {
     const apiError = new APIError(err.message, err.status, err.isPublic);
     return next(apiError);
   }
+
   return next(err);
 });
 
@@ -69,20 +72,27 @@ app.use((req, res, next) => {
 
 // express-winston error logger AFTER the router
 if (process.env.NODE_ENV !== 'test') {
+  let format = winston.format.combine(
+    winston.format.colorize(),
+    winston.format.json(),
+    winston.format.simple()
+  );
+
   if (process.env.NODE_ENV === 'development') {
     expressWinston.requestWhitelist.push('body');
+    format = winston.format.combine(
+      winston.format.colorize(),
+      winston.format.json(),
+      winston.format.prettyPrint()
+    );
   }
 
   app.use(
     expressWinston.errorLogger({
       transports: [new winston.transports.Console()],
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json(),
-        winston.format.simple(),
-      ),
+      format,
       msg: 'HTTP {{req.method}} {{req.url}}',
-    }),
+    })
   );
 }
 

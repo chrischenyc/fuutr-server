@@ -1,4 +1,6 @@
 const express = require('express');
+const validate = require('express-validation');
+const Joi = require('joi');
 const httpStatus = require('http-status');
 const axios = require('axios');
 const bcrypt = require('bcrypt');
@@ -6,56 +8,55 @@ const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
-const { twilioDebug } = require('../helpers/debug-loggers');
 const APIError = require('../helpers/api-error');
 const User = require('../models/user');
 
 // request a verification code to be sent to mobile number
 // twilio doc: https://www.twilio.com/docs/verify/api/verification
-router.get('/phone-verification/start', (req, res, next) => {
-  const { phone_number } = req.query;
-
-  twilioDebug('calling: https://api.authy.com/protected/json/phones/verification/start');
-
-  axios({
-    method: 'post',
-    url: 'https://api.authy.com/protected/json/phones/verification/start',
-    headers: { 'X-Authy-API-Key': process.env.TWILIO_API_KEY },
-    data: {
-      via: 'sms',
-      phone_number,
-      country_code: 61,
+router.post(
+  '/phone/start-verification',
+  validate({
+    body: {
+      phone_number: Joi.string().required(),
+      country_code: Joi.number().required(),
     },
-  })
-    .then(twilioResponse => {
-      twilioDebug(`response: ${JSON.stringify(twilioResponse.data)}`);
+  }),
+  (req, res, next) => {
+    const { phone_number, country_code } = req.query;
 
-      if (twilioResponse.data.success) {
-        res.sendStatus(httpStatus.OK);
-      } else {
-        // fall through to catch
-        throw 'response is not successful';
-      }
+    axios({
+      method: 'post',
+      url: 'https://api.authy.com/protected/json/phones/verification/start',
+      headers: { 'X-Authy-API-Key': process.env.TWILIO_API_KEY },
+      data: {
+        via: 'sms',
+        phone_number,
+        country_code,
+      },
     })
-    .catch(twilioError => {
-      twilioDebug(`error: ${twilioError}`);
-
-      const apiError = new APIError(
-        "Couldn't send SMS message, please try again",
-        httpStatus.INTERNAL_SERVER_ERROR,
-        true,
-      );
-
-      next(apiError);
-    });
-});
+      .then((result) => {
+        if (result.data.success) {
+          res.sendStatus(httpStatus.OK);
+        } else {
+          next(new APIError('Twilio response not successful', httpStatus.INTERNAL_SERVER_ERROR));
+        }
+      })
+      .catch(() => {
+        next(
+          new APIError(
+            "Couldn't send SMS message, please try again",
+            httpStatus.INTERNAL_SERVER_ERROR,
+            true
+          )
+        );
+      });
+  }
+);
 
 // verify the verification code with twilio
 // twilio doc: https://www.twilio.com/docs/verify/api/verification
 router.get('/phone-verification/check', (req, res, next) => {
   const { phone_number, verification_code } = req.query;
-
-  twilioDebug('calling: https://api.authy.com/protected/json/phones/verification/check');
 
   axios({
     method: 'get',
@@ -67,29 +68,27 @@ router.get('/phone-verification/check', (req, res, next) => {
       verification_code,
     },
   })
-    .then(twilioResponse => {
-      twilioDebug(`response: ${JSON.stringify(twilioResponse.data)}`);
-
+    .then((twilioResponse) => {
       if (twilioResponse.data.success) {
         // return matched User record or create a new one
         User.findOne({ mobile: phone_number })
           .exec()
-          .then(user => {
+          .then((user) => {
             if (user) {
               res.json(user);
             } else {
               const user = new User({ mobile: phone_number });
               user
                 .save()
-                .then(doc => {
+                .then((doc) => {
                   res.json(doc);
                 })
-                .catch(error => {
+                .catch((error) => {
                   throw `couldn't create new User with mobile ${phone_number}`;
                 });
             }
           })
-          .catch(error => {
+          .catch((error) => {
             throw `couldn't query User with mobile ${phone_number}`;
           });
       } else {
@@ -97,13 +96,11 @@ router.get('/phone-verification/check', (req, res, next) => {
         throw 'response is not successful';
       }
     })
-    .catch(twilioError => {
-      twilioDebug(`error: ${twilioError}`);
-
+    .catch((twilioError) => {
       const apiError = new APIError(
         "Couldn't verify your phone, please try again",
         httpStatus.UNAUTHORIZED,
-        true,
+        true
       );
 
       next(apiError);
@@ -116,7 +113,7 @@ router.post('/email/signup', (req, res, next) => {
 
   User.findOne({ email })
     .exec()
-    .then(user => {
+    .then((user) => {
       if (user) {
         next(new APIError('Email is taken', httpStatus.CONFLICT, true));
       } else {
@@ -127,20 +124,20 @@ router.post('/email/signup', (req, res, next) => {
             const user = new User({ email, password: hash });
             user
               .save()
-              .then(result => {
+              .then((result) => {
                 const token = jwt.sign({ id: result._id, email }, process.env.JWT_SECRET, {
                   expiresIn: '1h',
                 });
                 res.status(httpStatus.CREATED).json({ token });
               })
-              .catch(error => {
+              .catch((error) => {
                 next(new APIError(error, httpStatus.INTERNAL_SERVER_ERROR));
               });
           }
         });
       }
     })
-    .catch(error => {
+    .catch((error) => {
       next(new APIError('Cannot query user', httpStatus.INTERNAL_SERVER_ERROR));
     });
 });
@@ -151,7 +148,7 @@ router.post('/email/login', (req, res, next) => {
 
   User.findOne({ email })
     .exec()
-    .then(user => {
+    .then((user) => {
       if (user) {
         bcrypt.compare(password, user.password, (err, same) => {
           if (same) {
@@ -168,7 +165,7 @@ router.post('/email/login', (req, res, next) => {
         next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
       }
     })
-    .catch(err => {
+    .catch((err) => {
       next(new APIError('Cannot query user', httpStatus.INTERNAL_SERVER_ERROR));
     });
 });
