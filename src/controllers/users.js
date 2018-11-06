@@ -1,6 +1,5 @@
 const httpStatus = require('http-status');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
@@ -15,13 +14,11 @@ module.exports = {
       .exec()
       .then((user) => {
         if (user) {
-          // TODO: jwt
-          res.json(user);
+          res.json(user.jwtToken);
         } else {
           const newUser = new User({ phone_number, country_code });
           newUser.save().then((result) => {
-            // TODO: jwt
-            res.json(result);
+            res.status(httpStatus.CREATED).json(result);
           });
         }
       })
@@ -51,10 +48,7 @@ module.exports = {
             } else {
               const newUser = new User({ email, password: hash });
               newUser.save().then((result) => {
-                const token = jwt.sign({ id: result._id, email }, process.env.JWT_SECRET, {
-                  expiresIn: '1h',
-                });
-                res.status(httpStatus.CREATED).json({ token });
+                res.status(httpStatus.CREATED).json(result.jwtToken);
               });
             }
           });
@@ -76,11 +70,7 @@ module.exports = {
         if (user) {
           bcrypt.compare(password, user.password, (err, same) => {
             if (same) {
-              const token = jwt.sign({ id: user._id, email }, process.env.JWT_SECRET, {
-                expiresIn: '1h',
-              });
-
-              res.json({ token });
+              res.json(user.jwtToken);
             } else {
               next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
             }
