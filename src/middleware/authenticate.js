@@ -7,7 +7,8 @@ const User = require('../models/user');
 
 // middleware that validate JWT token in request headers "Authorization"
 module.exports = (req, res, next) => {
-  const { authorization: token } = req.headers;
+  const { authorization } = req.headers;
+  const token = authorization && authorization.split(' ')[1];
 
   if (token) {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
