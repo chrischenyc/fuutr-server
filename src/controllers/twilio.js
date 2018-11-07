@@ -6,7 +6,7 @@ const APIError = require('../helpers/api-error');
 module.exports = {
   // twilio doc: https://www.twilio.com/docs/verify/api/verification
   startPhoneVerification: (req, res, next) => {
-    const { phone_number, country_code } = req.body;
+    const { phoneNumber, countryCode } = req.body;
 
     axios({
       method: 'post',
@@ -14,8 +14,8 @@ module.exports = {
       headers: { 'X-Authy-API-Key': process.env.TWILIO_API_KEY },
       data: {
         via: 'sms',
-        phone_number,
-        country_code,
+        phone_number: phoneNumber,
+        country_code: countryCode,
       },
     })
       .then((result) => {
@@ -38,16 +38,16 @@ module.exports = {
 
   // twilio doc: https://www.twilio.com/docs/verify/api/verification
   checkPhoneVerification: (req, res, next) => {
-    const { phone_number, country_code, verification_code } = req.body;
+    const { phoneNumber, countryCode, verificationCode } = req.body;
 
     axios({
       method: 'get',
       url: 'https://api.authy.com/protected/json/phones/verification/check',
       headers: { 'X-Authy-API-Key': process.env.TWILIO_API_KEY },
       data: {
-        country_code,
-        phone_number,
-        verification_code,
+        country_code: countryCode,
+        phone_number: phoneNumber,
+        verification_code: verificationCode,
       },
     })
       .then((response) => {

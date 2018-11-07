@@ -13,8 +13,8 @@ router.post(
   '/phone/start-verification',
   validate({
     body: {
-      phone_number: Joi.string().required(),
-      country_code: Joi.number().required(),
+      phoneNumber: Joi.string().required(),
+      countryCode: Joi.number().required(),
     },
   }),
   TwilioController.startPhoneVerification
@@ -25,9 +25,9 @@ router.post(
   '/phone/signup',
   validate({
     body: {
-      phone_number: Joi.string().required(),
-      country_code: Joi.number().required(),
-      verification_code: Joi.string().required(),
+      phoneNumber: Joi.string().required(),
+      countryCode: Joi.number().required(),
+      verificationCode: Joi.string().required(),
     },
   }),
   TwilioController.checkPhoneVerification,

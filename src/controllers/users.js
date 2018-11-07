@@ -7,17 +7,17 @@ const APIError = require('../helpers/api-error');
 
 module.exports = {
   signupWithPhone: (req, res, next) => {
-    const { phone_number, country_code } = req.body;
+    const { phoneNumber, countryCode } = req.body;
 
     // return matched User record or create a new one
-    User.findOne({ phone_number, country_code })
+    User.findOne({ phoneNumber, countryCode })
       .exec()
       .then((existingUser) => {
         if (existingUser) {
           return res.json(existingUser.jwtToken);
         }
 
-        const newUser = new User({ phone_number, country_code });
+        const newUser = new User({ phoneNumber, countryCode });
         return newUser.save();
       })
       .then((newUser) => {
@@ -26,7 +26,7 @@ module.exports = {
       .catch(() => {
         next(
           new APIError(
-            `Couldn't sign up with mobile number +${country_code}${phone_number}`,
+            `Couldn't sign up with mobile number +${countryCode}${phoneNumber}`,
             httpStatus.INTERNAL_SERVER_ERROR,
             true
           )

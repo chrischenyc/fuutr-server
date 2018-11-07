@@ -5,8 +5,8 @@ const userSchema = new mongoose.Schema(
   {
     email: { type: String, unique: true, trim: true },
     password: { type: String },
-    phone_number: { type: String, trim: true },
-    country_code: { type: Number },
+    phoneNumber: { type: String, trim: true },
+    countryCode: { type: Number },
     facebookId: { type: String },
     displayName: { type: String, trim: true },
     photo: { type: String },
