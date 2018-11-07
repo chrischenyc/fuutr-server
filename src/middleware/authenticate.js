@@ -1,13 +1,10 @@
 const jwt = require('jsonwebtoken');
 const httpStatus = require('http-status');
 
-const APIError = require('../helpers/api-error');
-
 const User = require('../models/user');
 
 // middleware that validate JWT token in request headers "Authorization"
-
-module.exports = (req, res, next) => {
+exports.validJWT = (req, res, next) => {
   const { authorization } = req.headers;
 
   const bearer = authorization && authorization.split(' ')[0];

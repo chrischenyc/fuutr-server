@@ -7,7 +7,7 @@ const router = express.Router();
 
 const TwilioController = require('../controllers/twilio');
 const UserController = require('../controllers/users');
-const authenticate = require('../middleware/authenticate');
+const Authenticate = require('../middleware/authenticate');
 
 // request a verification code to be sent to mobile number
 router.post(
@@ -83,6 +83,6 @@ router.post(
 );
 
 // fetch profile for logged-in user
-router.get('/me', authenticate, UserController.getProfile);
+router.get('/me', Authenticate.validJWT, UserController.getProfile);
 
 module.exports = router;
