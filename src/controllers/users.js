@@ -106,26 +106,19 @@ module.exports = {
       });
   },
 
-  loginWithFacebook: (req, res, next) => {
-    const { token } = req.body;
+  authWithFacebook: (req, res, next) => {
+    const { user } = req;
 
-    next(new APIError('not implemented', httpStatus.NOT_IMPLEMENTED, true));
-
-    // return matched User record or create a new one
-    // User.findOne({ facebook_id })
-    //   .exec()
-    //   .then((user) => {
-    //     if (user) {
-    //       res.json(user.jwtToken);
-    //     } else {
-    //       const newUser = new User({ facebook_id });
-    //       newUser.save().then((result) => {
-    //         res.status(httpStatus.CREATED).json(result.jwtToken);
-    //       });
-    //     }
-    //   })
-    //   .catch(() => {
-    //     next(new APIError("Couldn't log in with facebook", httpStatus.INTERNAL_SERVER_ERROR, true));
-    //   });
+    if (user) {
+      res.json(user.jwtToken);
+    } else {
+      next(
+        new APIError(
+          "Couldn't sign in with Facebook, please try other methods",
+          httpStatus.UNAUTHORIZED,
+          true
+        )
+      );
+    }
   },
 };

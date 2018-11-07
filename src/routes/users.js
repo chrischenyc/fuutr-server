@@ -1,6 +1,7 @@
 const express = require('express');
 const validate = require('express-validation');
 const Joi = require('joi');
+const passport = require('passport');
 
 const router = express.Router();
 
@@ -68,15 +69,16 @@ router.post(
 
 // facebook log in
 router.post(
-  '/facebook/login',
+  '/facebook/auth',
   validate({
     body: {
-      token: Joi.string()
+      access_token: Joi.string()
         .required()
         .error(() => "couldn't finish your request"),
     },
   }),
-  UserController.loginWithFacebook
+  passport.authenticate('facebook-token', { session: false }),
+  UserController.authWithFacebook
 );
 
 module.exports = router;

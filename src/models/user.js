@@ -3,17 +3,11 @@ const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema(
   {
-    email: { type: String, unique: true },
+    email: { type: String, unique: true, trim: true },
     password: { type: String },
-    phone_number: { type: String },
+    phone_number: { type: String, trim: true },
     country_code: { type: Number },
-    facebook_provider: {
-      type: {
-        id: String,
-        token: String,
-      },
-      select: false,
-    },
+    facebookId: { type: String },
   },
   { timestamps: true }
 );

@@ -7,6 +7,7 @@ const winston = require('winston');
 const expressWinston = require('express-winston');
 const httpStatus = require('http-status');
 const { ValidationError } = require('express-validation');
+const passport = require('passport');
 
 const routes = require('./routes');
 const APIError = require('./helpers/api-error');
@@ -29,6 +30,9 @@ app.use(helmet());
 
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors());
+
+// route authentication with passport
+app.use(passport.initialize());
 
 // express-winston logger BEFORE the router
 if (process.env.NODE_ENV !== 'test') {

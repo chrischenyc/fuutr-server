@@ -3,8 +3,9 @@ const util = require('util');
 const axios = require('axios');
 const Promise = require('bluebird');
 
-// config should be imported before importing any other file
-require('./config');
+// configs should be imported before importing any other file
+require('./config/env');
+require('./config/passport');
 
 const app = require('./app');
 
