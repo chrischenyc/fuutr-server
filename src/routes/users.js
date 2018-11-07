@@ -7,6 +7,7 @@ const router = express.Router();
 
 const TwilioController = require('../controllers/twilio');
 const UserController = require('../controllers/users');
+const authenticate = require('../middleware/authenticate');
 
 // request a verification code to be sent to mobile number
 router.post(
@@ -80,5 +81,8 @@ router.post(
   passport.authenticate('facebook-token', { session: false }),
   UserController.authWithFacebook
 );
+
+// fetch profile for logged-in user
+router.get('/me', authenticate, UserController.getProfile);
 
 module.exports = router;

@@ -75,6 +75,7 @@ module.exports = {
     const { email, password } = req.body;
 
     User.findOne({ email })
+      .select({ password: 1 })
       .exec()
       .then((user) => {
         if (user) {
@@ -119,6 +120,16 @@ module.exports = {
           true
         )
       );
+    }
+  },
+
+  getProfile: (req, res, next) => {
+    const { user } = req;
+
+    if (user) {
+      res.json(user);
+    } else {
+      next(new APIError("JWT didn't pass", httpStatus.UNAUTHORIZED));
     }
   },
 };

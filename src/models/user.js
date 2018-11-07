@@ -4,14 +4,14 @@ const jwt = require('jsonwebtoken');
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, unique: true, trim: true },
-    password: { type: String },
+    password: { type: String, select: false },
     phoneNumber: { type: String, trim: true },
     countryCode: { type: Number },
-    facebookId: { type: String },
+    facebookId: { type: String, select: false },
     displayName: { type: String, trim: true },
     photo: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 userSchema.virtual('jwtToken').get(function generateJWTToken() {
