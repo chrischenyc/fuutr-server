@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema(
     phone_number: { type: String, trim: true },
     country_code: { type: Number },
     facebookId: { type: String },
+    displayName: { type: String, trim: true },
+    photo: { type: String },
   },
   { timestamps: true }
 );

@@ -11,10 +11,8 @@ passport.use(
       clientSecret: process.env.FACEBOOK_APP_SECRET,
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log(profile);
-
       const {
-        id: facebookId, displayName, name, emails, photos,
+        id: facebookId, displayName, emails, photos,
       } = profile;
 
       const email = emails && emails[0] && emails[0].value;
@@ -24,7 +22,7 @@ passport.use(
       User.findOne({ facebookId })
         .exec()
         .then(
-          userWithSameId => new Promise((resolve, reject) => {
+          userWithSameId => new Promise((resolve) => {
             if (userWithSameId) {
               resolve(userWithSameId);
             } else if (!_.isNil(email)) {
@@ -34,7 +32,12 @@ passport.use(
                   resolve(userWithSameEmail);
                 } else {
                   // don't even have an email, create a new user
-                  const user = new User({ facebookId, email });
+                  const user = new User({
+                    facebookId,
+                    email,
+                    displayName,
+                    photo,
+                  });
                   user.save().then((newUser) => {
                     resolve(newUser);
                   });
@@ -42,7 +45,12 @@ passport.use(
               });
             } else {
               // can't match with facebook id and have no email to match, create a new user
-              const user = new User({ facebookId, email });
+              const user = new User({
+                facebookId,
+                email,
+                displayName,
+                photo,
+              });
               user.save().then((newUser) => {
                 resolve(newUser);
               });
