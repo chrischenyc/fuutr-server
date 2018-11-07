@@ -22,13 +22,18 @@ passport.use(
       User.findOne({ facebookId })
         .exec()
         .then(
-          userWithSameId => new Promise((resolve) => {
-            if (userWithSameId) {
-              resolve(userWithSameId);
+          userWithSameFacebookId => new Promise((resolve) => {
+            if (userWithSameFacebookId) {
+              resolve(userWithSameFacebookId);
             } else if (!_.isNil(email)) {
               // try to match with facebook email
               User.findOne({ email }).then((userWithSameEmail) => {
                 if (userWithSameEmail) {
+                  // merge facebook profile into existing User record if necessary
+                  userWithSameEmail.displayName = _.isNil(userWithSameEmail.displayName) && displayName;
+                  userWithSameEmail.photo = _.isNil(userWithSameEmail.photo) && photo;
+                  userWithSameEmail.save();
+
                   resolve(userWithSameEmail);
                 } else {
                   // don't even have an email, create a new user
