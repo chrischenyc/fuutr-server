@@ -22,9 +22,13 @@ exports.signupWithPhone = (req, res, next) => {
       res.status(httpStatus.CREATED).json(newUser.jwtToken);
     })
     .catch(() => {
-      res
-        .status(httpStatus.INTERNAL_SERVER_ERROR)
-        .send(`Couldn't sign up with mobile number +${countryCode}${phoneNumber}`);
+      next(
+        new APIError(
+          `Couldn't sign up with mobile number +${countryCode}${phoneNumber}`,
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
     });
 };
 
