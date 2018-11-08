@@ -27,27 +27,29 @@ passport.use(
               resolve(userWithSameFacebookId);
             } else if (!_.isNil(email)) {
               // try to match with facebook email
-              User.findOne({ email }).then((userWithSameEmail) => {
-                if (userWithSameEmail) {
-                  // merge facebook profile into existing User record if necessary
-                  userWithSameEmail.displayName = _.isNil(userWithSameEmail.displayName) && displayName;
-                  userWithSameEmail.photo = _.isNil(userWithSameEmail.photo) && photo;
-                  userWithSameEmail.save();
+              User.findOne({ email })
+                .exec()
+                .then((userWithSameEmail) => {
+                  if (userWithSameEmail) {
+                    // merge facebook profile into existing User record if necessary
+                    userWithSameEmail.displayName = _.isNil(userWithSameEmail.displayName) && displayName; // eslint-disable-line no-param-reassign
+                    userWithSameEmail.photo = _.isNil(userWithSameEmail.photo) && photo; // eslint-disable-line no-param-reassign
+                    userWithSameEmail.save();
 
-                  resolve(userWithSameEmail);
-                } else {
-                  // don't even have an email, create a new user
-                  const user = new User({
-                    facebookId,
-                    email,
-                    displayName,
-                    photo,
-                  });
-                  user.save().then((newUser) => {
-                    resolve(newUser);
-                  });
-                }
-              });
+                    resolve(userWithSameEmail);
+                  } else {
+                    // don't even have an email, create a new user
+                    const user = new User({
+                      facebookId,
+                      email,
+                      displayName,
+                      photo,
+                    });
+                    user.save().then((newUser) => {
+                      resolve(newUser);
+                    });
+                  }
+                });
             } else {
               // can't match with facebook id and have no email to match, create a new user
               const user = new User({
