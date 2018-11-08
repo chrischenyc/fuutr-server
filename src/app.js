@@ -1,5 +1,4 @@
 const express = require('express');
-const morgan = require('morgan');
 const compression = require('compression');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -13,10 +12,6 @@ const routes = require('./routes');
 const APIError = require('./helpers/api-error');
 
 const app = express();
-
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
 
 // parse body params and attache them to req.body
 app.use(express.json()); // support Content-Type = application/json
