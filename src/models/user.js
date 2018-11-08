@@ -16,7 +16,9 @@ const userSchema = new mongoose.Schema(
 
 userSchema.virtual('jwtToken').get(function generateJWTToken() {
   const { _id } = this;
-  return { token: jwt.sign({ _id }, process.env.JWT_SECRET, { expiresIn: '1h' }) };
+  return {
+    token: jwt.sign({ _id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN }),
+  };
 });
 
 module.exports = mongoose.model('User', userSchema);
