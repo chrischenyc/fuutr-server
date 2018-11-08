@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 
 const User = require('../models/user');
 const APIError = require('../helpers/api-error');
+const TokenGenerator = require('../helpers/token-generator');
 
 exports.signupWithPhone = (req, res, next) => {
   const { phoneNumber, countryCode } = req.body;
@@ -12,14 +13,14 @@ exports.signupWithPhone = (req, res, next) => {
     .exec()
     .then((existingUser) => {
       if (existingUser) {
-        return res.json(existingUser.jwtToken);
+        return res.json(TokenGenerator.sign(existingUser));
       }
 
       const newUser = new User({ phoneNumber, countryCode });
       return newUser.save();
     })
     .then((newUser) => {
-      res.status(httpStatus.CREATED).json(newUser.jwtToken);
+      res.status(httpStatus.CREATED).json(TokenGenerator.sign(newUser));
     })
     .catch(() => {
       next(
@@ -60,7 +61,7 @@ exports.signupWithEmail = (req, res, next) => {
     .then((newUser) => {
       // TODO: send out email verification email
 
-      res.status(httpStatus.CREATED).json(newUser.jwtToken);
+      res.status(httpStatus.CREATED).json(TokenGenerator.sign(newUser));
     })
     .catch(() => {
       next(
@@ -92,7 +93,7 @@ exports.loginWithEmail = (req, res, next) => {
     })
     .then(({ user, samePassword }) => {
       if (samePassword) {
-        res.json(user.jwtToken);
+        res.json(TokenGenerator.sign(user));
       } else {
         next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
       }
@@ -109,7 +110,7 @@ exports.authWithFacebook = (req, res, next) => {
   const { user } = req;
 
   if (user) {
-    res.json(user.jwtToken);
+    res.json(TokenGenerator.sign(user));
   } else {
     next(
       new APIError(

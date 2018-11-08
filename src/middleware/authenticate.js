@@ -17,8 +17,7 @@ exports.validJWT = (req, res, next) => {
     if (err) {
       // https://github.com/auth0/node-jsonwebtoken#tokenexpirederror
       if (err instanceof jwt.TokenExpiredError) {
-        // TODO: implement refresh token
-        res.status(httpStatus.UNAUTHORIZED).send();
+        res.status(httpStatus.UNAUTHORIZED).json({ error: 'access token expired' });
         return;
       }
 
