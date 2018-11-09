@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const RefreshToken = require('../models/refresh-token');
 const APIError = require('../helpers/api-error');
+const logger = require('../helpers/logger');
 const { generateTokens, generateAccessToken } = require('../helpers/token-generator');
 
 exports.signupWithPhone = (req, res, next) => {
@@ -24,7 +25,8 @@ exports.signupWithPhone = (req, res, next) => {
     .then((newUser) => {
       res.status(httpStatus.CREATED).json(generateTokens(newUser));
     })
-    .catch(() => {
+    .catch((error) => {
+      logger.error(error);
       next(
         new APIError(
           `Couldn't sign up with mobile number ${countryCode}${phoneNumber}`,
@@ -65,7 +67,8 @@ exports.signupWithEmail = (req, res, next) => {
 
       res.status(httpStatus.CREATED).json(generateTokens(newUser));
     })
-    .catch(() => {
+    .catch((error) => {
+      logger.error(error);
       next(
         new APIError(`Cannot sign up with email ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true)
       );
@@ -100,7 +103,8 @@ exports.loginWithEmail = (req, res, next) => {
         next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
       }
     })
-    .catch(() => {
+    .catch((error) => {
+      logger.error(error);
       next(new APIError(`Cannot log in with email ${email}`, httpStatus.UNAUTHORIZED, true), true);
     });
 };

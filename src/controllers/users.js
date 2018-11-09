@@ -3,6 +3,7 @@ const _ = require('lodash');
 const User = require('../models/user');
 
 const APIError = require('../helpers/api-error');
+const logger = require('../helpers/logger');
 
 exports.getProfile = (req, res) => {
   const { userId: _id } = req;
@@ -105,6 +106,7 @@ exports.updateEmail = (req, res, next) => {
       if (error instanceof APIError) {
         next(error);
       } else {
+        logger.error(error);
         next(
           new APIError(`Couldn't update email to ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true)
         );
@@ -148,6 +150,8 @@ exports.updatePhone = (req, res, next) => {
       if (error instanceof APIError) {
         next(error);
       } else {
+        logger.error(error);
+
         next(
           new APIError(
             `Couldn't update phone to ${countryCode}${phoneNumber}`,

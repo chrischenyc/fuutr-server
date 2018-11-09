@@ -8,6 +8,7 @@ require('./config/env');
 require('./config/passport');
 
 const app = require('./app');
+const logger = require('./helpers/logger');
 
 // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
@@ -42,7 +43,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const port = process.env.PORT;
 app.listen(port, () => {
-  console.info(`server started on port ${port}`); // eslint-disable-line no-console
+  logger.info(`server started on port ${port}`);
 });
 
 module.exports = app;

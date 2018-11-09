@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const axios = require('axios');
 
 const APIError = require('../helpers/api-error');
+const logger = require('../helpers/logger');
 
 // twilio doc: https://www.twilio.com/docs/verify/api/verification
 exports.startPhoneVerification = (req, res, next) => {
@@ -24,7 +25,9 @@ exports.startPhoneVerification = (req, res, next) => {
         throw Error('twilio response is not successful');
       }
     })
-    .catch(() => {
+    .catch((error) => {
+      logger.error(error);
+
       next(
         new APIError(
           `Couldn't send SMS message to ${countryCode}${phoneNumber}. Please try again.`,
@@ -57,12 +60,10 @@ exports.checkVerificationCode = (req, res, next) => {
       }
     })
     .catch((err) => {
+      logger.error(err);
+
       next(
-        new APIError(
-          `${err.response.data.message || "Couldn't verify your code."} Please try again.`,
-          httpStatus.UNAUTHORIZED,
-          true
-        )
+        new APIError("Couldn't verify your code, please try again.", httpStatus.UNAUTHORIZED, true)
       );
     });
 };
