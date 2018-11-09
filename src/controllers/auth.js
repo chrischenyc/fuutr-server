@@ -133,11 +133,6 @@ exports.refreshToken = (req, res) => {
     return;
   }
 
-  if (!refreshToken) {
-    res.status(httpStatus.BAD_REQUEST).send();
-    return;
-  }
-
   jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true }, (err, decoded) => {
     if (!decoded || !decoded._id) {
       res.status(httpStatus.UNAUTHORIZED).send();
