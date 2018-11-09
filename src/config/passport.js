@@ -32,6 +32,7 @@ passport.use(
                 .then((userWithSameEmail) => {
                   if (userWithSameEmail) {
                     // merge facebook profile into existing User record if necessary
+                    userWithSameEmail.facebookId = _.isNil(userWithSameEmail.facebookId) && facebookId;
                     userWithSameEmail.displayName = _.isNil(userWithSameEmail.displayName) && displayName;
                     userWithSameEmail.photo = _.isNil(userWithSameEmail.photo) && photo;
                     userWithSameEmail.save();
