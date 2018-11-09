@@ -81,7 +81,7 @@ if (process.env.NODE_ENV !== 'test') {
     winston.format.simple()
   );
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'staging') {
     expressWinston.requestWhitelist.push('body');
     format = winston.format.combine(
       winston.format.colorize(),

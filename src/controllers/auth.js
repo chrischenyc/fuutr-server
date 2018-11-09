@@ -27,7 +27,7 @@ exports.signupWithPhone = (req, res, next) => {
     .catch(() => {
       next(
         new APIError(
-          `Couldn't sign up with mobile number +${countryCode}${phoneNumber}`,
+          `Couldn't sign up with mobile number ${countryCode}${phoneNumber}`,
           httpStatus.INTERNAL_SERVER_ERROR,
           true
         )
