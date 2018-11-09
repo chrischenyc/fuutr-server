@@ -10,7 +10,7 @@ const Authenticate = require('../middleware/authenticate');
 // fetch user info
 router.get('/me', Authenticate.validJWT, UserController.getProfile);
 
-// update user info
+// update user info, such as displayName and other non-critical info
 router.patch(
   '/me',
   Authenticate.validJWT,
@@ -21,6 +21,20 @@ router.patch(
     },
   }),
   UserController.updateProfile
+);
+
+// update user email
+router.put(
+  '/me/email',
+  Authenticate.validJWT,
+  validate({
+    body: {
+      email: Joi.string()
+        .email()
+        .required(),
+    },
+  }),
+  UserController.updateEmail
 );
 
 module.exports = router;

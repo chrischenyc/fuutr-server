@@ -2,6 +2,8 @@ const httpStatus = require('http-status');
 const _ = require('lodash');
 const User = require('../models/user');
 
+const APIError = require('../helpers/api-error');
+
 exports.getProfile = (req, res) => {
   const { userId: _id } = req;
 
@@ -39,9 +41,9 @@ exports.updateProfile = (req, res) => {
     res.status(httpStatus.UNAUTHORIZED);
   }
 
-  const { email, displayName } = req.body;
+  const { displayName } = req.body;
 
-  if (_.isNil(email) && _.isNil(displayName)) {
+  if (_.isNil(displayName)) {
     res.status(httpStatus.BAD_REQUEST).send();
   }
 
@@ -49,10 +51,6 @@ exports.updateProfile = (req, res) => {
     .exec()
     .then((user) => {
       if (user) {
-        if (!_.isNil(email)) {
-          user.email = email;
-        }
-
         if (!_.isNil(displayName)) {
           user.displayName = displayName;
         }
@@ -67,5 +65,48 @@ exports.updateProfile = (req, res) => {
     })
     .catch(() => {
       res.status(httpStatus.UNAUTHORIZED).send();
+    });
+};
+
+exports.updateEmail = (req, res, next) => {
+  const { userId: _id } = req;
+
+  if (!_id) {
+    res.status(httpStatus.UNAUTHORIZED);
+  }
+
+  const { email } = req.body;
+
+  User.findOne({ email })
+    .exec()
+    .then((userWithSameEmail) => {
+      if (userWithSameEmail) {
+        throw new APIError('Email is taken', httpStatus.FORBIDDEN, true);
+      }
+
+      return User.findOne({ _id }).exec();
+    })
+    .then((user) => {
+      if (user) {
+        const { email: previousEmail } = user;
+        // TODO: send email alert to previousEmail
+
+        user.email = email;
+        // TODO: send verification email to new email
+
+        return user.save();
+      }
+
+      return res.status(httpStatus.NO_CONTENT).send();
+    })
+    .then(() => res.status(httpStatus.OK).send())
+    .catch((error) => {
+      if (error instanceof APIError) {
+        next(error);
+      } else {
+        next(
+          new APIError(`Couldn't update email to ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true)
+        );
+      }
     });
 };
