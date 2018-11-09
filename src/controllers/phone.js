@@ -27,7 +27,7 @@ exports.startPhoneVerification = (req, res, next) => {
     .catch(() => {
       next(
         new APIError(
-          "Couldn't send SMS message. Please try again.",
+          `Couldn't send SMS message to ${countryCode}${phoneNumber}. Please try again.`,
           httpStatus.INTERNAL_SERVER_ERROR,
           true
         )
