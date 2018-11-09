@@ -2,6 +2,7 @@ const express = require('express');
 const compression = require('compression');
 const cors = require('cors');
 const helmet = require('helmet');
+const morgan = require('morgan');
 const winston = require('winston');
 const expressWinston = require('express-winston');
 const httpStatus = require('http-status');
@@ -28,6 +29,24 @@ app.use(cors());
 
 // route authentication with passport
 app.use(passport.initialize());
+
+app.use(
+  morgan('combined', {
+    skip(req, res) {
+      return res.statusCode < 400;
+    },
+    stream: process.stderr,
+  })
+);
+
+app.use(
+  morgan('combined', {
+    skip(req, res) {
+      return res.statusCode >= 400;
+    },
+    stream: process.stdout,
+  })
+);
 
 // express-winston logger BEFORE the router
 if (process.env.NODE_ENV !== 'test') {
