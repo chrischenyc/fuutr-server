@@ -37,6 +37,7 @@ exports.validJWT = (req, res, next) => {
   });
 };
 
+// TODO: implement ACL
 exports.minimumPermissionLevel = requiredPermissionLevel => (req, res, next) => {
   const { user } = req;
 

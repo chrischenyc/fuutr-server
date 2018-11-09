@@ -32,8 +32,8 @@ passport.use(
                 .then((userWithSameEmail) => {
                   if (userWithSameEmail) {
                     // merge facebook profile into existing User record if necessary
-                    userWithSameEmail.displayName = _.isNil(userWithSameEmail.displayName) && displayName; // eslint-disable-line no-param-reassign
-                    userWithSameEmail.photo = _.isNil(userWithSameEmail.photo) && photo; // eslint-disable-line no-param-reassign
+                    userWithSameEmail.displayName = _.isNil(userWithSameEmail.displayName) && displayName;
+                    userWithSameEmail.photo = _.isNil(userWithSameEmail.photo) && photo;
                     userWithSameEmail.save();
 
                     resolve(userWithSameEmail);
