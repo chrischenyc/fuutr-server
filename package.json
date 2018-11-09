@@ -53,6 +53,7 @@
     "npm": "^6.4.1",
     "passport": "^0.4.0",
     "passport-facebook-token": "^3.3.0",
+    "uuid": "^3.3.2",
     "winston": "^3.1.0"
   },
   "license": "UNLICENSED",

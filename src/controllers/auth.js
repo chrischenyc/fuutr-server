@@ -1,9 +1,11 @@
 const httpStatus = require('http-status');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
+const RefreshToken = require('../models/refresh-token');
 const APIError = require('../helpers/api-error');
-const TokenGenerator = require('../helpers/token-generator');
+const { generateTokens, generateAccessToken } = require('../helpers/token-generator');
 
 exports.signupWithPhone = (req, res, next) => {
   const { phoneNumber, countryCode } = req.body;
@@ -13,14 +15,14 @@ exports.signupWithPhone = (req, res, next) => {
     .exec()
     .then((existingUser) => {
       if (existingUser) {
-        return res.json(TokenGenerator.sign(existingUser));
+        return res.json(generateTokens(existingUser));
       }
 
       const newUser = new User({ phoneNumber, countryCode });
       return newUser.save();
     })
     .then((newUser) => {
-      res.status(httpStatus.CREATED).json(TokenGenerator.sign(newUser));
+      res.status(httpStatus.CREATED).json(generateTokens(newUser));
     })
     .catch(() => {
       next(
@@ -61,7 +63,7 @@ exports.signupWithEmail = (req, res, next) => {
     .then((newUser) => {
       // TODO: send out email verification email
 
-      res.status(httpStatus.CREATED).json(TokenGenerator.sign(newUser));
+      res.status(httpStatus.CREATED).json(generateTokens(newUser));
     })
     .catch(() => {
       next(
@@ -93,16 +95,13 @@ exports.loginWithEmail = (req, res, next) => {
     })
     .then(({ user, samePassword }) => {
       if (samePassword) {
-        res.json(TokenGenerator.sign(user));
+        res.json(generateTokens(user));
       } else {
         next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
       }
     })
     .catch(() => {
-      next(
-        new APIError(`Cannot log in with email ${email}`, httpStatus.INTERNAL_SERVER_ERROR),
-        true
-      );
+      next(new APIError(`Cannot log in with email ${email}`, httpStatus.UNAUTHORIZED, true), true);
     });
 };
 
@@ -110,7 +109,7 @@ exports.authWithFacebook = (req, res, next) => {
   const { user } = req;
 
   if (user) {
-    res.json(TokenGenerator.sign(user));
+    res.json(generateTokens(user));
   } else {
     next(
       new APIError(
@@ -120,4 +119,52 @@ exports.authWithFacebook = (req, res, next) => {
       )
     );
   }
+};
+
+exports.refreshToken = (req, res) => {
+  const { authorization } = req.headers;
+  const { refreshToken } = req.body;
+
+  const bearer = authorization && authorization.split(' ')[0];
+  const token = authorization && authorization.split(' ')[1];
+
+  if (bearer !== 'Bearer' || !token) {
+    res.status(httpStatus.UNAUTHORIZED).send();
+    return;
+  }
+
+  if (!refreshToken) {
+    res.status(httpStatus.BAD_REQUEST).send();
+    return;
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true }, (err, decoded) => {
+    if (!decoded || !decoded._id) {
+      res.status(httpStatus.UNAUTHORIZED).send();
+      return;
+    }
+
+    const { _id } = decoded;
+
+    // validate refresh token
+    RefreshToken.findOne({ token: refreshToken, userId: _id, expired: false })
+      .exec()
+      .then((validRefreshToken) => {
+        if (validRefreshToken) {
+          return User.findOne({ _id }).exec();
+        }
+
+        return res.status(httpStatus.UNAUTHORIZED).send();
+      })
+      .then((user) => {
+        if (user) {
+          return res.json(generateAccessToken(user));
+        }
+
+        return res.status(httpStatus.UNAUTHORIZED).send();
+      })
+      .catch(() => {
+        res.status(httpStatus.UNAUTHORIZED).send();
+      });
+  });
 };

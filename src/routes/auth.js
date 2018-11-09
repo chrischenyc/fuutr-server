@@ -69,4 +69,11 @@ router.post(
   AuthController.authWithFacebook
 );
 
+// refresh token
+router.post(
+  '/token',
+  validate({ body: { refreshToken: Joi.string().required() } }),
+  AuthController.refreshToken
+);
+
 module.exports = router;
