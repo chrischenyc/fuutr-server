@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     facebookId: { type: String, select: false },
     displayName: { type: String, trim: true },
     photo: { type: String },
+    balance: { type: Number, required: true, default: 0 },
   },
   { timestamps: true, versionKey: false }
 );

@@ -19,6 +19,7 @@ exports.getProfile = (req, res) => {
       countryCode: 1,
       displayName: 1,
       photo: 1,
+      balance: 1,
     })
     .exec()
     .then((user) => {

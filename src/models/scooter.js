@@ -21,10 +21,10 @@ const scooterSchema = new mongoose.Schema(
     remainderRange: Number,
     totalRidingSecs: Number,
     statusUtcTime: Date, // scooter status info's UTC time
-    latitude: mongoose.Schema.Types.Decimal128,
-    longitude: mongoose.Schema.Types.Decimal128,
+    latitude: Number,
+    longitude: Number,
     satelliteNumber: Number,
-    hdop: mongoose.Schema.Types.Decimal128, // GPS HDOP
+    hdop: Number, // GPS HDOP
     altitude: Number,
     gpsUtcTime: Date, // GPS get the location's UTC time
   },
