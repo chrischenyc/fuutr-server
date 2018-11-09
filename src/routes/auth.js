@@ -8,7 +8,7 @@ const router = express.Router();
 const PhoneController = require('../controllers/phone');
 const AuthController = require('../controllers/auth');
 
-// verify the verification code with twilio
+// verify phone code then sign up/in user
 router.post(
   '/phone',
   validate({
@@ -18,7 +18,7 @@ router.post(
       verificationCode: Joi.string().required(),
     },
   }),
-  PhoneController.checkPhoneVerification,
+  PhoneController.checkVerificationCode,
   AuthController.signupWithPhone
 );
 

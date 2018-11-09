@@ -5,6 +5,7 @@ const Joi = require('joi');
 const router = express.Router();
 
 const UserController = require('../controllers/users');
+const PhoneController = require('../controllers/phone');
 const Authenticate = require('../middleware/authenticate');
 
 // fetch user info
@@ -35,6 +36,21 @@ router.put(
     },
   }),
   UserController.updateEmail
+);
+
+// update user phone number
+router.put(
+  '/me/phone',
+  Authenticate.validJWT,
+  validate({
+    body: {
+      phoneNumber: Joi.string().required(),
+      countryCode: Joi.number().required(),
+      verificationCode: Joi.string().required(),
+    },
+  }),
+  PhoneController.checkVerificationCode,
+  UserController.updatePhone
 );
 
 module.exports = router;

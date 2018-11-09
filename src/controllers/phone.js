@@ -36,7 +36,7 @@ exports.startPhoneVerification = (req, res, next) => {
 };
 
 // twilio doc: https://www.twilio.com/docs/verify/api/verification
-exports.checkPhoneVerification = (req, res, next) => {
+exports.checkVerificationCode = (req, res, next) => {
   const { phoneNumber, countryCode, verificationCode } = req.body;
 
   axios({

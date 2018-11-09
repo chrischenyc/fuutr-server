@@ -77,7 +77,7 @@ exports.updateEmail = (req, res, next) => {
 
   const { email } = req.body;
 
-  User.findOne({ email })
+  User.findOne({ email, _id: { $ne: _id } })
     .exec()
     .then((userWithSameEmail) => {
       if (userWithSameEmail) {
@@ -106,6 +106,53 @@ exports.updateEmail = (req, res, next) => {
       } else {
         next(
           new APIError(`Couldn't update email to ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true)
+        );
+      }
+    });
+};
+
+exports.updatePhone = (req, res, next) => {
+  const { userId: _id } = req;
+  const { phoneNumber, countryCode } = req.body;
+
+  User.findOne({ phoneNumber, countryCode, _id: { $ne: _id } })
+    .exec()
+    .then((userWithSamePhone) => {
+      if (userWithSamePhone) {
+        throw new APIError(
+          `Phone number ${countryCode}${phoneNumber} is taken`,
+          httpStatus.FORBIDDEN,
+          true
+        );
+      }
+
+      return User.findOne({ _id }).exec();
+    })
+    .then((user) => {
+      if (user) {
+        const { phoneNumber: previousPhoneNumber, countryCode: previousCountryCode } = user;
+        // TODO: send SMS alert to previousPhoneNumber
+
+        user.phoneNumber = phoneNumber;
+        user.countryCode = countryCode;
+        // TODO: send SMS to new number
+
+        return user.save();
+      }
+
+      return res.status(httpStatus.NO_CONTENT).send();
+    })
+    .then(() => res.status(httpStatus.OK).send())
+    .catch((error) => {
+      if (error instanceof APIError) {
+        next(error);
+      } else {
+        next(
+          new APIError(
+            `Couldn't update phone to ${countryCode}${phoneNumber}`,
+            httpStatus.INTERNAL_SERVER_ERROR,
+            true
+          )
         );
       }
     });
