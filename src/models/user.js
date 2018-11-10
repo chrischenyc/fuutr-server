@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
   {
+    isAdmin: { type: Boolean, default: false },
     email: { type: String, unique: true, trim: true },
     password: { type: String, select: false },
     phoneNumber: { type: String, trim: true },
@@ -9,7 +10,8 @@ const userSchema = new mongoose.Schema(
     facebookId: { type: String, select: false },
     displayName: { type: String, trim: true },
     photo: { type: String },
-    balance: { type: Number, required: true, default: 0 },
+    balance: { type: Number, require: true, default: 0 },
+    stripeCustomerId: { type: String },
   },
   { timestamps: true, versionKey: false }
 );
