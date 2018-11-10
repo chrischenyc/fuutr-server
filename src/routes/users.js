@@ -66,4 +66,11 @@ router.post(
   UserController.generateStripeEphemeralKeys
 );
 
+router.put(
+  '/me/balance',
+  Authenticate.validJWT,
+  validate({ body: { amount: Joi.number().required(), source: Joi.string().required() } }),
+  UserController.topUpBalance
+);
+
 module.exports = router;

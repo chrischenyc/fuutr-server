@@ -178,3 +178,35 @@ exports.generateStripeEphemeralKeys = async (req, res, next) => {
     next(new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR));
   }
 };
+
+exports.topUpBalance = async (req, res, next) => {
+  const { amount, source } = req.body;
+  const { userId: _id } = req;
+
+  try {
+    const user = await User.findOne({ _id }).exec();
+
+    // TODO: server-side amount validation
+
+    // Create a charge and set its destination to the pilot's account.
+    const charge = await stripe.charges.create({
+      source: source,
+      amount: amount * 100, // in cents
+      currency: 'aud',
+      customer: user.stripeCustomerId,
+      description: 'OTG Ride balance top up',
+      statement_descriptor: 'OTG Ride',
+    });
+
+    // update user balance
+    user.balance += amount;
+    user.save();
+
+    res.status(httpStatus.OK).send();
+
+    // TODO: save payment info the Stripe charge reference to the ride and save it.
+  } catch (error) {
+    logger.error(error);
+    next(new APIError("Couldn't process your payment", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
