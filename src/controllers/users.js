@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const _ = require('lodash');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const User = require('../models/user');
 const APIError = require('../helpers/api-error');
@@ -23,7 +24,7 @@ exports.getProfile = (req, res) => {
       balance: 1,
     })
     .exec()
-    .then((user) => {
+    .then(user => {
       if (user) {
         req.user = user;
         return res.json(user);
@@ -51,7 +52,7 @@ exports.updateProfile = (req, res) => {
 
   User.findOne({ _id })
     .exec()
-    .then((user) => {
+    .then(user => {
       if (user) {
         if (!_.isNil(displayName)) {
           user.displayName = displayName;
@@ -81,14 +82,14 @@ exports.updateEmail = (req, res, next) => {
 
   User.findOne({ email, _id: { $ne: _id } })
     .exec()
-    .then((userWithSameEmail) => {
+    .then(userWithSameEmail => {
       if (userWithSameEmail) {
         throw new APIError('Email is taken', httpStatus.FORBIDDEN, true);
       }
 
       return User.findOne({ _id }).exec();
     })
-    .then((user) => {
+    .then(user => {
       if (user) {
         const { email: previousEmail } = user;
         // TODO: send email alert to previousEmail
@@ -102,7 +103,7 @@ exports.updateEmail = (req, res, next) => {
       return res.status(httpStatus.NO_CONTENT).send();
     })
     .then(() => res.status(httpStatus.OK).send())
-    .catch((error) => {
+    .catch(error => {
       if (error instanceof APIError) {
         next(error);
       } else {
@@ -120,14 +121,14 @@ exports.updatePhone = (req, res, next) => {
 
   User.findOne({ phoneNumber, countryCode, _id: { $ne: _id } })
     .exec()
-    .then((userWithSamePhone) => {
+    .then(userWithSamePhone => {
       if (userWithSamePhone) {
         throw new APIError(`Phone number ${phoneNumber} is taken`, httpStatus.FORBIDDEN, true);
       }
 
       return User.findOne({ _id }).exec();
     })
-    .then((user) => {
+    .then(user => {
       if (user) {
         const { phoneNumber: previousPhoneNumber, countryCode: previousCountryCode } = user;
         // TODO: send SMS alert to previousPhoneNumber
@@ -142,7 +143,7 @@ exports.updatePhone = (req, res, next) => {
       return res.status(httpStatus.NO_CONTENT).send();
     })
     .then(() => res.status(httpStatus.OK).send())
-    .catch((error) => {
+    .catch(error => {
       if (error instanceof APIError) {
         next(error);
       } else {
@@ -157,4 +158,23 @@ exports.updatePhone = (req, res, next) => {
         );
       }
     });
+};
+
+exports.generateStripeEphemeralKeys = async (req, res, next) => {
+  const { stripe_version } = req.body;
+  const { userId: _id } = req;
+
+  try {
+    const user = await User.findOne({ _id }).exec();
+    // Create ephemeral key for customer.
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+      { customer: user.stripeCustomerId },
+      { stripe_version }
+    );
+
+    // Respond with ephemeral key.
+    res.send(ephemeralKey);
+  } catch (err) {
+    next(new APIError(err.message, httpStatus.INTERNAL_SERVER_ERROR));
+  }
 };

@@ -53,4 +53,17 @@ router.put(
   UserController.updatePhone
 );
 
+/**
+ * POST /api/users/me/ephemeral_keys
+ *
+ * Generate an ephemeral key for the logged in customer.
+ * https://stripe.com/docs/mobile/ios/standard#prepare-your-api
+ */
+router.post(
+  '/me/ephemeral_keys',
+  Authenticate.validJWT,
+  validate({ body: { stripe_version: Joi.string().required() } }),
+  UserController.generateStripeEphemeralKeys
+);
+
 module.exports = router;
