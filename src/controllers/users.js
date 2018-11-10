@@ -191,7 +191,7 @@ exports.topUpBalance = async (req, res, next) => {
     // Create a charge and set its destination to the pilot's account.
     const charge = await stripe.charges.create({
       source: source,
-      amount: amount * 100, // in cents
+      amount: amount,
       currency: 'aud',
       customer: user.stripeCustomerId,
       description: 'OTG Ride balance top up',
@@ -199,7 +199,7 @@ exports.topUpBalance = async (req, res, next) => {
     });
 
     // update user balance
-    user.balance += amount;
+    user.balance += amount / 100.0;
     user.save();
 
     res.status(httpStatus.OK).send();
