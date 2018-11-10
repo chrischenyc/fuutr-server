@@ -1,6 +1,7 @@
 const passport = require('passport');
 const FacebookTokenStrategy = require('passport-facebook-token');
 const _ = require('lodash');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const User = require('../models/user');
 
@@ -19,55 +20,35 @@ passport.use(
       const photo = photos && photos[0] && photos[0].value;
 
       // try to match with facebook id
-      User.findOne({ facebookId })
+      User.findOne({ $or: [{ facebookId }, { email }] })
         .exec()
-        .then(
-          userWithSameFacebookId => new Promise((resolve) => {
-            if (userWithSameFacebookId) {
-              resolve(userWithSameFacebookId);
-            } else if (!_.isNil(email)) {
-              // try to match with facebook email
-              User.findOne({ email })
-                .exec()
-                .then((userWithSameEmail) => {
-                  if (userWithSameEmail) {
-                    // merge facebook profile into existing User record if necessary
-                    userWithSameEmail.facebookId = _.isNil(userWithSameEmail.facebookId) && facebookId;
-                    userWithSameEmail.displayName = _.isNil(userWithSameEmail.displayName) && displayName;
-                    userWithSameEmail.photo = _.isNil(userWithSameEmail.photo) && photo;
-                    userWithSameEmail.save();
+        .then((existingUser) => {
+          if (existingUser) {
+            // merge facebook profile into existing User record if necessary
+            existingUser.facebookId = _.isNil(existingUser.facebookId) && facebookId;
+            existingUser.displayName = _.isNil(existingUser.displayName) && displayName;
+            existingUser.photo = _.isNil(existingUser.photo) && photo;
+            existingUser.save();
 
-                    resolve(userWithSameEmail);
-                  } else {
-                    // don't even have an email, create a new user
-                    const user = new User({
-                      facebookId,
-                      email,
-                      displayName,
-                      photo,
-                    });
-                    user.save().then((newUser) => {
-                      resolve(newUser);
-                    });
-                  }
-                });
-            } else {
-              // can't match with facebook id and have no email to match, create a new user
-              const user = new User({
-                facebookId,
-                email,
-                displayName,
-                photo,
-              });
-              user.save().then((newUser) => {
-                resolve(newUser);
-              });
-            }
-          })
-        )
-        .then((user) => {
-          if (user) {
-            done(null, user);
+            return done(null, existingUser);
+          }
+
+          // create stripe customer first
+          return stripe.customers.create({ email });
+        })
+        .then((stripeCustomer) => {
+          if (stripeCustomer) {
+            const user = new User({
+              facebookId,
+              email,
+              displayName,
+              photo,
+              stripeCustomerId: stripeCustomer.id,
+            });
+
+            user.save().then((newUser) => {
+              done(null, newUser);
+            });
           }
         })
         .catch((err) => {

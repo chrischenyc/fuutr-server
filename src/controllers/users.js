@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const _ = require('lodash');
-const User = require('../models/user');
 
+const User = require('../models/user');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
@@ -122,11 +122,7 @@ exports.updatePhone = (req, res, next) => {
     .exec()
     .then((userWithSamePhone) => {
       if (userWithSamePhone) {
-        throw new APIError(
-          `Phone number ${countryCode}${phoneNumber} is taken`,
-          httpStatus.FORBIDDEN,
-          true
-        );
+        throw new APIError(`Phone number ${phoneNumber} is taken`, httpStatus.FORBIDDEN, true);
       }
 
       return User.findOne({ _id }).exec();
@@ -154,7 +150,7 @@ exports.updatePhone = (req, res, next) => {
 
         next(
           new APIError(
-            `Couldn't update phone to ${countryCode}${phoneNumber}`,
+            `Couldn't update phone to ${phoneNumber}`,
             httpStatus.INTERNAL_SERVER_ERROR,
             true
           )

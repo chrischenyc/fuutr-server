@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const User = require('../models/user');
 const RefreshToken = require('../models/refresh-token');
@@ -19,7 +20,12 @@ exports.signupWithPhone = (req, res, next) => {
         return res.json(generateTokens(existingUser));
       }
 
-      const newUser = new User({ phoneNumber, countryCode });
+      return stripe.customers.create({
+        description: phoneNumber,
+      });
+    })
+    .then((stripeCustomer) => {
+      const newUser = new User({ phoneNumber, countryCode, stripeCustomerId: stripeCustomer.id });
       return newUser.save();
     })
     .then((newUser) => {
@@ -29,7 +35,7 @@ exports.signupWithPhone = (req, res, next) => {
       logger.error(error);
       next(
         new APIError(
-          `Couldn't sign up with mobile number ${countryCode}${phoneNumber}`,
+          `Couldn't sign up with mobile number ${phoneNumber}`,
           httpStatus.INTERNAL_SERVER_ERROR,
           true
         )
@@ -39,6 +45,7 @@ exports.signupWithPhone = (req, res, next) => {
 
 exports.signupWithEmail = (req, res, next) => {
   const { email, password } = req.body;
+  let stripeCustomerId = null;
 
   User.findOne({ email })
     .exec()
@@ -46,6 +53,13 @@ exports.signupWithEmail = (req, res, next) => {
       if (existingUser) {
         return next(new APIError('Email is taken', httpStatus.CONFLICT, true));
       }
+
+      return stripe.customers.create({
+        email,
+      });
+    })
+    .then((stripeCustomer) => {
+      stripeCustomerId = stripeCustomer.id;
 
       // hash password
       return new Promise((resolve, reject) => {
@@ -59,7 +73,7 @@ exports.signupWithEmail = (req, res, next) => {
       });
     })
     .then((hash) => {
-      const newUser = new User({ email, password: hash });
+      const newUser = new User({ email, password: hash, stripeCustomerId });
       return newUser.save();
     })
     .then((newUser) => {
