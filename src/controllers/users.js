@@ -3,6 +3,7 @@ const _ = require('lodash');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const User = require('../models/user');
+const Payment = require('../models/payment');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
@@ -189,12 +190,13 @@ exports.topUpBalance = async (req, res, next) => {
     // TODO: server-side amount validation
 
     // Create a charge and set its destination to the pilot's account.
+    const description = 'OTG Ride balance top up';
     const charge = await stripe.charges.create({
       source: source,
       amount: amount,
       currency: 'aud',
       customer: user.stripeCustomerId,
-      description: 'OTG Ride balance top up',
+      description,
       statement_descriptor: 'OTG Ride',
     });
 
@@ -202,9 +204,23 @@ exports.topUpBalance = async (req, res, next) => {
     user.balance += amount / 100.0;
     user.save();
 
-    res.status(httpStatus.OK).send();
+    var lastFour = charge.source && charge.source.last4;
+    var dynamicLastFour = charge.source && charge.source.dynamic_last4;
+    const tokenizationMethod = charge.source && charge.source.tokenization_method;
+    if (tokenizationMethod) {
+      lastFour = `${dynamicLastFour} (${tokenizationMethod.replace('_', ' ')})`;
+    }
 
-    // TODO: save payment info the Stripe charge reference to the ride and save it.
+    const payment = new Payment({
+      stripeChargeId: charge.id,
+      amount: amount / 100.0,
+      userId: _id,
+      lastFour,
+      description,
+    });
+    payment.save();
+
+    res.status(httpStatus.OK).send();
   } catch (error) {
     logger.error(error);
     next(new APIError("Couldn't process your payment", httpStatus.INTERNAL_SERVER_ERROR, true));
