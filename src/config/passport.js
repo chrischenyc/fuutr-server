@@ -4,6 +4,7 @@ const _ = require('lodash');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const User = require('../models/user');
+const { sendWelcomeEmail } = require('../helpers/send-email');
 
 passport.use(
   new FacebookTokenStrategy(
@@ -53,6 +54,7 @@ passport.use(
             });
 
             user.save().then((newUser) => {
+              sendWelcomeEmail(email);
               done(null, newUser);
             });
           }
