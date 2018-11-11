@@ -25,9 +25,15 @@ passport.use(
         .then((existingUser) => {
           if (existingUser) {
             // merge facebook profile into existing User record if necessary
-            existingUser.facebookId = _.isNil(existingUser.facebookId) && facebookId;
-            existingUser.displayName = _.isNil(existingUser.displayName) && displayName;
-            existingUser.photo = _.isNil(existingUser.photo) && photo;
+            if (_.isNil(existingUser.facebookId)) {
+              existingUser.facebookId = facebookId;
+            }
+            if (_.isNil(existingUser.displayName)) {
+              existingUser.displayName = displayName;
+            }
+            if (_.isNil(existingUser.photo)) {
+              existingUser.photo = photo;
+            }
             existingUser.save();
 
             return done(null, existingUser);
