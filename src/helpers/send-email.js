@@ -52,6 +52,6 @@ const sendEmail = (to, subject, template, templateConstants) => {
   }
 };
 
-exports.sendWelcomeEmail = to => {
+exports.sendWelcomeEmail = (to) => {
   sendEmail(to, `Welcome to ${process.env.APP_NAME}`, 'welcome', { title: 'Welcome' });
 };

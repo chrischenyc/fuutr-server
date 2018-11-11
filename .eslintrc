@@ -1,11 +1,11 @@
 {
-  "extends": ["airbnb-base"],
+  "extends": ["eslint:recommended", "airbnb-base"],
   "env": {
     "es6": true,
     "node": true
   },
   "parserOptions": {
-    "ecmaVersion": 6,
+    "ecmaVersion": 9,
     "sourceType": "module"
   },
   "plugins": ["import"],
