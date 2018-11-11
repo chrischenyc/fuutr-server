@@ -34,6 +34,7 @@
     "API"
   ],
   "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
     "axios": "^0.18.0",
     "bcrypt": "^3.0.2",
     "bluebird": "^3.5.3",
@@ -45,11 +46,12 @@
     "express-validation": "^1.0.2",
     "express-winston": "^3.0.1",
     "helmet": "^3.15.0",
+    "html-to-text": "^4.0.0",
     "http-status": "^1.2.0",
     "joi": "^14.0.4",
     "jsonwebtoken": "^8.3.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.3.10",
+    "mongoose": "^5.3.11",
     "morgan": "^1.9.1",
     "npm": "^6.4.1",
     "passport": "^0.4.0",
@@ -60,7 +62,7 @@
   },
   "license": "UNLICENSED",
   "devDependencies": {
-    "eslint": "^5.8.0",
+    "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0"
   }

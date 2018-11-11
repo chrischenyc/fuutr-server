@@ -9,6 +9,8 @@ const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { generateTokens, generateAccessToken } = require('../helpers/token-generator');
 
+const { sendWelcomeEmail } = require('../helpers/send-email');
+
 exports.signupWithPhone = (req, res, next) => {
   const { phoneNumber, countryCode } = req.body;
 
@@ -74,6 +76,8 @@ exports.signupWithEmail = (req, res, next) => {
     })
     .then((hash) => {
       const newUser = new User({ email, password: hash, stripeCustomerId });
+      sendWelcomeEmail(email);
+
       return newUser.save();
     })
     .then((newUser) => {
