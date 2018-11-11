@@ -40,7 +40,7 @@ const sendEmail = (to, subject, template, templateConstants) => {
     const html = templateToHTML(templateFile, { ...commonConstants, ...(templateConstants || {}) });
     const msg = {
       to,
-      from: APP_SENDER_EMAIL,
+      from: { email: APP_SENDER_EMAIL, name: APP_NAME },
       subject,
       text: htmlToText.fromString(html, { wordwrap: 130 }),
       html,
