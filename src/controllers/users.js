@@ -226,3 +226,24 @@ exports.topUpBalance = async (req, res, next) => {
     next(new APIError("Couldn't process your payment", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.getHistoryPayments = async (req, res, next) => {
+  try {
+    const { userId } = req;
+    const payments = await Payment.find({ userId })
+      .select({ amount: 1, lastFour: 1, description: 1, createdAt: 1 })
+      .sort({ createdAt: -1 });
+
+    res.json(payments);
+  } catch (error) {
+    logger.error(error);
+
+    next(
+      new APIError(
+        "Couldn't find history payments, please try again",
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      )
+    );
+  }
+};

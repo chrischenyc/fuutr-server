@@ -73,4 +73,6 @@ router.put(
   UserController.topUpBalance
 );
 
+router.get('/me/payments', Authenticate.validJWT, UserController.getHistoryPayments);
+
 module.exports = router;
