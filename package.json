@@ -53,6 +53,7 @@
     "jsonwebtoken": "^8.3.0",
     "juice": "^5.0.1",
     "lodash": "^4.17.11",
+    "moment-timezone": "^0.5.23",
     "mongoose": "^5.3.11",
     "morgan": "^1.9.1",
     "npm": "^6.4.1",

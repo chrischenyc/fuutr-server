@@ -6,6 +6,8 @@ const User = require('../models/user');
 const Payment = require('../models/payment');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
+const { sendInvoiceEmail } = require('../helpers/send-email');
+const { dateString } = require('../helpers/format-date');
 
 exports.getProfile = (req, res) => {
   const { userId: _id } = req;
@@ -190,7 +192,7 @@ exports.topUpBalance = async (req, res, next) => {
     // TODO: server-side amount validation
 
     // Create a charge and set its destination to the pilot's account.
-    const description = 'OTG Ride balance top up';
+    const description = 'balance top up';
     const charge = await stripe.charges.create({
       source,
       amount,
@@ -200,9 +202,11 @@ exports.topUpBalance = async (req, res, next) => {
       statement_descriptor: 'OTG Ride',
     });
 
+    const dollarAmount = amount / 100.0;
+
     // update user balance
-    user.balance += amount / 100.0;
-    user.save();
+    user.balance += dollarAmount;
+    await user.save();
 
     let lastFour = charge.source && charge.source.last4;
     const dynamicLastFour = charge.source && charge.source.dynamic_last4;
@@ -210,15 +214,24 @@ exports.topUpBalance = async (req, res, next) => {
     if (tokenizationMethod) {
       lastFour = `${dynamicLastFour} (${tokenizationMethod.replace('_', ' ')})`;
     }
-
     const payment = new Payment({
       stripeChargeId: charge.id,
-      amount: amount / 100.0,
+      amount: dollarAmount,
       userId: _id,
       lastFour,
       description,
     });
-    payment.save();
+    await payment.save();
+
+    if (user.email) {
+      sendInvoiceEmail(
+        user.email,
+        charge.created,
+        [{ name: description, price: dollarAmount }],
+        dollarAmount,
+        dateString(Date.now())
+      );
+    }
 
     res.status(httpStatus.OK).send();
   } catch (error) {

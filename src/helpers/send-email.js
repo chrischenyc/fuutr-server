@@ -63,3 +63,12 @@ exports.sendWelcomeEmail = (to) => {
 exports.sendPasswordResetCodeEmail = (to, code) => {
   sendEmail(to, 'Your password reset code', 'password-reset-code', { code });
 };
+
+exports.sendInvoiceEmail = (to, invoiceNumber, items, total, date) => {
+  sendEmail(to, `Your invoice ${invoiceNumber}`, 'template-billing', {
+    invoiceNumber,
+    items,
+    total,
+    date,
+  });
+};
