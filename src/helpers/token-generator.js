@@ -10,8 +10,9 @@ const generateAccessToken = (user) => {
     }),
   };
 };
+exports.generateAccessToken = generateAccessToken;
 
-const generateTokens = (user) => {
+exports.generateTokens = (user) => {
   const { accessToken } = generateAccessToken(user);
   const refreshToken = uuid.v4();
 
@@ -24,5 +25,7 @@ const generateTokens = (user) => {
   };
 };
 
-exports.generateAccessToken = generateAccessToken;
-exports.generateTokens = generateTokens;
+exports.fourDigitsToken = () => {
+  const number = Math.floor(100000 + Math.random() * 900000);
+  return String(number).substring(0, 4);
+};

@@ -37,7 +37,11 @@ commonConstants = {
 const sendEmail = (to, subject, template, templateConstants) => {
   try {
     const templateFile = getPrivateFile(`/src/templates/${template}.html`);
-    const html = templateToHTML(templateFile, { ...commonConstants, ...(templateConstants || {}) });
+    const html = templateToHTML(templateFile, {
+      ...commonConstants,
+      title: subject,
+      ...(templateConstants || {}),
+    });
     const msg = {
       to,
       from: { email: APP_SENDER_EMAIL, name: APP_NAME },
@@ -53,5 +57,9 @@ const sendEmail = (to, subject, template, templateConstants) => {
 };
 
 exports.sendWelcomeEmail = (to) => {
-  sendEmail(to, `Welcome to ${process.env.APP_NAME}`, 'welcome', { title: 'Welcome' });
+  sendEmail(to, `Welcome to ${process.env.APP_NAME}`, 'welcome');
+};
+
+exports.sendPasswordResetCodeEmail = (to, code) => {
+  sendEmail(to, 'Your password reset code', 'password-reset-code', { code });
 };

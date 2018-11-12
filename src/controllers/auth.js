@@ -7,9 +7,13 @@ const User = require('../models/user');
 const RefreshToken = require('../models/refresh-token');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
-const { generateTokens, generateAccessToken } = require('../helpers/token-generator');
+const {
+  generateTokens,
+  generateAccessToken,
+  fourDigitsToken,
+} = require('../helpers/token-generator');
 
-const { sendWelcomeEmail } = require('../helpers/send-email');
+const { sendWelcomeEmail, sendPasswordResetCodeEmail } = require('../helpers/send-email');
 
 exports.signupWithPhone = (req, res, next) => {
   const { phoneNumber, countryCode } = req.body;
@@ -184,4 +188,98 @@ exports.refreshToken = (req, res) => {
         res.status(httpStatus.UNAUTHORIZED).send();
       });
   });
+};
+
+exports.sendPasswordResetCode = async (req, res, next) => {
+  const { email } = req.query;
+
+  try {
+    const user = await User.findOne({ email }).exec();
+    if (!user) {
+      throw Error('User not found');
+    }
+
+    const code = fourDigitsToken();
+    const hashedToken = await bcrypt.hash(code, process.env.BCRYPT_SALT);
+    user.passwordResetTokens.push({ hashedToken });
+    await user.save();
+
+    sendPasswordResetCodeEmail(email, code);
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error);
+    next(
+      new APIError(
+        `Couldn't send password reset code to ${email}`,
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      )
+    );
+  }
+};
+
+exports.verifyPasswordResetCode = async (req, res, next) => {
+  const { email, code } = req.body;
+
+  try {
+    const hashedToken = await bcrypt.hash(code, process.env.BCRYPT_SALT);
+
+    const user = await User.findOne({
+      email,
+      'passwordResetTokens.hashedToken': { $in: hashedToken },
+    }).exec();
+
+    if (!user) {
+      throw Error('User not found');
+    }
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error);
+    next(
+      new APIError(
+        `Couldn't verify password reset code for ${email}`,
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      )
+    );
+  }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  const { email, code, password } = req.body;
+
+  try {
+    const hashedToken = await bcrypt.hash(code, process.env.BCRYPT_SALT);
+
+    const user = await User.findOne({
+      email,
+      'passwordResetTokens.hashedToken': { $in: hashedToken },
+    }).exec();
+
+    if (!user) {
+      throw Error('User not found');
+    }
+
+    // update password hash
+    // remove used verification code
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.passwordResetTokens = user.passwordResetTokens.filter(
+      passwordResetToken => passwordResetToken.hashedToken !== hashedToken
+    );
+    await user.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error);
+    next(
+      new APIError(
+        `Couldn't reset password reset code for ${email}`,
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      )
+    );
+  }
 };
