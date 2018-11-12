@@ -25,7 +25,7 @@ exports.getProfile = (req, res) => {
       balance: 1,
     })
     .exec()
-    .then(user => {
+    .then((user) => {
       if (user) {
         req.user = user;
         return res.json(user);
@@ -53,7 +53,7 @@ exports.updateProfile = (req, res) => {
 
   User.findOne({ _id })
     .exec()
-    .then(user => {
+    .then((user) => {
       if (user) {
         if (!_.isNil(displayName)) {
           user.displayName = displayName;
@@ -83,14 +83,14 @@ exports.updateEmail = (req, res, next) => {
 
   User.findOne({ email, _id: { $ne: _id } })
     .exec()
-    .then(userWithSameEmail => {
+    .then((userWithSameEmail) => {
       if (userWithSameEmail) {
         throw new APIError('Email is taken', httpStatus.FORBIDDEN, true);
       }
 
       return User.findOne({ _id }).exec();
     })
-    .then(user => {
+    .then((user) => {
       if (user) {
         const { email: previousEmail } = user;
         // TODO: send email alert to previousEmail
@@ -104,7 +104,7 @@ exports.updateEmail = (req, res, next) => {
       return res.status(httpStatus.NO_CONTENT).send();
     })
     .then(() => res.status(httpStatus.OK).send())
-    .catch(error => {
+    .catch((error) => {
       if (error instanceof APIError) {
         next(error);
       } else {
@@ -122,14 +122,14 @@ exports.updatePhone = (req, res, next) => {
 
   User.findOne({ phoneNumber, countryCode, _id: { $ne: _id } })
     .exec()
-    .then(userWithSamePhone => {
+    .then((userWithSamePhone) => {
       if (userWithSamePhone) {
         throw new APIError(`Phone number ${phoneNumber} is taken`, httpStatus.FORBIDDEN, true);
       }
 
       return User.findOne({ _id }).exec();
     })
-    .then(user => {
+    .then((user) => {
       if (user) {
         const { phoneNumber: previousPhoneNumber, countryCode: previousCountryCode } = user;
         // TODO: send SMS alert to previousPhoneNumber
@@ -144,7 +144,7 @@ exports.updatePhone = (req, res, next) => {
       return res.status(httpStatus.NO_CONTENT).send();
     })
     .then(() => res.status(httpStatus.OK).send())
-    .catch(error => {
+    .catch((error) => {
       if (error instanceof APIError) {
         next(error);
       } else {
@@ -192,8 +192,8 @@ exports.topUpBalance = async (req, res, next) => {
     // Create a charge and set its destination to the pilot's account.
     const description = 'OTG Ride balance top up';
     const charge = await stripe.charges.create({
-      source: source,
-      amount: amount,
+      source,
+      amount,
       currency: 'aud',
       customer: user.stripeCustomerId,
       description,
@@ -204,8 +204,8 @@ exports.topUpBalance = async (req, res, next) => {
     user.balance += amount / 100.0;
     user.save();
 
-    var lastFour = charge.source && charge.source.last4;
-    var dynamicLastFour = charge.source && charge.source.dynamic_last4;
+    let lastFour = charge.source && charge.source.last4;
+    const dynamicLastFour = charge.source && charge.source.dynamic_last4;
     const tokenizationMethod = charge.source && charge.source.tokenization_method;
     if (tokenizationMethod) {
       lastFour = `${dynamicLastFour} (${tokenizationMethod.replace('_', ' ')})`;
@@ -231,7 +231,12 @@ exports.getHistoryPayments = async (req, res, next) => {
   try {
     const { userId } = req;
     const payments = await Payment.find({ userId })
-      .select({ amount: 1, lastFour: 1, description: 1, createdAt: 1 })
+      .select({
+        amount: 1,
+        lastFour: 1,
+        description: 1,
+        createdAt: 1,
+      })
       .sort({ createdAt: -1 });
 
     res.json(payments);
