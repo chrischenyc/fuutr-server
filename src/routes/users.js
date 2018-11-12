@@ -4,7 +4,7 @@ const Joi = require('joi');
 
 const router = express.Router();
 
-const UserController = require('../controllers/users');
+const UserController = require('../controllers/user');
 const PhoneController = require('../controllers/phone');
 const { requireJWT } = require('../middleware/authenticate');
 

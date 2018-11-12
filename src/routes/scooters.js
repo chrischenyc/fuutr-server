@@ -1,30 +1,40 @@
 const express = require('express');
+const validate = require('express-validation');
+const Joi = require('joi');
 
 const router = express.Router();
 
-const Scooter = require('../models/scooter');
-const { databaseDebug } = require('../helpers/debug-loggers');
+const { requireJWT } = require('../middleware/authenticate');
+const ScooterController = require('../controllers/scooter');
 
+//
 /**
- * Public routes to discover scooters
+ * GET /scooters/search?lat=&lon=&radius=
+ * search scooters nearby
  */
+router.get(
+  '/search',
+  requireJWT,
+  validate({
+    query: {
+      lat: Joi.number()
+        .min(-90)
+        .max(90)
+        .required(),
+      lon: Joi.number()
+        .min(-180)
+        .max(180)
+        .required(),
+      radius: Joi.number().required(),
+    },
+  }),
+  ScooterController.searchScooters
+);
 
-// TODO: /scooters/{gps} GET - search scooters nearby
-router.get('/', (req, res) => {
-  res.json({ message: 'not implemented' });
-});
+// /scooters/{id} GET - retrieve detail of a scooter
 
-// TODO: /scooters/{id} GET - retrieve detail of a scooter
-router.get('/:id', (req, res) => {
-  res.json({ message: 'not implemented' });
-});
+// /scooters/{id}/unlock POST - request to unlock a scooter
 
-/**
- * Authenticated routes to discover scooters
- */
-
-// TODO: /scooters/{id}/unlock POST - request to unlock a scooter
-
-// TODO: /scooters/{id}/lock POST - request to lock a scooter
+// /scooters/{id}/lock POST - request to lock a scooter
 
 module.exports = router;

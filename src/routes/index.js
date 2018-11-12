@@ -5,7 +5,6 @@ const router = express.Router();
 const auth = require('./auth');
 const phone = require('./phone');
 const users = require('./users');
-const paymentMethods = require('./payment-methods');
 const rides = require('./rides');
 const scooters = require('./scooters');
 
@@ -14,7 +13,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 router.use('/auth', auth);
-router.use('/payment-methods', paymentMethods);
 router.use('/phone', phone);
 router.use('/rides', rides);
 router.use('/scooters', scooters);
