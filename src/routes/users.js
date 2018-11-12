@@ -6,15 +6,15 @@ const router = express.Router();
 
 const UserController = require('../controllers/users');
 const PhoneController = require('../controllers/phone');
-const Authenticate = require('../middleware/authenticate');
+const { requireJWT } = require('../middleware/authenticate');
 
 // fetch user info
-router.get('/me', Authenticate.validJWT, UserController.getProfile);
+router.get('/me', requireJWT, UserController.getProfile);
 
 // update user info, such as displayName and other non-critical info
 router.patch(
   '/me',
-  Authenticate.validJWT,
+  requireJWT,
   validate({
     body: {
       email: Joi.string().email(),
@@ -27,7 +27,7 @@ router.patch(
 // update user email
 router.put(
   '/me/email',
-  Authenticate.validJWT,
+  requireJWT,
   validate({
     body: {
       email: Joi.string()
@@ -41,7 +41,7 @@ router.put(
 // update user phone number
 router.put(
   '/me/phone',
-  Authenticate.validJWT,
+  requireJWT,
   validate({
     body: {
       phoneNumber: Joi.string().required(),
@@ -61,18 +61,18 @@ router.put(
  */
 router.post(
   '/me/stripe-ephemeral-keys',
-  Authenticate.validJWT,
+  requireJWT,
   validate({ body: { stripe_version: Joi.string().required() } }),
   UserController.generateStripeEphemeralKeys
 );
 
 router.put(
   '/me/balance',
-  Authenticate.validJWT,
+  requireJWT,
   validate({ body: { amount: Joi.number().required(), source: Joi.string().required() } }),
   UserController.topUpBalance
 );
 
-router.get('/me/payments', Authenticate.validJWT, UserController.getHistoryPayments);
+router.get('/me/payments', requireJWT, UserController.getHistoryPayments);
 
 module.exports = router;

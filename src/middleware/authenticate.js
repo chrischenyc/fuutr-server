@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
 const httpStatus = require('http-status');
 
+const User = require('../models/user');
+const logger = require('../helpers/logger');
+
 // middleware that validate JWT token in request headers "Authorization"
-exports.validJWT = (req, res, next) => {
+exports.requireJWT = async (req, res, next) => {
   const { authorization } = req.headers;
 
   const bearer = authorization && authorization.split(' ')[0];
@@ -13,17 +16,8 @@ exports.validJWT = (req, res, next) => {
     return;
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      // https://github.com/auth0/node-jsonwebtoken#tokenexpirederror
-      if (err instanceof jwt.TokenExpiredError) {
-        res.status(httpStatus.UNAUTHORIZED).json({ error: 'access token expired' });
-        return;
-      }
-
-      res.status(httpStatus.UNAUTHORIZED).send();
-      return;
-    }
+  try {
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
 
     const { _id } = decoded;
 
@@ -32,18 +26,36 @@ exports.validJWT = (req, res, next) => {
       return;
     }
 
+    // inject userId into req
     req.userId = _id;
     next();
-  });
+  } catch (error) {
+    // access token expired: https://github.com/auth0/node-jsonwebtoken#tokenexpirederror
+    if (error instanceof jwt.TokenExpiredError) {
+      // respond with specific message so client knows to refresh token
+      res.status(httpStatus.UNAUTHORIZED).json({ error: 'access token expired' });
+
+      return;
+    }
+
+    res.status(httpStatus.UNAUTHORIZED).send();
+  }
 };
 
-// TODO: implement ACL
-exports.minimumPermissionLevel = requiredPermissionLevel => (req, res, next) => {
-  const { user } = req;
+// middleware that validates user is an admin
+exports.requireAdmin = async (req, res, next) => {
+  const { userId: _id } = req;
 
-  if (userPermissionLevel & requiredPermissionLevel) {
-    return next();
+  try {
+    const user = await User.findOne({ _id }).exec();
+
+    if (!user || !user.isAdmin) {
+      res.status(httpStatus.FORBIDDEN).send();
+      return;
+    }
+
+    next();
+  } catch (error) {
+    logger.error(error);
   }
-
-  return res.status(httpStatus.FORBIDDEN).send();
 };
