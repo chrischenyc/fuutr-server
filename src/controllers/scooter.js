@@ -10,7 +10,7 @@ const { mockScooters } = require('../helpers/mock-data');
  * search scooters within x radius of lat/lon, which are suitable for riding
  */
 exports.searchScooters = async (req, res, next) => {
-  const { lat, lon, radius } = req.query;
+  const { latitude, longitude, radius } = req.query;
 
   try {
     const scooters = await Scooter.find({
@@ -18,7 +18,7 @@ exports.searchScooters = async (req, res, next) => {
       locked: true,
       charging: false,
       powerPercent: { $gt: 0 },
-      latitude: { $gt: lat - radius / 110.574, $lt: lat + radius / 110.574 },
+      latitude: { $gt: latitude - radius / 110.574, $lt: latitude + radius / 110.574 },
     }).select({
       iotCode: 1,
       vehicleCode: 1,
@@ -29,7 +29,7 @@ exports.searchScooters = async (req, res, next) => {
 
     // FIXME: mock data!!!
     // res.json(scooters);
-    res.json(mockScooters(lat, lon, radius));
+    res.json(mockScooters(latitude, longitude, radius));
   } catch (error) {
     logger.error(error);
     next(new APIError("couldn't find scooters", httpStatus.INTERNAL_SERVER_ERROR, true));

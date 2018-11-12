@@ -9,7 +9,7 @@ const ScooterController = require('../controllers/scooter');
 
 //
 /**
- * GET /scooters/search?lat=&lon=&radius=
+ * GET /scooters/search?latitude=&longitude=&radius=
  * search scooters nearby
  */
 router.get(
@@ -17,11 +17,11 @@ router.get(
   requireJWT,
   validate({
     query: {
-      lat: Joi.number()
+      latitude: Joi.number()
         .min(-90)
         .max(90)
         .required(),
-      lon: Joi.number()
+      longitude: Joi.number()
         .min(-180)
         .max(180)
         .required(),
