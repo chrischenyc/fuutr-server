@@ -15,120 +15,89 @@ const {
 
 const { sendWelcomeEmail, sendPasswordResetCodeEmail } = require('../helpers/send-email');
 
-exports.signupWithPhone = (req, res, next) => {
+exports.signupWithPhone = async (req, res, next) => {
   const { phoneNumber, countryCode } = req.body;
 
-  // return matched User record or create a new one
-  User.findOne({ phoneNumber, countryCode })
-    .exec()
-    .then((existingUser) => {
-      if (existingUser) {
-        return res.json(generateTokens(existingUser));
-      }
+  try {
+    // return matched User record or create a new one
+    const existingUser = await User.findOne({ phoneNumber, countryCode }).exec();
+    if (existingUser) {
+      res.json(generateTokens(existingUser));
+      return;
+    }
 
-      return stripe.customers.create({
-        description: phoneNumber,
-      });
-    })
-    .then((stripeCustomer) => {
-      const newUser = new User({ phoneNumber, countryCode, stripeCustomerId: stripeCustomer.id });
-      return newUser.save();
-    })
-    .then((newUser) => {
-      res.status(httpStatus.CREATED).json(generateTokens(newUser));
-    })
-    .catch((error) => {
-      logger.error(error);
-      next(
-        new APIError(
-          `Couldn't sign up with mobile number ${phoneNumber}`,
-          httpStatus.INTERNAL_SERVER_ERROR,
-          true
-        )
-      );
+    const stripeCustomer = await stripe.customers.create({
+      description: phoneNumber,
     });
+
+    const newUser = new User({ phoneNumber, countryCode, stripeCustomerId: stripeCustomer.id });
+    await newUser.save();
+
+    res.status(httpStatus.CREATED).json(generateTokens(newUser));
+  } catch (error) {
+    logger.error(error);
+    next(
+      new APIError(
+        `Couldn't sign up with mobile number ${phoneNumber}`,
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      )
+    );
+  }
 };
 
-exports.signupWithEmail = (req, res, next) => {
+exports.signupWithEmail = async (req, res, next) => {
   const { email, password } = req.body;
-  let stripeCustomerId = null;
 
-  User.findOne({ email })
-    .exec()
-    .then((existingUser) => {
-      if (existingUser) {
-        return next(new APIError('Email is taken', httpStatus.CONFLICT, true));
-      }
+  try {
+    const existingUser = await User.findOne({ email }).exec();
+    if (existingUser) {
+      next(new APIError('Email is taken', httpStatus.CONFLICT, true));
+      return;
+    }
 
-      return stripe.customers.create({
-        email,
-      });
-    })
-    .then((stripeCustomer) => {
-      stripeCustomerId = stripeCustomer.id;
+    const stripeCustomer = await stripe.customers.create({ email });
+    const hash = await bcrypt.hash(password, 10);
 
-      // hash password
-      return new Promise((resolve, reject) => {
-        bcrypt.hash(password, 10, (error, hash) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(hash);
-          }
-        });
-      });
-    })
-    .then((hash) => {
-      const newUser = new User({ email, password: hash, stripeCustomerId });
-      sendWelcomeEmail(email);
+    const newUser = new User({ email, password: hash, stripeCustomerId: stripeCustomer.id });
+    await newUser.save();
 
-      return newUser.save();
-    })
-    .then((newUser) => {
-      // TODO: send out email verification email
+    // TODO: send out email verification email
+    sendWelcomeEmail(email);
 
-      res.status(httpStatus.CREATED).json(generateTokens(newUser));
-    })
-    .catch((error) => {
-      logger.error(error);
-      next(
-        new APIError(`Cannot sign up with email ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true)
-      );
-    });
+    res.status(httpStatus.CREATED).json(generateTokens(newUser));
+  } catch (error) {
+    logger.error(error);
+    next(
+      new APIError(`Cannot sign up with email ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true)
+    );
+  }
 };
 
-exports.loginWithEmail = (req, res, next) => {
+exports.loginWithEmail = async (req, res, next) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
-    .select({ password: 1 })
-    .exec()
-    .then((user) => {
-      if (user) {
-        return new Promise((resolve, reject) => {
-          bcrypt.compare(password, user.password, (err, samePassword) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve({ user, samePassword });
-            }
-          });
-        });
-      }
+  try {
+    const user = await User.findOne({ email })
+      .select({ password: 1 })
+      .exec();
 
-      return next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
-    })
-    .then(({ user, samePassword }) => {
-      if (samePassword) {
-        res.json(generateTokens(user));
-      } else {
-        next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
-      }
-    })
-    .catch((error) => {
-      logger.error(error);
-      next(new APIError(`Cannot log in with email ${email}`, httpStatus.UNAUTHORIZED, true), true);
-    });
+    if (!user) {
+      next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
+      return;
+    }
+
+    const samePassword = await bcrypt.compare(password, user.password);
+    if (!samePassword) {
+      next(new APIError('wrong email or password', httpStatus.UNAUTHORIZED, true));
+      return;
+    }
+
+    res.json(generateTokens(user));
+  } catch (error) {
+    logger.error(error);
+    next(new APIError(`Cannot log in with email ${email}`, httpStatus.UNAUTHORIZED, true), true);
+  }
 };
 
 exports.authWithFacebook = (req, res, next) => {
@@ -147,7 +116,7 @@ exports.authWithFacebook = (req, res, next) => {
   }
 };
 
-exports.refreshToken = (req, res) => {
+exports.refreshToken = async (req, res) => {
   const { authorization } = req.headers;
   const { refreshToken } = req.body;
 
@@ -159,35 +128,37 @@ exports.refreshToken = (req, res) => {
     return;
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true }, (err, decoded) => {
-    if (!decoded || !decoded._id) {
+  try {
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+    const { _id } = decoded;
+    if (!_id) {
       res.status(httpStatus.UNAUTHORIZED).send();
       return;
     }
 
-    const { _id } = decoded;
+    const validRefreshToken = await RefreshToken.findOne({
+      token: refreshToken,
+      userId: _id,
+      expired: false,
+    }).exec();
 
-    // validate refresh token
-    RefreshToken.findOne({ token: refreshToken, userId: _id, expired: false })
-      .exec()
-      .then((validRefreshToken) => {
-        if (validRefreshToken) {
-          return User.findOne({ _id }).exec();
-        }
+    if (!validRefreshToken) {
+      res.status(httpStatus.UNAUTHORIZED).send();
+      return;
+    }
 
-        return res.status(httpStatus.UNAUTHORIZED).send();
-      })
-      .then((user) => {
-        if (user) {
-          return res.json(generateAccessToken(user));
-        }
+    const user = await User.findOne({ _id }).exec();
 
-        return res.status(httpStatus.UNAUTHORIZED).send();
-      })
-      .catch(() => {
-        res.status(httpStatus.UNAUTHORIZED).send();
-      });
-  });
+    if (!user) {
+      res.status(httpStatus.UNAUTHORIZED).send();
+      return;
+    }
+
+    res.json(generateAccessToken(user));
+  } catch (error) {
+    logger.error(error);
+    res.status(httpStatus.UNAUTHORIZED).send();
+  }
 };
 
 exports.sendPasswordResetCode = async (req, res, next) => {

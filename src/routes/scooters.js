@@ -11,14 +11,7 @@ const { databaseDebug } = require('../helpers/debug-loggers');
 
 // TODO: /scooters/{gps} GET - search scooters nearby
 router.get('/', (req, res) => {
-  Scooter.find()
-    .exec()
-    .then((scooters) => {
-      res.json(scooters);
-    })
-    .catch((error) => {
-      databaseDebug(error);
-    });
+  res.json({ message: 'not implemented' });
 });
 
 // TODO: /scooters/{id} GET - retrieve detail of a scooter

@@ -12,7 +12,7 @@ passport.use(
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
     },
-    (accessToken, refreshToken, profile, done) => {
+    async (accessToken, refreshToken, profile, done) => {
       const {
         id: facebookId, displayName, emails, photos,
       } = profile;
@@ -20,48 +20,44 @@ passport.use(
       const email = emails && emails[0] && emails[0].value;
       const photo = photos && photos[0] && photos[0].value;
 
-      // try to match with facebook id
-      User.findOne({ $or: [{ facebookId }, { email }] })
-        .exec()
-        .then((existingUser) => {
-          if (existingUser) {
-            // merge facebook profile into existing User record if necessary
-            if (_.isNil(existingUser.facebookId)) {
-              existingUser.facebookId = facebookId;
-            }
-            if (_.isNil(existingUser.displayName)) {
-              existingUser.displayName = displayName;
-            }
-            if (_.isNil(existingUser.photo)) {
-              existingUser.photo = photo;
-            }
-            existingUser.save();
-
-            return done(null, existingUser);
+      try {
+        // match existing users with same facebook id or email
+        const existingUser = await User.findOne({ $or: [{ facebookId }, { email }] }).exec();
+        if (existingUser) {
+          // merge facebook profile into existing User record if necessary
+          if (_.isNil(existingUser.facebookId)) {
+            existingUser.facebookId = facebookId;
+          }
+          if (_.isNil(existingUser.displayName)) {
+            existingUser.displayName = displayName;
+          }
+          if (_.isNil(existingUser.photo)) {
+            existingUser.photo = photo;
           }
 
-          // create stripe customer first
-          return stripe.customers.create({ email });
-        })
-        .then((stripeCustomer) => {
-          if (stripeCustomer) {
-            const user = new User({
-              facebookId,
-              email,
-              displayName,
-              photo,
-              stripeCustomerId: stripeCustomer.id,
-            });
+          await existingUser.save();
 
-            user.save().then((newUser) => {
-              sendWelcomeEmail(email);
-              done(null, newUser);
-            });
-          }
-        })
-        .catch((err) => {
-          done(err, null);
-        });
+          return done(null, existingUser);
+        }
+
+        // create new user and Stripe customer
+        const stripeCustomer = await stripe.customers.create({ email });
+        if (stripeCustomer) {
+          const user = new User({
+            facebookId,
+            email,
+            displayName,
+            photo,
+            stripeCustomerId: stripeCustomer.id,
+          });
+          await user.save();
+
+          sendWelcomeEmail(email);
+          done(null, user);
+        }
+      } catch (err) {
+        done(err, null);
+      }
     }
   )
 );
