@@ -8,29 +8,6 @@ const { requireJWT } = require('../middleware/authenticate');
 const ScooterController = require('../controllers/scooter');
 
 /**
- * GET /scooters/search-in-radius?latitude=&longitude=&radius=
- * search scooters nearby
- */
-router.get(
-  '/search-in-radius',
-  requireJWT,
-  validate({
-    query: {
-      latitude: Joi.number()
-        .min(-90)
-        .max(90)
-        .required(),
-      longitude: Joi.number()
-        .min(-180)
-        .max(180)
-        .required(),
-      radius: Joi.number().required(),
-    },
-  }),
-  ScooterController.searchScootersInRadius
-);
-
-/**
  * GET /scooters/search-in-bound?minLatitude=&minLongitude=&maxLatitude=&maxLongitude=
  * search scooters nearby
  */
