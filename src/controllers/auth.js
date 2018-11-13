@@ -35,7 +35,7 @@ exports.signupWithPhone = async (req, res, next) => {
 
     res.status(httpStatus.CREATED).json(generateTokens(newUser));
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(
       new APIError(
         `Couldn't sign up with mobile number ${phoneNumber}`,
@@ -67,7 +67,7 @@ exports.signupWithEmail = async (req, res, next) => {
 
     res.status(httpStatus.CREATED).json(generateTokens(newUser));
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(
       new APIError(`Cannot sign up with email ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true)
     );
@@ -95,7 +95,7 @@ exports.loginWithEmail = async (req, res, next) => {
 
     res.json(generateTokens(user));
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(new APIError(`Cannot log in with email ${email}`, httpStatus.UNAUTHORIZED, true), true);
   }
 };
@@ -156,7 +156,7 @@ exports.refreshToken = async (req, res) => {
 
     res.json(generateAccessToken(user));
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     res.status(httpStatus.UNAUTHORIZED).send();
   }
 };
@@ -179,7 +179,7 @@ exports.sendPasswordResetCode = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(
       new APIError(
         `Couldn't send password reset code to ${email}`,
@@ -207,7 +207,7 @@ exports.verifyPasswordResetCode = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(
       new APIError(
         `Couldn't verify password reset code for ${email}`,
@@ -244,7 +244,7 @@ exports.resetPassword = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(
       new APIError(
         `Couldn't reset password reset code for ${email}`,

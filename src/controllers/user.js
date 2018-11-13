@@ -59,7 +59,7 @@ exports.updateProfile = async (req, res) => {
     await user.save();
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     res.status(httpStatus.UNAUTHORIZED).send();
   }
 };
@@ -96,7 +96,7 @@ exports.updateEmail = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(new APIError(`Couldn't update email to ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -132,7 +132,7 @@ exports.updatePhone = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     next(
       new APIError(
@@ -216,7 +216,7 @@ exports.topUpBalance = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
     next(new APIError("Couldn't process your payment", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -235,7 +235,7 @@ exports.getHistoryPayments = async (req, res, next) => {
 
     res.json(payments);
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
 
     next(
       new APIError(

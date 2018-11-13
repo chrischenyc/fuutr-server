@@ -34,3 +34,25 @@ exports.mockScooters = (latitude, longitude, radius) => {
 
   return scooters;
 };
+
+exports.mockScooters2 = (minLatitude, minLongitude, maxLatitude, maxLongitude) => {
+  const minLatitudeFloat = parseFloat(minLatitude);
+  const minLongitudeFloat = parseFloat(minLongitude);
+  const maxLatitudeFloat = parseFloat(maxLatitude);
+  const maxLongitudeFloat = parseFloat(maxLongitude);
+
+  const scooters = [];
+  const numberOfScooters = randomFromInterval(20, 50);
+
+  while (scooters.length < numberOfScooters) {
+    scooters.push({
+      iotCode: uuid.v4().split('-')[0],
+      vehicleCode: uuid.v4().split('-')[0],
+      powerPercent: Math.floor(randomFromInterval(10, 100)),
+      latitude: randomFromInterval(minLatitudeFloat, maxLatitudeFloat),
+      longitude: randomFromInterval(minLongitudeFloat, maxLongitudeFloat),
+    });
+  }
+
+  return scooters;
+};

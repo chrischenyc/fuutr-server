@@ -52,7 +52,7 @@ const sendEmail = (to, subject, template, templateConstants) => {
 
     SendGridMail.send(msg);
   } catch (error) {
-    logger.error(error);
+    logger.error(error.message);
   }
 };
 
