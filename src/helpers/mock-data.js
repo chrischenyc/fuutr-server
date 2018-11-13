@@ -10,7 +10,8 @@ exports.mockScootersInBound = (minLatitude, minLongitude, maxLatitude, maxLongit
     scooters.push({
       iotCode: uuid.v4().split('-')[0],
       vehicleCode: uuid.v4().split('-')[0],
-      powerPercent: Math.floor(randomFromInterval(0, 100)),
+      powerPercent: randomFromInterval(0, 100),
+      remainderRange: randomFromInterval(5, 50),
       latitude: minLatitude + (maxLatitude - minLatitude) * Math.random(),
       longitude: minLongitude + (maxLongitude - minLongitude) * Math.random(),
     });

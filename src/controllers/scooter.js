@@ -25,6 +25,7 @@ exports.searchScootersInBound = async (req, res, next) => {
       powerPercent: 1,
       latitude: 1,
       longitude: 1,
+      remainderRange: 1,
     });
 
     // FIXME: mock data!!!
