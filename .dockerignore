@@ -55,3 +55,4 @@ cfn-template*.json
 README*.md
 .editorconfig
 **/.DS_Store
+*.vscode
