@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 
+const User = require('../models/user');
 const Scooter = require('../models/scooter');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
@@ -34,5 +35,25 @@ exports.searchScootersInBound = async (req, res, next) => {
   } catch (error) {
     logger.error(error.message);
     next(new APIError("couldn't find scooters", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
+exports.unlockScooter = async (req, res, next) => {
+  const { vehicleCode } = req.body;
+  const { userId } = req;
+
+  try {
+    const user = await User.findOne({ _id: userId }).exec();
+
+    // TODO: evaluate user balance
+
+    // TODO: call Segway gateway
+
+    // TODO: create Ride object
+
+    res.json({ userId, vehicleCode, unlockedAt: Date.now() });
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

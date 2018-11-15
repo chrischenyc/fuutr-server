@@ -39,7 +39,13 @@ router.get(
 
 // /scooters/{id} GET - retrieve detail of a scooter
 
-// /scooters/{id}/unlock POST - request to unlock a scooter
+// /scooters/unlock POST - request to unlock a scooter
+router.post(
+  '/unlock',
+  requireJWT,
+  validate({ body: { vehicleCode: Joi.string().required() } }),
+  ScooterController.unlockScooter
+);
 
 // /scooters/{id}/lock POST - request to lock a scooter
 
