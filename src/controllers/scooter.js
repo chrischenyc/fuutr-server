@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 
 const User = require('../models/user');
 const Scooter = require('../models/scooter');
+const Ride = require('../models/ride');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
@@ -55,11 +56,31 @@ exports.unlockScooter = async (req, res, next) => {
       return;
     }
 
+    // find scooter
+    const scooter = await Scooter.findOne({
+      vehicleCode: '2222', // FIXME: demo data
+      online: true,
+      locked: true,
+      charging: false,
+    }).exec();
+
     // TODO: call Segway gateway
 
-    // TODO: create Ride object
+    // create Ride object
+    const ride = new Ride({
+      user: userId,
+      scooter: scooter.id,
+      vehicleCode,
+      unlockCost: process.env.APP_UNLOCK_COST,
+      minuteCost: process.env.APP_MINUTE_COST,
+      rideCost: 0.0,
+      totalCost: process.env.APP_UNLOCK_COST,
+    });
 
-    res.json({ userId, vehicleCode, unlockedAt: Date.now() });
+    await ride.save();
+
+    // FIXME: omit unwanted fields!!!
+    res.json(ride);
   } catch (error) {
     logger.error(error.message);
     next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));

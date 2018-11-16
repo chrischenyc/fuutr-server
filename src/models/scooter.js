@@ -4,19 +4,19 @@ const GeoSchema = require('./geo-schema');
 
 const scooterSchema = new mongoose.Schema(
   {
-    iotCode: { type: String },
-    vehicleCode: { type: String },
+    iotCode: { type: String, required: true },
+    vehicleCode: { type: String, required: true },
     iotVersion: { type: String },
     vehicleControllerVersion: { type: Number },
     vehicleDashboardVersion: { type: Number },
     vehicleBuildInBatteryVersion: { type: Number },
     vehiclePlugInBatteryVersion: { type: Number },
     // whether the device is connected to gateway
-    online: { type: Boolean },
-    locked: { type: Boolean },
+    online: { type: Boolean, required: true, default: true },
+    locked: { type: Boolean, required: true, default: true },
     lockVoltage: { type: Number },
     networkSignal: { type: Number },
-    charging: { type: Boolean },
+    charging: { type: Boolean, required: true, default: false },
     // scooter battery percentage, 80 is 80%
     powerPercent: { type: Number },
     // speed mode (0: can't read; 1: low speed; 2: medium speed; 3: high speed;)
