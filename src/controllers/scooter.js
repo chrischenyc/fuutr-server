@@ -7,6 +7,7 @@ const logger = require('../helpers/logger');
 
 const { mockScootersInBound } = require('../helpers/mock-data');
 
+// TODO: replace with mongodb $near query: https://docs.mongodb.com/manual/reference/operator/query/near/
 exports.searchScootersInBound = async (req, res, next) => {
   const {
     minLatitude, minLongitude, maxLatitude, maxLongitude,

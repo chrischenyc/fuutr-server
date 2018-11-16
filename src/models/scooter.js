@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const GeoSchema = require('./geo-schema');
+
 const scooterSchema = new mongoose.Schema(
   {
     iotCode: { type: String },
@@ -24,8 +26,7 @@ const scooterSchema = new mongoose.Schema(
     odometer: { type: Number },
     remainderRange: { type: Number },
     totalRidingSecs: { type: Number },
-    latitude: { type: Number, min: -90, max: 90 },
-    longitude: { type: Number, min: -180, max: 180 },
+    location: { type: GeoSchema },
     altitude: { type: Number },
     satelliteNumber: { type: Number },
     hdop: { type: Number }, // GPS HDOP

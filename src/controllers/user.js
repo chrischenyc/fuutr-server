@@ -198,7 +198,7 @@ exports.topUpBalance = async (req, res, next) => {
     const payment = new Payment({
       stripeChargeId: charge.id,
       amount: dollarAmount,
-      userId: _id,
+      user: _id,
       lastFour,
       description,
     });
@@ -224,7 +224,7 @@ exports.topUpBalance = async (req, res, next) => {
 exports.getHistoryPayments = async (req, res, next) => {
   try {
     const { userId } = req;
-    const payments = await Payment.find({ userId })
+    const payments = await Payment.find({ user: userId })
       .select({
         amount: 1,
         lastFour: 1,

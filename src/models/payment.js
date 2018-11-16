@@ -4,7 +4,7 @@ const paymentSchema = new mongoose.Schema(
   {
     stripeChargeId: { type: String, required: true },
     amount: { type: Number, required: true },
-    userId: { type: String, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, required: true },
     lastFour: { type: String },
     description: { type: String },
   },

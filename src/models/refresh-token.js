@@ -7,7 +7,7 @@ const refreshTokenSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    userId: {
+    user: {
       type: mongoose.SchemaTypes.ObjectId,
       required: true,
     },

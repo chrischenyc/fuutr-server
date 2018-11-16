@@ -16,7 +16,7 @@ exports.generateTokens = (user) => {
   const { accessToken } = generateAccessToken(user);
   const refreshToken = uuid.v4();
 
-  const record = new RefreshToken({ token: refreshToken, userId: user._id });
+  const record = new RefreshToken({ token: refreshToken, user: user._id });
   record.save();
 
   return {

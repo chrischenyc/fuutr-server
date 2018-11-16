@@ -11,6 +11,7 @@ const ScooterController = require('../controllers/scooter');
  * GET /scooters/search-in-bound?minLatitude=&minLongitude=&maxLatitude=&maxLongitude=
  * search scooters nearby
  */
+// TODO: replace with radius search
 router.get(
   '/search-in-bound',
   requireJWT,

@@ -138,7 +138,7 @@ exports.refreshToken = async (req, res) => {
 
     const validRefreshToken = await RefreshToken.findOne({
       token: refreshToken,
-      userId: _id,
+      user: _id,
       expired: false,
     }).exec();
 
