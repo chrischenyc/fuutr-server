@@ -19,8 +19,6 @@ exports.searchScootersInBound = async (req, res, next) => {
       locked: true,
       charging: false,
       powerPercent: { $gt: 0 },
-      latitude: { $gt: minLatitude, $lt: maxLatitude },
-      longitude: { $gt: minLongitude, $lt: maxLongitude },
     }).select({
       iotCode: 1,
       vehicleCode: 1,
@@ -46,7 +44,16 @@ exports.unlockScooter = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: userId }).exec();
 
-    // TODO: evaluate user balance
+    if (!user) {
+      res.httpStatus(httpStatus.UNAUTHORIZED).send();
+      return;
+    }
+
+    // evaluate user balance
+    if (user.balance < process.env.APP_UNLOCK_MIN_BALANCE) {
+      next(new APIError('insufficient balance', httpStatus.PAYMENT_REQUIRED, true));
+      return;
+    }
 
     // TODO: call Segway gateway
 
