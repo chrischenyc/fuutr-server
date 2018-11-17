@@ -14,7 +14,7 @@ const router = express.Router();
 router.get('/ongoing', requireJWT, RideController.getOngoingRide);
 
 /**
- * POST /api/scooters/unlock
+ * POST /api/rides/unlock
  * request to unlock a scooter that is online, locked, and not being charged
  * @param vehicleCode
  * @return a new Ride object
@@ -27,7 +27,7 @@ router.post(
 );
 
 /**
- * POST /api/scooters/lock
+ * POST /api/rides/lock
  * request to lock a scooter which the user is currently ridings
  * @param scooterId
  * @param rideId
@@ -40,7 +40,12 @@ router.post(
   RideController.lockScooter
 );
 
-// /rides GET - list history rides
+/**
+ * GET /api/rides/
+ * get history rides
+ * @return an array of Ride objects
+ */
+router.get('/', requireJWT, RideController.pastRides);
 
 // /rides/{id} PATCH - update a ride during riding
 

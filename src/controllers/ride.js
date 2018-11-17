@@ -116,3 +116,18 @@ exports.lockScooter = async (req, res, next) => {
     next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.pastRides = async (req, res, next) => {
+  const { userId } = req;
+
+  try {
+    const rides = await Ride.find({ user: userId, completed: true }).sort({ unlockTime: -1 });
+
+    res.json(rides);
+  } catch (error) {
+    logger.error(error.message);
+    next(
+      new APIError("couldn't retrieve your ride history", httpStatus.INTERNAL_SERVER_ERROR, true)
+    );
+  }
+};
