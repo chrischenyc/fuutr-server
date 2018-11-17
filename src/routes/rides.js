@@ -8,10 +8,10 @@ const { requireJWT } = require('../middleware/authenticate');
 const router = express.Router();
 
 /**
- * GET /api/rides/ongoing
- * find the unfinished ride of the user
+ * GET /api/rides/me/ongoing
+ * find the unfinished ride of current user
  */
-router.get('/ongoing', requireJWT, RideController.getOngoingRide);
+router.get('/me/ongoing', requireJWT, RideController.getOngoingRide);
 
 /**
  * POST /api/rides/unlock
@@ -41,11 +41,11 @@ router.post(
 );
 
 /**
- * GET /api/rides/
- * get history rides
+ * GET /api/rides/me
+ * get history rides of current user
  * @return an array of Ride objects
  */
-router.get('/', requireJWT, RideController.pastRides);
+router.get('/me', requireJWT, RideController.pastRides);
 
 // /rides/{id} PATCH - update a ride during riding
 
