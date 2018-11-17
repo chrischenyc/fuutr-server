@@ -38,31 +38,4 @@ router.get(
   ScooterController.searchScootersInBound
 );
 
-/**
- * POST /api/scooters/unlock
- * request to unlock a scooter that is online, locked, and not being charged
- * @param vehicleCode
- * @return a new Ride object
- */
-router.post(
-  '/unlock',
-  requireJWT,
-  validate({ body: { vehicleCode: Joi.string().required() } }),
-  ScooterController.unlockScooter
-);
-
-/**
- * POST /api/scooters/lock
- * request to lock a scooter which the user is currently ridings
- * @param scooterId
- * @param rideId
- * @return the updated Ride object
- */
-router.post(
-  '/lock',
-  requireJWT,
-  validate({ body: { scooterId: Joi.string().required(), rideId: Joi.string().required() } }),
-  ScooterController.lockScooter
-);
-
 module.exports = router;
