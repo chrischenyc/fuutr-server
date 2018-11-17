@@ -71,6 +71,7 @@ exports.topUpBalance = async (req, res, next) => {
       user: _id,
       amount: dollarAmount,
       payment: payment._id,
+      balance: user.balance,
       type: 'top-up',
     });
     await transaction.save();

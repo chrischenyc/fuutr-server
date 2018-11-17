@@ -109,18 +109,19 @@ exports.lockScooter = async (req, res, next) => {
 
     await ride.save();
 
+    // update user balance
+    user.balance -= ride.totalCost;
+    await user.save();
+
     // create new transaction
     const transaction = new Transaction({
       user: userId,
       amount: -ride.totalCost,
+      balance: user.balance,
       ride: ride._id,
       type: 'ride',
     });
     await transaction.save();
-
-    // update user balance
-    user.balance -= ride.totalCost;
-    await user.save();
 
     res.json(ride);
   } catch (error) {

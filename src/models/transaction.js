@@ -11,11 +11,12 @@ const mongoose = require('mongoose');
  */
 const transactionSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, select: false },
     amount: { type: Number, required: true },
-    payment: { type: mongoose.Schema.Types.ObjectId }, // if it's a top up transaction
-    ride: { type: mongoose.Schema.Types.ObjectId }, // if it's a ride transaction
+    payment: { type: mongoose.Schema.Types.ObjectId, select: false }, // if it's a top up transaction
+    ride: { type: mongoose.Schema.Types.ObjectId, select: false }, // if it's a ride transaction
     type: { type: String, required: true, default: 'ride' }, // top-up | ride | coupon | credit
+    balance: { type: Number, required: true },
   },
   { timestamps: true, versionKey: false }
 );
