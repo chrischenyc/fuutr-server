@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const auth = require('./auth');
+const payment = require('./payment');
 const phone = require('./phone');
 const users = require('./users');
 const rides = require('./rides');
@@ -13,7 +14,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 router.use('/auth', auth);
-router.use('/phone', phone);
+router.use('/payments', payment);
+router.use('/phones', phone);
 router.use('/rides', rides);
 router.use('/scooters', scooters);
 router.use('/users', users);

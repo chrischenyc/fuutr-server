@@ -53,26 +53,4 @@ router.put(
   UserController.updatePhone
 );
 
-/**
- * POST /api/users/me/stripe-ephemeral-keys
- *
- * Generate an ephemeral key for the logged in customer.
- * https://stripe.com/docs/mobile/ios/standard#prepare-your-api
- */
-router.post(
-  '/me/stripe-ephemeral-keys',
-  requireJWT,
-  validate({ body: { stripe_version: Joi.string().required() } }),
-  UserController.generateStripeEphemeralKeys
-);
-
-router.put(
-  '/me/balance',
-  requireJWT,
-  validate({ body: { amount: Joi.number().required(), source: Joi.string().required() } }),
-  UserController.topUpBalance
-);
-
-router.get('/me/payments', requireJWT, UserController.getHistoryPayments);
-
 module.exports = router;

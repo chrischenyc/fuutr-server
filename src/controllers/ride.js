@@ -3,6 +3,7 @@ const httpStatus = require('http-status');
 const Ride = require('../models/ride');
 const User = require('../models/user');
 const Scooter = require('../models/scooter');
+const Transaction = require('../models/transaction');
 
 const secondsBetweenDates = require('../helpers/seconds-between-dates');
 const APIError = require('../helpers/api-error');
@@ -106,9 +107,20 @@ exports.lockScooter = async (req, res, next) => {
     ride.totalCost = ride.unlockCost + ride.minuteCost * (ride.duration / 60.0);
     // TODO: geo info
 
-    // TODO: create new transaction
-
     await ride.save();
+
+    // create new transaction
+    const transaction = new Transaction({
+      user: userId,
+      amount: -ride.totalCost,
+      ride: ride._id,
+      type: 'ride',
+    });
+    await transaction.save();
+
+    // update user balance
+    user.balance -= ride.totalCost;
+    await user.save();
 
     res.json(ride);
   } catch (error) {
