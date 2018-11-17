@@ -4,7 +4,12 @@ const GeoSchema = require('./geo-schema');
 
 const rideSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, required: true },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      index: true,
+      select: false,
+    },
     scooter: { type: mongoose.Schema.Types.ObjectId, required: true },
     vehicleCode: { type: String, required: true },
     unlockTime: { type: Date, required: true, default: Date.now },
@@ -17,9 +22,7 @@ const rideSchema = new mongoose.Schema(
     completed: { type: Boolean, required: true, default: false },
     unlockCost: { type: Number },
     minuteCost: { type: Number },
-    rideCost: { type: Number },
     totalCost: { type: Number },
-    paidBy: { type: String }, // "balance", "subscription", "free"
   },
   { timestamps: true, versionKey: false }
 );

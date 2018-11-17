@@ -15,11 +15,11 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: { type: String, trim: true },
     countryCode: { type: Number },
-    facebookId: { type: String, select: false },
+    facebookId: { type: String, unique: true, select: false },
     displayName: { type: String, trim: true },
     photo: { type: String },
     balance: { type: Number, require: true, default: 0 },
-    stripeCustomerId: { type: String },
+    stripeCustomerId: { type: String, unique: true },
   },
   { timestamps: true, versionKey: false }
 );

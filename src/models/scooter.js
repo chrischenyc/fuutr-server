@@ -4,8 +4,8 @@ const GeoSchema = require('./geo-schema');
 
 const scooterSchema = new mongoose.Schema(
   {
-    iotCode: { type: String, required: true },
-    vehicleCode: { type: String, required: true },
+    iotCode: { type: String, required: true, unique: true },
+    vehicleCode: { type: String, required: true, unique: true },
     iotVersion: { type: String },
     vehicleControllerVersion: { type: Number },
     vehicleDashboardVersion: { type: Number },
