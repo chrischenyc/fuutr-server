@@ -44,7 +44,7 @@ router.post(
       rideId: Joi.string().required(),
       latitude: Joi.number(),
       longitude: Joi.number(),
-      path: Joi.string(),
+      encodedPath: Joi.string(),
       distance: Joi.number(),
     },
   }),

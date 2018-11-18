@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const polyline = require('@mapbox/polyline');
 
 const Ride = require('../models/ride');
 const User = require('../models/user');
@@ -68,6 +69,7 @@ exports.unlockScooter = async (req, res, next) => {
       totalCost: process.env.APP_UNLOCK_COST,
     });
     if (latitude && longitude) {
+      // GeoJSON spec
       ride.unlockLocation = { type: 'Point', coordinates: [longitude, latitude] };
     }
 
@@ -82,7 +84,7 @@ exports.unlockScooter = async (req, res, next) => {
 
 exports.lockScooter = async (req, res, next) => {
   const {
-    scooterId, rideId, latitude, longitude, path, distance,
+    scooterId, rideId, latitude, longitude, encodedPath, distance,
   } = req.body;
   const { userId } = req;
 
@@ -110,9 +112,16 @@ exports.lockScooter = async (req, res, next) => {
     ride.completed = true;
     ride.totalCost = ride.unlockCost + ride.minuteCost * (ride.duration / 60.0);
     if (latitude && longitude) {
+      // GeoJSON spec
       ride.lockLocation = { type: 'Point', coordinates: [longitude, latitude] };
     }
     ride.distance = distance;
+    if (encodedPath) {
+      const coordinates = polyline
+        .decode(encodedPath)
+        .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
+      ride.route = { type: 'LineString', coordinates };
+    }
 
     await ride.save();
 

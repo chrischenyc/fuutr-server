@@ -24,6 +24,6 @@ const rideSchema = new mongoose.Schema(
     totalCost: { type: Number },
   },
   { timestamps: true, versionKey: false }
-);
+).index({ lockLocation: '2dsphere', unlockLocation: '2dsphere', route: '2dsphere' });
 
 module.exports = mongoose.model('Ride', rideSchema);

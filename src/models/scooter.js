@@ -33,6 +33,6 @@ const scooterSchema = new mongoose.Schema(
     gpsUtcTime: { type: Date }, // GPS get the location's UTC time
   },
   { timestamps: true }
-);
+).index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Scooter', scooterSchema);
