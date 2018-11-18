@@ -67,7 +67,6 @@ exports.unlockScooter = async (req, res, next) => {
       minuteCost: process.env.APP_MINUTE_COST,
       totalCost: process.env.APP_UNLOCK_COST,
     });
-
     if (latitude && longitude) {
       ride.unlockLocation = { type: 'Point', coordinates: [longitude, latitude] };
     }
@@ -82,7 +81,9 @@ exports.unlockScooter = async (req, res, next) => {
 };
 
 exports.lockScooter = async (req, res, next) => {
-  const { scooterId, rideId } = req.body;
+  const {
+    scooterId, rideId, latitude, longitude,
+  } = req.body;
   const { userId } = req;
 
   try {
@@ -108,7 +109,9 @@ exports.lockScooter = async (req, res, next) => {
     ride.duration = secondsBetweenDates(ride.unlockTime, ride.lockTime);
     ride.completed = true;
     ride.totalCost = ride.unlockCost + ride.minuteCost * (ride.duration / 60.0);
-    // TODO: geo info
+    if (latitude && longitude) {
+      ride.lockLocation = { type: 'Point', coordinates: [longitude, latitude] };
+    }
 
     await ride.save();
 

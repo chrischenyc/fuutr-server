@@ -38,7 +38,14 @@ router.post(
 router.post(
   '/lock',
   requireJWT,
-  validate({ body: { scooterId: Joi.string().required(), rideId: Joi.string().required() } }),
+  validate({
+    body: {
+      scooterId: Joi.string().required(),
+      rideId: Joi.string().required(),
+      latitude: Joi.number(),
+      longitude: Joi.number(),
+    },
+  }),
   RideController.lockScooter
 );
 
