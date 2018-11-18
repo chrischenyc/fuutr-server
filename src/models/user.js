@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
           hashedToken: { type: String, required: true },
         },
       ],
+      select: false,
     },
     phoneNumber: { type: String, trim: true },
     countryCode: { type: Number },
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema(
     displayName: { type: String, trim: true },
     photo: { type: String },
     balance: { type: Number, require: true, default: 0 },
-    stripeCustomerId: { type: String, unique: true },
+    stripeCustomerId: { type: String, unique: true, select: false },
   },
   { timestamps: true, versionKey: false }
 );

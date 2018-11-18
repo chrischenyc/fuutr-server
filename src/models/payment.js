@@ -9,9 +9,9 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema(
   {
-    stripeChargeId: { type: String, required: true },
+    stripeChargeId: { type: String, required: true, select: false },
     amount: { type: Number, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, select: false },
     lastFour: { type: String },
     description: { type: String },
   },

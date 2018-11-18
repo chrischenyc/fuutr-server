@@ -16,7 +16,6 @@ exports.getOngoingRide = async (req, res, next) => {
   try {
     const ride = await Ride.findOne({ user: userId, completed: false })
       .sort({ unlockTime: -1 })
-      .select({})
       .exec();
 
     res.json(ride);
@@ -158,5 +157,50 @@ exports.pastRides = async (req, res, next) => {
     next(
       new APIError("couldn't retrieve your ride history", httpStatus.INTERNAL_SERVER_ERROR, true)
     );
+  }
+};
+
+exports.updateRide = async (req, res, next) => {
+  const { _id } = req.params;
+  const { encodedPath, distance } = req.body;
+  const { userId } = req;
+
+  try {
+    const user = await User.findOne({ _id: userId }).exec();
+    const ride = await Ride.findOne({ _id })
+      .select({ route: 1, distance: 1 })
+      .exec();
+
+    if (!user || !ride) {
+      next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
+    }
+
+    // update ride
+    if (distance) {
+      ride.distance += distance;
+    }
+
+    if (encodedPath) {
+      const coordinates = polyline
+        .decode(encodedPath)
+        .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
+
+      if (ride.route) {
+        ride.route = {
+          type: 'LineString',
+          coordinates: [...ride.route.coordinates, ...coordinates],
+        };
+      } else {
+        ride.route = { type: 'LineString', coordinates };
+      }
+    }
+
+    await ride.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

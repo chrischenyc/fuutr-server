@@ -52,12 +52,21 @@ router.post(
 );
 
 /**
+ * PATCH /api/rides/:_id
+ * to update an ongoing ride with the new route and distance travelled
+ */
+router.patch(
+  '/:_id',
+  requireJWT,
+  validate({ body: { encodedPath: Joi.string(), distance: Joi.number() } }),
+  RideController.updateRide
+);
+
+/**
  * GET /api/rides/me
  * get history rides of current user
  * @return an array of Ride objects
  */
 router.get('/me', requireJWT, RideController.pastRides);
-
-// /rides/{id} PATCH - update a ride during riding
 
 module.exports = router;
