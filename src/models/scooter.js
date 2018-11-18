@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-
-const GeoSchema = require('./geo-schema');
+require('mongoose-geojson-schema');
 
 const scooterSchema = new mongoose.Schema(
   {
@@ -26,7 +25,7 @@ const scooterSchema = new mongoose.Schema(
     odometer: { type: Number },
     remainderRange: { type: Number },
     totalRidingSecs: { type: Number },
-    location: { type: GeoSchema },
+    location: { type: mongoose.Schema.Types.Point },
     altitude: { type: Number },
     satelliteNumber: { type: Number },
     hdop: { type: Number }, // GPS HDOP

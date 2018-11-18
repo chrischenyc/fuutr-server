@@ -22,7 +22,9 @@ router.get('/me/ongoing', requireJWT, RideController.getOngoingRide);
 router.post(
   '/unlock',
   requireJWT,
-  validate({ body: { vehicleCode: Joi.string().required() } }),
+  validate({
+    body: { vehicleCode: Joi.string().required(), latitude: Joi.number(), longitude: Joi.number() },
+  }),
   RideController.unlockScooter
 );
 

@@ -26,7 +26,7 @@ exports.getOngoingRide = async (req, res, next) => {
 };
 
 exports.unlockScooter = async (req, res, next) => {
-  const { vehicleCode } = req.body;
+  const { vehicleCode, latitude, longitude } = req.body;
   const { userId } = req;
 
   try {
@@ -59,7 +59,6 @@ exports.unlockScooter = async (req, res, next) => {
     // TODO: call Segway gateway https://api.segway.pt/doc/index.html#api-Control-VehicleUnlock
 
     // create Ride object
-    // TODO: geo info
     const ride = new Ride({
       user: userId,
       scooter: scooter.id,
@@ -68,6 +67,10 @@ exports.unlockScooter = async (req, res, next) => {
       minuteCost: process.env.APP_MINUTE_COST,
       totalCost: process.env.APP_UNLOCK_COST,
     });
+
+    if (latitude && longitude) {
+      ride.unlockLocation = { type: 'Point', coordinates: [longitude, latitude] };
+    }
 
     await ride.save();
 

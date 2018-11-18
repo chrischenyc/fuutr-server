@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-
-const GeoSchema = require('./geo-schema');
+require('mongoose-geojson-schema');
 
 const rideSchema = new mongoose.Schema(
   {
@@ -14,9 +13,9 @@ const rideSchema = new mongoose.Schema(
     vehicleCode: { type: String, required: true },
     unlockTime: { type: Date, required: true, default: Date.now },
     lockTime: { type: Date },
-    unlockLocation: { type: GeoSchema }, // POINT
-    lockLocation: { type: GeoSchema }, // POINT
-    route: { type: GeoSchema }, // MultiPoint
+    unlockLocation: { type: mongoose.Schema.Types.Point },
+    lockLocation: { type: mongoose.Schema.Types.Point },
+    route: { type: mongoose.Schema.Types.MultiPoint },
     duration: { type: Number, required: true, default: 0 },
     distance: { type: Number, required: true, default: 0 },
     completed: { type: Boolean, required: true, default: false },
