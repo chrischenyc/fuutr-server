@@ -44,6 +44,8 @@ router.post(
       rideId: Joi.string().required(),
       latitude: Joi.number(),
       longitude: Joi.number(),
+      path: Joi.string(),
+      distance: Joi.number(),
     },
   }),
   RideController.lockScooter

@@ -82,7 +82,7 @@ exports.unlockScooter = async (req, res, next) => {
 
 exports.lockScooter = async (req, res, next) => {
   const {
-    scooterId, rideId, latitude, longitude,
+    scooterId, rideId, latitude, longitude, path, distance,
   } = req.body;
   const { userId } = req;
 
@@ -112,6 +112,7 @@ exports.lockScooter = async (req, res, next) => {
     if (latitude && longitude) {
       ride.lockLocation = { type: 'Point', coordinates: [longitude, latitude] };
     }
+    ride.distance = distance;
 
     await ride.save();
 

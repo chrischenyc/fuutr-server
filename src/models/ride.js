@@ -15,7 +15,7 @@ const rideSchema = new mongoose.Schema(
     lockTime: { type: Date },
     unlockLocation: { type: mongoose.Schema.Types.Point },
     lockLocation: { type: mongoose.Schema.Types.Point },
-    route: { type: mongoose.Schema.Types.MultiPoint },
+    route: { type: mongoose.Schema.Types.LineString },
     duration: { type: Number, required: true, default: 0 },
     distance: { type: Number, required: true, default: 0 },
     completed: { type: Boolean, required: true, default: false },
