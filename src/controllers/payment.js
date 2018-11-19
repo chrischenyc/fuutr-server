@@ -14,7 +14,9 @@ exports.generateStripeEphemeralKeys = async (req, res, next) => {
   const { userId: _id } = req;
 
   try {
-    const user = await User.findOne({ _id }).exec();
+    const user = await User.findOne({ _id })
+      .select({ stripeCustomerId: 1 })
+      .exec();
     // Create ephemeral key for customer.
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { customer: user.stripeCustomerId },
@@ -33,7 +35,9 @@ exports.topUpBalance = async (req, res, next) => {
   const { userId: _id } = req;
 
   try {
-    const user = await User.findOne({ _id }).exec();
+    const user = await User.findOne({ _id })
+      .select({ stripeCustomerId: 1, balance: 1, email: 1 })
+      .exec();
 
     // Create a charge and set its destination to the pilot's account.
     const description = 'balance top up';

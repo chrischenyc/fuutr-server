@@ -81,16 +81,17 @@ exports.unlockScooter = async (req, res, next) => {
   }
 };
 
-exports.lockScooter = async (req, res, next) => {
+exports.finishRide = async (req, res, next) => {
   const {
-    scooterId, rideId, latitude, longitude, encodedPath, distance,
+    latitude, longitude, encodedPath, distance,
   } = req.body;
   const { userId } = req;
+  const { _id } = req.params;
 
   try {
     const user = await User.findOne({ _id: userId }).exec();
-    const scooter = await Scooter.findOne({ _id: scooterId }).exec();
-    const ride = await Ride.findOne({ _id: rideId }).exec();
+    const ride = await Ride.findOne({ _id }).exec();
+    const scooter = await Scooter.findOne({ _id: ride.scooter }).exec();
 
     if (!user || !scooter || !ride) {
       next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
@@ -119,7 +120,17 @@ exports.lockScooter = async (req, res, next) => {
       const coordinates = polyline
         .decode(encodedPath)
         .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
-      ride.route = { type: 'LineString', coordinates };
+
+      if (ride.route) {
+        // append to existing geo
+        ride.route = {
+          type: 'LineString',
+          coordinates: [...ride.route.coordinates, ...coordinates],
+        };
+      } else {
+        // save as a new geo
+        ride.route = { type: 'LineString', coordinates };
+      }
     }
 
     await ride.save();
@@ -162,7 +173,7 @@ exports.pastRides = async (req, res, next) => {
 
 exports.updateRide = async (req, res, next) => {
   const { _id } = req.params;
-  const { encodedPath, distance } = req.body;
+  const { incrementalEncodedPath, incrementalDistance } = req.body;
   const { userId } = req;
 
   try {
@@ -177,13 +188,13 @@ exports.updateRide = async (req, res, next) => {
     }
 
     // update ride
-    if (distance) {
-      ride.distance += distance;
+    if (incrementalDistance) {
+      ride.distance += incrementalDistance;
     }
 
-    if (encodedPath) {
+    if (incrementalEncodedPath) {
       const coordinates = polyline
-        .decode(encodedPath)
+        .decode(incrementalEncodedPath)
         .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
 
       if (ride.route) {

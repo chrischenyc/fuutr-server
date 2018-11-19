@@ -29,37 +29,39 @@ router.post(
 );
 
 /**
- * POST /api/rides/lock
- * request to lock a scooter which the user is currently ridings
- * @param scooterId
- * @param rideId
+ * PATCH /api/rides/:_id
+ * @param incrementalEncodedPath - incremental path to be decoded to GeoJSON
+ * @param incrementalDistance - incremental distance
+ * to update an ongoing ride with the new route and distance travelled
+ */
+router.patch(
+  '/:_id',
+  requireJWT,
+  validate({ body: { incrementalEncodedPath: Joi.string(), incrementalDistance: Joi.number() } }),
+  RideController.updateRide
+);
+
+/**
+ * POST /api/rides/:id/finish
+ * request to finish an ongoing ride
+ * @param latitude
+ * @param longitude
+ * @param encodedPath - incremental path to be decoded to GeoJSON
+ * @param distance - total distance travelled
  * @return the updated Ride object
  */
 router.post(
-  '/lock',
+  '/:_id/finish',
   requireJWT,
   validate({
     body: {
-      scooterId: Joi.string().required(),
-      rideId: Joi.string().required(),
       latitude: Joi.number(),
       longitude: Joi.number(),
       encodedPath: Joi.string(),
       distance: Joi.number(),
     },
   }),
-  RideController.lockScooter
-);
-
-/**
- * PATCH /api/rides/:_id
- * to update an ongoing ride with the new route and distance travelled
- */
-router.patch(
-  '/:_id',
-  requireJWT,
-  validate({ body: { encodedPath: Joi.string(), distance: Joi.number() } }),
-  RideController.updateRide
+  RideController.finishRide
 );
 
 /**
