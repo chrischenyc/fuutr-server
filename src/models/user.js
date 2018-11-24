@@ -3,7 +3,12 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema(
   {
     isAdmin: { type: Boolean, default: false },
-    email: { type: String, unique: true, trim: true },
+    email: {
+      type: String,
+      unique: true,
+      sparse: true, // email may be null, need sparse indexing here
+      trim: true,
+    },
     password: { type: String, select: false },
     passwordResetTokens: {
       type: [
@@ -16,11 +21,21 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: { type: String, trim: true },
     countryCode: { type: Number },
-    facebookId: { type: String, unique: true, select: false },
+    facebookId: {
+      type: String,
+      unique: true,
+      sparse: true, // facebookId may be null, need sparse indexing here
+      select: false,
+    },
     displayName: { type: String, trim: true },
     photo: { type: String },
     balance: { type: Number, require: true, default: 0 },
-    stripeCustomerId: { type: String, unique: true, select: false },
+    stripeCustomerId: {
+      type: String,
+      unique: true,
+      sparse: true, // stripeCustomerId may be null, need sparse indexing here
+      select: false,
+    },
   },
   { timestamps: true, versionKey: false }
 );
