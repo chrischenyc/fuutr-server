@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const polyline = require('@mapbox/polyline');
+const _ = require('lodash');
 
 const Ride = require('../models/ride');
 const User = require('../models/user');
@@ -9,21 +10,6 @@ const Transaction = require('../models/transaction');
 const secondsBetweenDates = require('../helpers/seconds-between-dates');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
-
-exports.getOngoingRide = async (req, res, next) => {
-  const { userId } = req;
-
-  try {
-    const ride = await Ride.findOne({ user: userId, completed: false })
-      .sort({ unlockTime: -1 })
-      .exec();
-
-    res.json(ride);
-  } catch (error) {
-    logger.error(error);
-    next(new APIError("couldn't find current ride"));
-  }
-};
 
 exports.unlockScooter = async (req, res, next) => {
   const { vehicleCode, latitude, longitude } = req.body;
@@ -81,9 +67,59 @@ exports.unlockScooter = async (req, res, next) => {
   }
 };
 
+const updateRideWithIncrementalData = (ride, incrementalEncodedPath, incrementalDistance) => {
+  if (incrementalDistance) {
+    ride.distance += incrementalDistance;
+  }
+
+  if (incrementalEncodedPath) {
+    const coordinates = polyline
+      .decode(incrementalEncodedPath)
+      .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
+
+    if (ride.route) {
+      ride.route = {
+        type: 'LineString',
+        coordinates: [...ride.route.coordinates, ...coordinates],
+      };
+    } else {
+      ride.route = { type: 'LineString', coordinates };
+    }
+
+    ride.encodedPath = polyline.encode(ride.route.coordinates);
+  }
+};
+
+exports.updateRide = async (req, res, next) => {
+  const { _id } = req.params;
+  const { incrementalEncodedPath, incrementalDistance } = req.body;
+  const { userId } = req;
+
+  try {
+    const user = await User.findOne({ _id: userId }).exec();
+    const ride = await Ride.findOne({ _id })
+      .select({ route: 1, distance: 1 })
+      .exec();
+
+    if (!user || !ride) {
+      next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
+    }
+
+    updateRideWithIncrementalData(ride, incrementalEncodedPath, incrementalDistance);
+
+    await ride.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
 exports.finishRide = async (req, res, next) => {
   const {
-    latitude, longitude, encodedPath, distance,
+    latitude, longitude, incrementalEncodedPath, incrementalDistance,
   } = req.body;
   const { userId } = req;
   const { _id } = req.params;
@@ -115,23 +151,8 @@ exports.finishRide = async (req, res, next) => {
       // GeoJSON spec
       ride.lockLocation = { type: 'Point', coordinates: [longitude, latitude] };
     }
-    ride.distance = distance;
-    if (encodedPath) {
-      const coordinates = polyline
-        .decode(encodedPath)
-        .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
 
-      if (ride.route) {
-        // append to existing geo
-        ride.route = {
-          type: 'LineString',
-          coordinates: [...ride.route.coordinates, ...coordinates],
-        };
-      } else {
-        // save as a new geo
-        ride.route = { type: 'LineString', coordinates };
-      }
-    }
+    updateRideWithIncrementalData(ride, incrementalEncodedPath, incrementalDistance);
 
     await ride.save();
 
@@ -171,47 +192,17 @@ exports.pastRides = async (req, res, next) => {
   }
 };
 
-exports.updateRide = async (req, res, next) => {
-  const { _id } = req.params;
-  const { incrementalEncodedPath, incrementalDistance } = req.body;
+exports.getOngoingRide = async (req, res, next) => {
   const { userId } = req;
 
   try {
-    const user = await User.findOne({ _id: userId }).exec();
-    const ride = await Ride.findOne({ _id })
-      .select({ route: 1, distance: 1 })
+    const ride = await Ride.findOne({ user: userId, completed: false })
+      .sort({ unlockTime: -1 })
       .exec();
 
-    if (!user || !ride) {
-      next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
-      return;
-    }
-
-    // update ride
-    if (incrementalDistance) {
-      ride.distance += incrementalDistance;
-    }
-
-    if (incrementalEncodedPath) {
-      const coordinates = polyline
-        .decode(incrementalEncodedPath)
-        .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
-
-      if (ride.route) {
-        ride.route = {
-          type: 'LineString',
-          coordinates: [...ride.route.coordinates, ...coordinates],
-        };
-      } else {
-        ride.route = { type: 'LineString', coordinates };
-      }
-    }
-
-    await ride.save();
-
-    res.status(httpStatus.OK).send();
+    res.json(ride);
   } catch (error) {
-    logger.error(error.message);
-    next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+    logger.error(error);
+    next(new APIError("couldn't find current ride"));
   }
 };

@@ -8,14 +8,9 @@ const { requireJWT } = require('../middleware/authenticate');
 const router = express.Router();
 
 /**
- * GET /api/rides/me/ongoing
- * find the unfinished ride of current user
- */
-router.get('/me/ongoing', requireJWT, RideController.getOngoingRide);
-
-/**
  * POST /api/rides/unlock
  * request to unlock a scooter that is online, locked, and not being charged
+ *
  * @param vehicleCode
  * @return a new Ride object
  */
@@ -30,9 +25,10 @@ router.post(
 
 /**
  * PATCH /api/rides/:_id
- * @param incrementalEncodedPath - incremental path to be decoded to GeoJSON
- * @param incrementalDistance - incremental distance
  * to update an ongoing ride with the new route and distance travelled
+ *
+ * @param incrementalEncodedPath - incremental path from last update
+ * @param incrementalDistance - incremental distance from last update
  */
 router.patch(
   '/:_id',
@@ -44,10 +40,11 @@ router.patch(
 /**
  * POST /api/rides/:id/finish
  * request to finish an ongoing ride
+ *
  * @param latitude
  * @param longitude
- * @param encodedPath - incremental path to be decoded to GeoJSON
- * @param distance - total distance travelled
+ * @param incrementalEncodedPath - incremental path from last update
+ * @param incrementalDistance - incremental distance from last update
  * @return the updated Ride object
  */
 router.post(
@@ -57,8 +54,8 @@ router.post(
     body: {
       latitude: Joi.number(),
       longitude: Joi.number(),
-      encodedPath: Joi.string(),
-      distance: Joi.number(),
+      incrementalEncodedPath: Joi.string(),
+      incrementalDistance: Joi.number(),
     },
   }),
   RideController.finishRide
@@ -67,8 +64,15 @@ router.post(
 /**
  * GET /api/rides/me
  * get history rides of current user
+ *
  * @return an array of Ride objects
  */
 router.get('/me', requireJWT, RideController.pastRides);
+
+/**
+ * GET /api/rides/me/ongoing
+ * find the unfinished ride of current user
+ */
+router.get('/me/ongoing', requireJWT, RideController.getOngoingRide);
 
 module.exports = router;
