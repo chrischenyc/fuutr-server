@@ -1,6 +1,5 @@
 const httpStatus = require('http-status');
 const polyline = require('@mapbox/polyline');
-const _ = require('lodash');
 
 const Ride = require('../models/ride');
 const User = require('../models/user');
@@ -86,7 +85,9 @@ const updateRideWithIncrementalData = (ride, incrementalEncodedPath, incremental
       ride.route = { type: 'LineString', coordinates };
     }
 
-    ride.encodedPath = polyline.encode(ride.route.coordinates);
+    ride.encodedPath = polyline.encode(
+      ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
+    );
   }
 };
 
