@@ -67,6 +67,10 @@ exports.unlockScooter = async (req, res, next) => {
 };
 
 const updateRideWithIncrementalData = (ride, incrementalEncodedPath, incrementalDistance) => {
+  if (incrementalDistance === 0) {
+    return;
+  }
+
   if (incrementalDistance) {
     ride.distance += incrementalDistance;
   }
