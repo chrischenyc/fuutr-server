@@ -9,6 +9,7 @@ require('./config/passport');
 
 const app = require('./app');
 const logger = require('./helpers/logger');
+const { requestAccessToken, segwayClient } = require('./controllers/segway');
 
 // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
@@ -39,11 +40,23 @@ if (process.env.NODE_ENV === 'development') {
 
     return request;
   });
+
+  segwayClient.interceptors.request.use((request) => {
+    axiosDebug(
+      `${request.method} ${request.baseURL}${request.url} ${JSON.stringify(request.data)}`
+    );
+
+    return request;
+  });
 }
 
 const port = process.env.PORT;
 app.listen(port, () => {
   logger.info(`server started on port ${port}`);
+
+  requestAccessToken((expiresIn) => {
+    logger.info(expiresIn);
+  });
 });
 
 module.exports = app;
