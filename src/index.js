@@ -42,9 +42,7 @@ if (process.env.NODE_ENV === 'development') {
   });
 
   segwayClient.interceptors.request.use((request) => {
-    axiosDebug(
-      `${request.method} ${request.baseURL}${request.url} ${JSON.stringify(request.data)}`
-    );
+    axiosDebug(`${request.method} ${request.baseURL}${request.url}`);
 
     return request;
   });
@@ -54,9 +52,7 @@ const port = process.env.PORT;
 app.listen(port, () => {
   logger.info(`server started on port ${port}`);
 
-  requestAccessToken((expiresIn) => {
-    logger.info(expiresIn);
-  });
+  requestAccessToken();
 });
 
 module.exports = app;
