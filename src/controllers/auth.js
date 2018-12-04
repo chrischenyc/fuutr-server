@@ -165,7 +165,9 @@ exports.sendPasswordResetCode = async (req, res, next) => {
   const { email } = req.query;
 
   try {
-    const user = await User.findOne({ email }).exec();
+    const user = await User.findOne({ email })
+      .select({ passwordResetTokens: 1 })
+      .exec();
     if (!user) {
       throw Error('User not found');
     }
@@ -227,7 +229,9 @@ exports.resetPassword = async (req, res, next) => {
     const user = await User.findOne({
       email,
       'passwordResetTokens.hashedToken': { $in: hashedToken },
-    }).exec();
+    })
+      .select({ passwordResetTokens: 1 })
+      .exec();
 
     if (!user) {
       throw Error('User not found');
