@@ -14,7 +14,7 @@ const segwayClient = axios.create({
 exports.segwayClient = segwayClient;
 
 // https://api.segway.pt/doc/index.html#api-Auth-Authorization
-exports.requestAccessToken = async () => {
+const requestAccessToken = async () => {
   try {
     const params = {
       client_id: process.env.SEGWAY_CLIENT_ID,
@@ -38,11 +38,18 @@ exports.requestAccessToken = async () => {
     segwayClient.defaults.headers.common.Authorization = `bearer ${access_token}`;
     logger.info(`Segway access token acquired, expires in ${expires_in}`);
 
-    queryVehicle('3323', '3333');
-    unlockVehicle('3333', '333');
+    scheduleAccessTokenRefresh(expires_in);
   } catch (error) {
     logger.error(error.message);
   }
+};
+
+exports.requestAccessToken = requestAccessToken;
+
+const scheduleAccessTokenRefresh = (after) => {
+  setTimeout(() => {
+    requestAccessToken();
+  }, after * 1000);
 };
 
 // https://api.segway.pt/doc/index.html#api-Query-VehicleQuery
