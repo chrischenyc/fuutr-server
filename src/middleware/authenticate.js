@@ -11,7 +11,7 @@ exports.requireJWT = async (req, res, next) => {
   const bearer = authorization && authorization.split(' ')[0];
   const token = authorization && authorization.split(' ')[1];
 
-  if (bearer !== 'Bearer' || !token) {
+  if (bearer.toLowerCase() !== 'bearer' || !token) {
     res.status(httpStatus.UNAUTHORIZED).send();
     return;
   }

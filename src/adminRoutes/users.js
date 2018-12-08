@@ -10,7 +10,7 @@ const { requireJWT } = require('../middleware/authenticate');
 // fetch users
 router.get(
   '/',
-  // requireJWT,
+  requireJWT,
   validate({
     query: {
       page: Joi.number().required(),
