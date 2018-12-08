@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const _ = require('lodash');
 
 const User = require('../models/user');
 const APIError = require('../helpers/api-error');
@@ -10,7 +11,18 @@ exports.getUsers = async (req, res, next) => {
   const { page, search } = req.query;
 
   try {
-    const users = await User.find({})
+    let selector = {};
+    if (!_.isEmpty(search)) {
+      selector = {
+        $or: [
+          { displayName: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+          { phoneNumber: { $regex: search, $options: 'i' } },
+        ],
+      };
+    }
+
+    const users = await User.find(selector)
       .select({
         displayName: 1,
         email: 1,
