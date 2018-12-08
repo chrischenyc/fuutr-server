@@ -10,6 +10,7 @@ const { ValidationError } = require('express-validation');
 const passport = require('passport');
 
 const routes = require('./routes');
+const adminRoutes = require('./adminRoutes');
 const APIError = require('./helpers/api-error');
 
 const app = express();
@@ -64,6 +65,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 // mount all routes on /api path
 app.use('/api', routes);
+app.use('/admin', adminRoutes);
 
 // if error is not an instanceOf APIError, convert it.
 app.use((err, req, res, next) => {

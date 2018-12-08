@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const _ = require('lodash');
 
 const User = require('../models/user');
 const RefreshToken = require('../models/refresh-token');
@@ -75,11 +76,16 @@ exports.signupWithEmail = async (req, res, next) => {
 };
 
 exports.loginWithEmail = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, isAdmin } = req.body;
 
   try {
-    const user = await User.findOne({ email })
-      .select({ password: 1 })
+    const selector = { email };
+    if (!_.isNil(isAdmin)) {
+      selector.isAdmin = isAdmin;
+    }
+
+    const user = await User.findOne(selector)
+      .select({ password: 1, displayName: 1, photo: 1 })
       .exec();
 
     if (!user) {
@@ -93,7 +99,9 @@ exports.loginWithEmail = async (req, res, next) => {
       return;
     }
 
-    res.json(generateTokens(user));
+    const { displayName, photo } = user;
+
+    res.json({ ...generateTokens(user), displayName, photo });
   } catch (error) {
     logger.error(error.message);
     next(new APIError(`Cannot log in with email ${email}`, httpStatus.UNAUTHORIZED, true), true);
