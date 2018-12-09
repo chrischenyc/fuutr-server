@@ -11,7 +11,7 @@ exports.requireJWT = async (req, res, next) => {
   const bearer = authorization && authorization.split(' ')[0];
   const token = authorization && authorization.split(' ')[1];
 
-  if (bearer.toLowerCase() !== 'bearer' || !token) {
+  if (!bearer || bearer.toLowerCase() !== 'bearer' || !token) {
     res.status(httpStatus.UNAUTHORIZED).send();
     return;
   }
@@ -47,9 +47,9 @@ exports.requireAdmin = async (req, res, next) => {
   const { userId: _id } = req;
 
   try {
-    const user = await User.findOne({ _id }).exec();
+    const user = await User.findOne({ _id, isAdmin: true }).exec();
 
-    if (!user || !user.isAdmin) {
+    if (!user) {
       res.status(httpStatus.FORBIDDEN).send();
       return;
     }

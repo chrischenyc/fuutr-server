@@ -24,6 +24,7 @@ exports.getUsers = async (req, res, next) => {
 
     const users = await User.find(selector)
       .select({
+        isAdmin: 1,
         displayName: 1,
         email: 1,
         countryCode: 1,

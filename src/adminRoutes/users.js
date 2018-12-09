@@ -5,12 +5,13 @@ const Joi = require('joi');
 const router = express.Router();
 
 const UserController = require('../adminControllers/user');
-const { requireJWT } = require('../middleware/authenticate');
+const { requireJWT, requireAdmin } = require('../middleware/authenticate');
 
 // fetch users
 router.get(
   '/',
   requireJWT,
+  requireAdmin,
   validate({
     query: {
       page: Joi.number().required(),
