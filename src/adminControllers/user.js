@@ -44,3 +44,27 @@ exports.getUsers = async (req, res, next) => {
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.getUser = async (req, res, next) => {
+  const { _id } = req.params;
+
+  try {
+    const user = await User.findOne({ _id })
+      .select({
+        isAdmin: 1,
+        displayName: 1,
+        email: 1,
+        countryCode: 1,
+        phoneNumber: 1,
+        balance: 1,
+        createdAt: 1,
+        photo: 1,
+      })
+      .exec();
+
+    res.json(user);
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};

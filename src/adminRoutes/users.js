@@ -21,4 +21,17 @@ router.get(
   UserController.getUsers
 );
 
+// fetch user detail
+router.get(
+  '/:_id',
+  requireJWT,
+  requireAdmin,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  UserController.getUser
+);
+
 module.exports = router;
