@@ -8,7 +8,7 @@ const PaymentController = require('../adminControllers/payment');
 const { requireJWT, requireAdmin } = require('../middleware/authenticate');
 
 /**
- * GET /admin/rides/
+ * GET /admin/payments/
  */
 router.get(
   '/',

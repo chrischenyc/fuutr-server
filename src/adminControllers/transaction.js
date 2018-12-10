@@ -1,24 +1,38 @@
 const httpStatus = require('http-status');
+const _ = require('lodash');
 
 const Transaction = require('../models/transaction');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
+const { adminTablePaginationLimit } = require('../helpers/constants');
 
-exports.userTransactions = async (req, res, next) => {
+exports.getTransactions = async (req, res, next) => {
+  const { user, page } = req.query;
+
   try {
-    const { userId } = req;
-    const transactions = await Transaction.find({ user: userId }).sort({ createdAt: -1 });
+    let selector = {};
 
-    res.json(transactions);
+    if (!_.isEmpty(user)) {
+      selector = { ...selector, user };
+    }
+
+    const transactions = await Transaction.find(selector)
+      .select({
+        user: 1,
+        amount: 1,
+        type: 1,
+        balance: 1,
+        createdAt: 1,
+      })
+      .limit(adminTablePaginationLimit)
+      .skip(page * adminTablePaginationLimit)
+      .sort({ createdAt: -1 });
+
+    const total = await Transaction.countDocuments(selector);
+
+    res.json({ transactions, pages: Math.ceil(total / adminTablePaginationLimit) });
   } catch (error) {
     logger.error(error.message);
-
-    next(
-      new APIError(
-        "Couldn't find history transactions, please try again",
-        httpStatus.INTERNAL_SERVER_ERROR,
-        true
-      )
-    );
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
