@@ -4,8 +4,7 @@ const _ = require('lodash');
 const User = require('../models/user');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
-
-const paginationLimit = 10;
+const { adminTablePaginationLimit } = require('../helpers/constants');
 
 exports.getUsers = async (req, res, next) => {
   const { page, search } = req.query;
@@ -32,13 +31,13 @@ exports.getUsers = async (req, res, next) => {
         balance: 1,
         createdAt: 1,
       })
-      .limit(paginationLimit)
-      .skip(page * paginationLimit)
+      .limit(adminTablePaginationLimit)
+      .skip(page * adminTablePaginationLimit)
       .sort({ _id: 1 });
 
     const total = await User.countDocuments({ selector });
 
-    res.json({ users, pages: total / paginationLimit });
+    res.json({ users, pages: total / adminTablePaginationLimit });
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));

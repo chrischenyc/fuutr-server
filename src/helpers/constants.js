@@ -1,0 +1,1 @@
+exports.adminTablePaginationLimit = 10;

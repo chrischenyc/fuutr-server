@@ -5,8 +5,7 @@ const Ride = require('../models/ride');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
-
-const paginationLimit = 5;
+const { adminTablePaginationLimit } = require('../helpers/constants');
 
 exports.getRides = async (req, res, next) => {
   const { user, page, search } = req.query;
@@ -33,13 +32,13 @@ exports.getRides = async (req, res, next) => {
         totalCost: 1,
         createdAt: 1,
       })
-      .limit(paginationLimit)
-      .skip(page * paginationLimit)
+      .limit(adminTablePaginationLimit)
+      .skip(page * adminTablePaginationLimit)
       .sort({ createdAt: -1 });
 
     const total = await Ride.countDocuments(selector);
 
-    res.json({ rides, pages: Math.ceil(total / paginationLimit) });
+    res.json({ rides, pages: Math.ceil(total / adminTablePaginationLimit) });
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
