@@ -4,39 +4,23 @@ const Joi = require('joi');
 
 const router = express.Router();
 
-const PaymentController = require('../controllers/payment');
-const { requireJWT } = require('../middleware/authenticate');
+const PaymentController = require('../adminControllers/payment');
+const { requireJWT, requireAdmin } = require('../middleware/authenticate');
 
 /**
- * POST /api/payments/me/stripe-ephemeral-keys
- *
- * Generate an ephemeral key for the logged in customer.
- * https://stripe.com/docs/mobile/ios/standard#prepare-your-api
+ * GET /admin/rides/
  */
-router.post(
-  '/me/stripe-ephemeral-keys',
+router.get(
+  '/',
   requireJWT,
-  validate({ body: { stripe_version: Joi.string().required() } }),
-  PaymentController.generateStripeEphemeralKeys
+  requireAdmin,
+  validate({
+    query: {
+      page: Joi.number().required(),
+      user: Joi.strict(),
+    },
+  }),
+  PaymentController.getPayments
 );
-
-/**
- * PUT /api/payments/me/top-up
- * top up user balance
- * @param amount
- * @param source - stripe payment source
- */
-router.put(
-  '/me/top-up',
-  requireJWT,
-  validate({ body: { amount: Joi.number().required(), source: Joi.string().required() } }),
-  PaymentController.topUpBalance
-);
-
-/**
- * GET /api/payments/me
- * list history payments
- */
-router.get('/me', requireJWT, PaymentController.getHistoryPayments);
 
 module.exports = router;
