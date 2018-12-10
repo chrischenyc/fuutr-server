@@ -8,15 +8,10 @@ const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
 
 exports.getRides = async (req, res, next) => {
-  const { user, page, search } = req.query;
+  const { user, page } = req.query;
 
   try {
     let selector = {};
-    if (!_.isEmpty(search)) {
-      selector = {
-        $or: [{ createdAt: { $regex: search, $options: 'i' } }],
-      };
-    }
 
     if (!_.isEmpty(user)) {
       selector = { ...selector, user };

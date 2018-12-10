@@ -17,7 +17,6 @@ router.get(
   validate({
     query: {
       page: Joi.number().required(),
-      search: Joi.string().allow(''),
       user: Joi.strict(),
     },
   }),
