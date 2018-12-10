@@ -36,7 +36,7 @@ exports.getUsers = async (req, res, next) => {
       .skip(page * paginationLimit)
       .sort({ _id: 1 });
 
-    const total = await User.countDocuments({});
+    const total = await User.countDocuments({ selector });
 
     res.json({ users, pages: total / paginationLimit });
   } catch (error) {
