@@ -23,4 +23,17 @@ router.get(
   RideController.getRides
 );
 
+// fetch ride detail
+router.get(
+  '/:_id',
+  requireJWT,
+  requireAdmin,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  RideController.getRide
+);
+
 module.exports = router;

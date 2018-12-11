@@ -39,3 +39,34 @@ exports.getRides = async (req, res, next) => {
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.getRide = async (req, res, next) => {
+  const { _id } = req.params;
+
+  try {
+    const ride = await Ride.findOne({ _id })
+      .select({
+        user: 1,
+        scooter: 1,
+        vehicleCode: 1,
+        unlockTime: 1,
+        lockTime: 1,
+        unlockLocation: 1,
+        lockLocation: 1,
+        route: 1,
+        encodedPath: 1,
+        duration: 1,
+        distance: 1,
+        completed: 1,
+        unlockCost: 1,
+        minuteCost: 1,
+        totalCost: 1,
+      })
+      .exec();
+
+    res.json(ride);
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
