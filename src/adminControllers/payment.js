@@ -35,3 +35,25 @@ exports.getPayments = async (req, res, next) => {
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.getPayment = async (req, res, next) => {
+  const { _id } = req.params;
+
+  try {
+    const payment = await Payment.findOne({ _id })
+      .select({
+        user: 1,
+        amount: 1,
+        description: 1,
+        createdAt: 1,
+        stripeChargeId: 1,
+        lastFour: 1,
+      })
+      .exec();
+
+    res.json(payment);
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};

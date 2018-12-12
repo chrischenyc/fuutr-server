@@ -23,4 +23,17 @@ router.get(
   PaymentController.getPayments
 );
 
+// fetch payment detail
+router.get(
+  '/:_id',
+  requireJWT,
+  requireAdmin,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  PaymentController.getPayment
+);
+
 module.exports = router;
