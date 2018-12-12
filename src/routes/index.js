@@ -7,7 +7,7 @@ const payments = require('./payments');
 const phones = require('./phones');
 const users = require('./users');
 const rides = require('./rides');
-const scooters = require('./scooters');
+const vehicles = require('./vehicles');
 const transactions = require('./transactions');
 
 if (process.env.NODE_ENV !== 'production') {
@@ -18,7 +18,7 @@ router.use('/auth', auth);
 router.use('/payments', payments);
 router.use('/phones', phones);
 router.use('/rides', rides);
-router.use('/vehicles', scooters);
+router.use('/vehicles', vehicles);
 router.use('/users', users);
 router.use('/transactions', transactions);
 

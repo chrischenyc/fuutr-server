@@ -5,7 +5,7 @@ const Joi = require('joi');
 const router = express.Router();
 
 const { requireJWT } = require('../middleware/authenticate');
-const ScooterController = require('../controllers/scooter');
+const VehicleController = require('../controllers/vehicle');
 
 /**
  * GET /scooters?minLatitude=&minLongitude=&maxLatitude=&maxLongitude=
@@ -35,7 +35,7 @@ router.get(
         .required(),
     },
   }),
-  ScooterController.searchScootersInBound
+  VehicleController.searchVehicles
 );
 
 module.exports = router;

@@ -2,12 +2,12 @@ const uuid = require('uuid');
 
 const randomFromInterval = (min, max) => Math.random() * (max - min + 1) + min;
 
-exports.mockScootersInBound = (minLatitude, minLongitude, maxLatitude, maxLongitude) => {
-  const scooters = [];
-  const numberOfScooters = randomFromInterval(10, 20);
+exports.mockVehiclesInBound = (minLatitude, minLongitude, maxLatitude, maxLongitude) => {
+  const vehicles = [];
+  const numberOfVehicles = randomFromInterval(10, 20);
 
-  while (scooters.length < numberOfScooters) {
-    scooters.push({
+  while (vehicles.length < numberOfVehicles) {
+    vehicles.push({
       iotCode: uuid.v4().split('-')[0],
       vehicleCode: uuid.v4().split('-')[0],
       powerPercent: randomFromInterval(0, 100),
@@ -17,5 +17,5 @@ exports.mockScootersInBound = (minLatitude, minLongitude, maxLatitude, maxLongit
     });
   }
 
-  return scooters;
+  return vehicles;
 };
