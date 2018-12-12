@@ -7,11 +7,13 @@ const payments = require('./payments');
 const rides = require('./rides');
 const users = require('./users');
 const transactions = require('./transactions');
+const vehicles = require('./vehicles');
 
 router.use('/auth', auth);
 router.use('/payments', payments);
 router.use('/rides', rides);
 router.use('/transactions', transactions);
 router.use('/users', users);
+router.use('/vehicles', vehicles);
 
 module.exports = router;
