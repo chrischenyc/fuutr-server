@@ -3,14 +3,14 @@ const polyline = require('@mapbox/polyline');
 
 const Ride = require('../models/ride');
 const User = require('../models/user');
-const Scooter = require('../models/scooter');
+const Vehicle = require('../models/vehicle');
 const Transaction = require('../models/transaction');
 
 const secondsBetweenDates = require('../helpers/seconds-between-dates');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
-exports.unlockScooter = async (req, res, next) => {
+exports.unlockVehicle = async (req, res, next) => {
   const { vehicleCode, latitude, longitude } = req.body;
   const { userId } = req;
 
@@ -28,15 +28,15 @@ exports.unlockScooter = async (req, res, next) => {
       return;
     }
 
-    // find scooter
-    const scooter = await Scooter.findOne({
+    // find vehicle
+    const vehicle = await Vehicle.findOne({
       vehicleCode: '2222', // FIXME: demo data
       online: true,
       locked: true,
       charging: false,
     }).exec();
 
-    if (!scooter) {
+    if (!vehicle) {
       next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
       return;
     }
@@ -46,7 +46,7 @@ exports.unlockScooter = async (req, res, next) => {
     // create Ride object
     const ride = new Ride({
       user: userId,
-      scooter: scooter.id,
+      scooter: vehicle.id,
       vehicleCode,
       unlockCost: process.env.APP_UNLOCK_COST,
       minuteCost: process.env.APP_MINUTE_COST,
@@ -132,20 +132,20 @@ exports.finishRide = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: userId }).exec();
     const ride = await Ride.findOne({ _id }).exec();
-    const scooter = await Scooter.findOne({ _id: ride.scooter }).exec();
+    const vehicle = await Vehicle.findOne({ _id: ride.scooter }).exec();
 
-    if (!user || !scooter || !ride) {
+    if (!user || !vehicle || !ride) {
       next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
       return;
     }
 
     // TODO: Segway gateway https://api.segway.pt/doc/index.html#api-Control-VehicleLock
-    // call to unlock scooter
-    // call to refresh scooter stats
+    // call to unlock vehicle
+    // call to refresh vehicle stats
 
-    // update scooter
-    scooter.locked = true;
-    await scooter.save();
+    // update vehicle
+    vehicle.locked = true;
+    await vehicle.save();
 
     // update ride
     ride.lockTime = Date.now();

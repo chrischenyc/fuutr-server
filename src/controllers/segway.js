@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const axios = require('axios');
 const querystring = require('querystring');
 
-const Scooter = require('../models/scooter');
+const Vehicle = require('../models/vehicle');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');

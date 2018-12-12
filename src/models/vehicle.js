@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 require('mongoose-geojson-schema');
 
-const scooterSchema = new mongoose.Schema(
+const vehicleSchema = new mongoose.Schema(
   {
     iotCode: { type: String, required: true, unique: true },
     vehicleCode: { type: String, required: true, unique: true },
@@ -16,7 +16,7 @@ const scooterSchema = new mongoose.Schema(
     lockVoltage: { type: Number },
     networkSignal: { type: Number },
     charging: { type: Boolean, required: true, default: false },
-    // scooter battery percentage, 80 is 80%
+    // vehicle battery percentage, 80 is 80%
     powerPercent: { type: Number },
     // speed mode (0: can't read; 1: low speed; 2: medium speed; 3: high speed;)
     speedMode: { type: Number },
@@ -29,10 +29,10 @@ const scooterSchema = new mongoose.Schema(
     altitude: { type: Number },
     satelliteNumber: { type: Number },
     hdop: { type: Number }, // GPS HDOP
-    statusUtcTime: { type: Date }, // scooter status info's UTC time
+    statusUtcTime: { type: Date }, // vehicle status info's UTC time
     gpsUtcTime: { type: Date }, // GPS get the location's UTC time
   },
   { timestamps: true }
 ).index({ location: '2dsphere' });
 
-module.exports = mongoose.model('Scooter', scooterSchema);
+module.exports = mongoose.model('Vehicle', vehicleSchema);

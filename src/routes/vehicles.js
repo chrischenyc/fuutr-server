@@ -8,8 +8,8 @@ const { requireJWT } = require('../middleware/authenticate');
 const VehicleController = require('../controllers/vehicle');
 
 /**
- * GET /scooters?minLatitude=&minLongitude=&maxLatitude=&maxLongitude=
- * search scooters nearby
+ * GET /vehicles?minLatitude=&minLongitude=&maxLatitude=&maxLongitude=
+ * search vehicles nearby
  */
 // TODO: replace with radius search
 router.get(

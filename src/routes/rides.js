@@ -9,7 +9,7 @@ const router = express.Router();
 
 /**
  * POST /api/rides/unlock
- * request to unlock a scooter that is online, locked, and not being charged
+ * request to unlock a vehicle that is online, locked, and not being charged
  *
  * @param vehicleCode
  * @return a new Ride object
@@ -20,7 +20,7 @@ router.post(
   validate({
     body: { vehicleCode: Joi.string().required(), latitude: Joi.number(), longitude: Joi.number() },
   }),
-  RideController.unlockScooter
+  RideController.unlockVehicle
 );
 
 /**

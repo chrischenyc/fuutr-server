@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 
-const Scooter = require('../models/scooter');
+const Vehicle = require('../models/vehicle');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
@@ -14,7 +14,7 @@ exports.searchVehicles = async (req, res, next) => {
   } = req.query;
 
   try {
-    const vehicles = await Scooter.find({
+    const vehicles = await Vehicle.find({
       online: true,
       locked: true,
       charging: false,
@@ -28,7 +28,7 @@ exports.searchVehicles = async (req, res, next) => {
     });
 
     // FIXME: mock data!!!
-    // res.json(scooters);
+    // res.json(vehicles);
     res.json(mockVehiclesInBound(minLatitude, minLongitude, maxLatitude, maxLongitude));
   } catch (error) {
     logger.error(error.message);
