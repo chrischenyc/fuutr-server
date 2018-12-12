@@ -10,7 +10,7 @@ const router = express.Router();
 /**
  * POST /api/rides/unlock
  * request to unlock a vehicle that is online, locked, and not being charged
- *
+ * TODO: should support a unlock code
  * @param vehicleCode
  * @return a new Ride object
  */

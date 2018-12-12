@@ -20,7 +20,7 @@ exports.getRides = async (req, res, next) => {
     const rides = await Ride.find(selector)
       .select({
         user: 1,
-        scooter: 1,
+        vehicle: 1,
         duration: 1,
         distance: 1,
         completed: 1,
@@ -47,7 +47,7 @@ exports.getRide = async (req, res, next) => {
     const ride = await Ride.findOne({ _id })
       .select({
         user: 1,
-        scooter: 1,
+        vehicle: 1,
         unlockTime: 1,
         lockTime: 1,
         unlockLocation: 1,

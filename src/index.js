@@ -14,6 +14,9 @@ const { requestAccessToken, segwayClient } = require('./controllers/segway');
 // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
 
+const Ride = require('./models/ride');
+const Vehicle = require('./models/vehicle');
+
 // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;
 
@@ -53,6 +56,29 @@ app.listen(port, () => {
   logger.info(`server started on port ${port}`);
 
   requestAccessToken();
+
+  Ride.find({ scooter: { $exists: 1 } }).then((rides) => {
+    rides.forEach((ride) => {
+      ride.vehicle = ride.scooter;
+      ride.scooter = undefined;
+      ride.save();
+    });
+  });
+
+  Ride.find({ vehicleCode: { $exists: 1 } }).then((rides) => {
+    rides.forEach((ride) => {
+      ride.vehicleCode = undefined;
+      ride.save();
+    });
+  });
+
+  Vehicle.findOne({})
+    .exec()
+    .then((vehicle) => {
+      if (!vehicle) {
+        Vehicle.create({ iotCode: '1111', vehicleCode: '1111' });
+      }
+    });
 });
 
 module.exports = app;

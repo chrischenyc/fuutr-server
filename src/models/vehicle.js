@@ -32,7 +32,7 @@ const vehicleSchema = new mongoose.Schema(
     statusUtcTime: { type: Date }, // vehicle status info's UTC time
     gpsUtcTime: { type: Date }, // GPS get the location's UTC time
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 ).index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);

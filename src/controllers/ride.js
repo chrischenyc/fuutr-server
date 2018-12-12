@@ -30,7 +30,7 @@ exports.unlockVehicle = async (req, res, next) => {
 
     // find vehicle
     const vehicle = await Vehicle.findOne({
-      vehicleCode: '2222', // FIXME: demo data
+      vehicleCode: '1111', // FIXME: demo data
       online: true,
       locked: true,
       charging: false,
@@ -46,8 +46,7 @@ exports.unlockVehicle = async (req, res, next) => {
     // create Ride object
     const ride = new Ride({
       user: userId,
-      scooter: vehicle.id,
-      vehicleCode,
+      vehicle: vehicle.id,
       unlockCost: process.env.APP_UNLOCK_COST,
       minuteCost: process.env.APP_MINUTE_COST,
       totalCost: process.env.APP_UNLOCK_COST,
@@ -132,7 +131,7 @@ exports.finishRide = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: userId }).exec();
     const ride = await Ride.findOne({ _id }).exec();
-    const vehicle = await Vehicle.findOne({ _id: ride.scooter }).exec();
+    const vehicle = await Vehicle.findOne({ _id: ride.vehicle }).exec();
 
     if (!user || !vehicle || !ride) {
       next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
