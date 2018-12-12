@@ -18,7 +18,7 @@ router.use('/auth', auth);
 router.use('/payments', payments);
 router.use('/phones', phones);
 router.use('/rides', rides);
-router.use('/scooters', scooters);
+router.use('/vehicles', scooters);
 router.use('/users', users);
 router.use('/transactions', transactions);
 

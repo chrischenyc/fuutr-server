@@ -48,7 +48,6 @@ exports.getRide = async (req, res, next) => {
       .select({
         user: 1,
         scooter: 1,
-        vehicleCode: 1,
         unlockTime: 1,
         lockTime: 1,
         unlockLocation: 1,

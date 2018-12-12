@@ -21,7 +21,6 @@ exports.searchScootersInBound = async (req, res, next) => {
       powerPercent: { $gt: 0 },
     }).select({
       iotCode: 1,
-      vehicleCode: 1,
       powerPercent: 1,
       latitude: 1,
       longitude: 1,
