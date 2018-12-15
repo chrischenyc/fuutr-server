@@ -69,3 +69,21 @@ exports.getVehicle = async (req, res, next) => {
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.generateNewUnlockCode = async () => {
+  let isUnique = false;
+  let unlockCode = null;
+
+  const vehicles = await Vehicle.find({ unlockCode: { $exists: 1 } }).select({
+    unlockCode: 1,
+  });
+
+  const existingUnlockCodes = vehicles.map(vehicle => vehicle.unlockCode);
+
+  while (!isUnique) {
+    unlockCode = Number(Math.floor(100000 + Math.random() * 900000)).toString();
+    isUnique = !existingUnlockCodes.includes(unlockCode);
+  }
+
+  return unlockCode;
+};
