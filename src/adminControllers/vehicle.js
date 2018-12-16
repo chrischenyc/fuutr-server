@@ -123,13 +123,13 @@ exports.addVehicle = async (req, res, next) => {
 
     const vehicle = new Vehicle({ vehicleCode, iotCode, unlockCode });
 
-    // generate unlock QR code image
+    // generate unlock QR code image in local temp folder
     const uploadFolder = './upload';
     if (!fs.existsSync(uploadFolder)) {
       fs.mkdirSync(uploadFolder);
     }
     const imageFilePath = `${uploadFolder}/${vehicleCode}_${iotCode}.png`;
-    await QRCode.toFile(imageFilePath, unlockCode);
+    await QRCode.toFile(imageFilePath, unlockCode, { width: 640 });
 
     // upload to S3
     const unlockQRImage = await S3Upload(imageFilePath);
