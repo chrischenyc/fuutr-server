@@ -98,8 +98,6 @@ const generateNewUnlockCode = async () => {
   return unlockCode;
 };
 
-exports.generateNewUnlockCode = generateNewUnlockCode;
-
 const generateUnlockCodeQRImage = async (vehicleCode, iotCode, unlockCode) => {
   // generate unlock QR code image in local temp folder
   const uploadFolder = './upload';
@@ -117,8 +115,6 @@ const generateUnlockCodeQRImage = async (vehicleCode, iotCode, unlockCode) => {
 
   return imageUrl;
 };
-
-exports.generateUnlockCodeQRImage = generateUnlockCodeQRImage;
 
 exports.addVehicle = async (req, res, next) => {
   const { vehicleCode, iotCode } = req.body;

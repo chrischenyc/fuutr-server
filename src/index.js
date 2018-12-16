@@ -14,9 +14,6 @@ const { requestAccessToken, segwayClient } = require('./controllers/segway');
 // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
 
-const Vehicle = require('./models/vehicle');
-const { generateNewUnlockCode, generateUnlockCodeQRImage } = require('./adminControllers/vehicle');
-
 // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;
 
@@ -56,23 +53,6 @@ app.listen(port, () => {
   logger.info(`server started on port ${port}`);
 
   requestAccessToken();
-
-  // FIXME: temp db script, remove after deploy to staging
-  Vehicle.find({ $or: [{ unlockCode: { $exists: 0 } }, { unlockQRImage: { $exists: 0 } }] }).then(
-    (vehicles) => {
-      vehicles.forEach(async (vehicle) => {
-        const unlockCode = await generateNewUnlockCode();
-        const unlockQRImage = await generateUnlockCodeQRImage(
-          vehicle.vehicleCode,
-          vehicle.iotCode,
-          unlockCode
-        );
-        vehicle.unlockCode = unlockCode;
-        vehicle.unlockQRImage = unlockQRImage;
-        vehicle.save();
-      });
-    }
-  );
 });
 
 module.exports = app;
