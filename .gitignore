@@ -78,3 +78,6 @@ typings/
 
 # mac
 **/.DS_Store
+
+# file for s3 upload
+upload/

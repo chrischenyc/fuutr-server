@@ -4,6 +4,7 @@ require('mongoose-geojson-schema');
 const vehicleSchema = new mongoose.Schema(
   {
     unlockCode: { type: String, required: true, unique: true },
+    unlockQRImage: { type: String },
     iotCode: { type: String, required: true, unique: true },
     vehicleCode: { type: String, required: true, unique: true },
     iotVersion: { type: String },

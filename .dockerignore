@@ -56,3 +56,6 @@ README*.md
 .editorconfig
 **/.DS_Store
 *.vscode
+
+# file for s3 upload
+upload/

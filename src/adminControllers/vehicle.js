@@ -1,11 +1,14 @@
 const httpStatus = require('http-status');
 const _ = require('lodash');
+const QRCode = require('qrcode');
+const fs = require('fs');
 
 const Vehicle = require('../models/vehicle');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
+const S3Upload = require('../helpers/s3-upload');
 
 exports.getVehicles = async (req, res, next) => {
   const { user, page, search } = req.query;
@@ -114,12 +117,30 @@ exports.addVehicle = async (req, res, next) => {
       next(new APIError(`IoT Code ${iotCode} exists`, httpStatus.INTERNAL_SERVER_ERROR, true));
     }
 
+    // TODO: validate vehicle code and iot code on Segway API
+
     const unlockCode = await generateNewUnlockCode();
+
     const vehicle = new Vehicle({ vehicleCode, iotCode, unlockCode });
+
+    // generate unlock QR code image
+    const uploadFolder = './upload';
+    if (!fs.existsSync(uploadFolder)) {
+      fs.mkdirSync(uploadFolder);
+    }
+    const imageFilePath = `${uploadFolder}/${vehicleCode}_${iotCode}.png`;
+    await QRCode.toFile(imageFilePath, unlockCode);
+
+    // upload to S3
+    const unlockQRImage = await S3Upload(imageFilePath);
+    vehicle.unlockQRImage = unlockQRImage;
 
     await vehicle.save();
 
     res.json(vehicle);
+
+    // remove tmp image file
+    fs.unlinkSync(imageFilePath);
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
