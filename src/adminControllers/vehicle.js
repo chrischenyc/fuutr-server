@@ -8,13 +8,24 @@ const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
 
 exports.getVehicles = async (req, res, next) => {
-  const { user, page } = req.query;
+  const { user, page, search } = req.query;
 
   try {
     let selector = {};
 
     if (!_.isEmpty(user)) {
       selector = { ...selector, user };
+    }
+
+    if (!_.isEmpty(search)) {
+      selector = {
+        ...selector,
+        $or: [
+          { unlockCode: { $regex: search, $options: 'i' } },
+          { vehicleCode: { $regex: search, $options: 'i' } },
+          { iotCode: { $regex: search, $options: 'i' } },
+        ],
+      };
     }
 
     const vehicles = await Vehicle.find(selector)
