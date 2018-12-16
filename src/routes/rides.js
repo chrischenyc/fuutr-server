@@ -8,17 +8,16 @@ const { requireJWT } = require('../middleware/authenticate');
 const router = express.Router();
 
 /**
- * POST /api/rides/unlock
+ * POST /api/rides/start
  * request to unlock a vehicle that is online, locked, and not being charged
- * TODO: should support a unlock code
- * @param vehicleCode
+ * @param unlockCode
  * @return a new Ride object
  */
 router.post(
-  '/unlock',
+  '/start',
   requireJWT,
   validate({
-    body: { vehicleCode: Joi.string().required(), latitude: Joi.number(), longitude: Joi.number() },
+    body: { unlockCode: Joi.string().required(), latitude: Joi.number(), longitude: Joi.number() },
   }),
   RideController.unlockVehicle
 );

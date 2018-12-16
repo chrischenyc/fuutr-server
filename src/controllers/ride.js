@@ -9,9 +9,10 @@ const Transaction = require('../models/transaction');
 const secondsBetweenDates = require('../helpers/seconds-between-dates');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
+const { unlockVehicle } = require('./segway');
 
 exports.unlockVehicle = async (req, res, next) => {
-  const { vehicleCode, latitude, longitude } = req.body;
+  const { unlockCode, latitude, longitude } = req.body;
   const { userId } = req;
 
   try {
@@ -30,23 +31,32 @@ exports.unlockVehicle = async (req, res, next) => {
 
     // find vehicle
     const vehicle = await Vehicle.findOne({
-      vehicleCode: '1111', // FIXME: demo data
+      unlockCode,
       online: true,
       locked: true,
       charging: false,
     }).exec();
 
     if (!vehicle) {
+      logger.error(`Unlock code ${unlockCode} not found`);
       next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
       return;
     }
 
-    // TODO: call Segway gateway https://api.segway.pt/doc/index.html#api-Control-VehicleUnlock
+    // call Segway gateway https://api.segway.pt/doc/index.html#api-Control-VehicleUnlock
+    const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+
+    if (!segwayResult.success) {
+      logger.error(`Segway API error: ${segwayResult.message}`);
+
+      // FIXME: currently bypass segway
+      // next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+    }
 
     // create Ride object
     const ride = new Ride({
       user: userId,
-      vehicle: vehicle.id,
+      vehicle: vehicle._id,
       unlockCost: process.env.APP_UNLOCK_COST,
       minuteCost: process.env.APP_MINUTE_COST,
       totalCost: process.env.APP_UNLOCK_COST,

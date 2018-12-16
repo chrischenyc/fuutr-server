@@ -76,7 +76,7 @@ const queryVehicle = async (iotCode, vehicleCode) => {
 };
 
 // https://api.segway.pt/doc/index.html#api-Control-VehicleUnlock
-const unlockVehicle = async (iotCode, vehicleCode) => {
+exports.unlockVehicle = async (iotCode, vehicleCode) => {
   try {
     const data = {
       iotCode,
@@ -91,9 +91,7 @@ const unlockVehicle = async (iotCode, vehicleCode) => {
 
     return response.data;
   } catch (error) {
-    logger.error(error.response.data.message);
-
-    return null;
+    return { success: false, message: error.response.data.message };
   }
 };
 
