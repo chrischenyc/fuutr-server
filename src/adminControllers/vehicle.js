@@ -19,6 +19,7 @@ exports.getVehicles = async (req, res, next) => {
 
     const vehicles = await Vehicle.find(selector)
       .select({
+        unlockCode: 1,
         iotCode: 1,
         vehicleCode: 1,
         online: 1,
@@ -46,20 +47,14 @@ exports.getVehicle = async (req, res, next) => {
   try {
     const vehicle = await Vehicle.findOne({ _id })
       .select({
-        user: 1,
-        vehicle: 1,
-        unlockTime: 1,
-        lockTime: 1,
-        unlockLocation: 1,
-        lockLocation: 1,
-        route: 1,
-        encodedPath: 1,
-        duration: 1,
-        distance: 1,
-        completed: 1,
-        unlockCost: 1,
-        minuteCost: 1,
-        totalCost: 1,
+        unlockCode: 1,
+        iotCode: 1,
+        vehicleCode: 1,
+        online: 1,
+        locked: 1,
+        charging: 1,
+        powerPercent: 1,
+        remainderRange: 1,
       })
       .exec();
 
@@ -70,7 +65,7 @@ exports.getVehicle = async (req, res, next) => {
   }
 };
 
-exports.generateNewUnlockCode = async () => {
+const generateNewUnlockCode = async () => {
   let isUnique = false;
   let unlockCode = null;
 
@@ -86,4 +81,36 @@ exports.generateNewUnlockCode = async () => {
   }
 
   return unlockCode;
+};
+
+exports.generateNewUnlockCode = generateNewUnlockCode;
+
+exports.addVehicle = async (req, res, next) => {
+  const { vehicleCode, iotCode } = req.body;
+
+  try {
+    let existingVehicle = await Vehicle.findOne({ vehicleCode }).exec();
+
+    if (existingVehicle) {
+      next(
+        new APIError(`Vehicle Code ${vehicleCode} exists`, httpStatus.INTERNAL_SERVER_ERROR, true)
+      );
+    }
+
+    existingVehicle = await Vehicle.findOne({ iotCode }).exec();
+
+    if (existingVehicle) {
+      next(new APIError(`IoT Code ${iotCode} exists`, httpStatus.INTERNAL_SERVER_ERROR, true));
+    }
+
+    const unlockCode = await generateNewUnlockCode();
+    const vehicle = new Vehicle({ vehicleCode, iotCode, unlockCode });
+
+    await vehicle.save();
+
+    res.json(vehicle);
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
 };

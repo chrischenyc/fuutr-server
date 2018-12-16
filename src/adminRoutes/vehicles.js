@@ -38,4 +38,20 @@ router.get(
   VehicleController.getVehicle
 );
 
+/**
+ * POST /admin/vehicles
+ */
+router.post(
+  '/',
+  requireJWT,
+  requireAdmin,
+  validate({
+    body: {
+      vehicleCode: Joi.string().required(),
+      iotCode: Joi.string().required(),
+    },
+  }),
+  VehicleController.addVehicle
+);
+
 module.exports = router;
