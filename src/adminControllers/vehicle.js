@@ -62,6 +62,7 @@ exports.getVehicle = async (req, res, next) => {
     const vehicle = await Vehicle.findOne({ _id })
       .select({
         unlockCode: 1,
+        unlockQRImage: 1,
         iotCode: 1,
         vehicleCode: 1,
         online: 1,
