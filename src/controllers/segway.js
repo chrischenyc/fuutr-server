@@ -118,3 +118,25 @@ const lockVehicle = async (iotCode, vehicleCode) => {
     return null;
   }
 };
+
+// api.segway.pt/doc/index.html#api-VehicleIoT-VehicleIoTBinding
+exports.bindVehicle = async (iotCode, vehicleCode) => {
+  try {
+    const data = {
+      iotCode,
+      vehicleCode,
+    };
+
+    const response = await segwayClient({
+      method: 'post',
+      data,
+      url: '/api/vehicle/iot/bind',
+    });
+
+    return response.data;
+  } catch (error) {
+    logger.error(error.response.data.message);
+
+    return null;
+  }
+};
