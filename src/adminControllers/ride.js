@@ -8,13 +8,17 @@ const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
 
 exports.getRides = async (req, res, next) => {
-  const { user, page } = req.query;
+  const { user, vehicle, page } = req.query;
 
   try {
     let selector = {};
 
     if (!_.isEmpty(user)) {
       selector = { ...selector, user };
+    }
+
+    if (!_.isEmpty(vehicle)) {
+      selector = { ...selector, vehicle };
     }
 
     const rides = await Ride.find(selector)
