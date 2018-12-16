@@ -99,6 +99,26 @@ const generateNewUnlockCode = async () => {
 
 exports.generateNewUnlockCode = generateNewUnlockCode;
 
+const generateUnlockCodeQRImage = async (vehicleCode, iotCode, unlockCode) => {
+  // generate unlock QR code image in local temp folder
+  const uploadFolder = './upload';
+  if (!fs.existsSync(uploadFolder)) {
+    fs.mkdirSync(uploadFolder);
+  }
+  const imageFilePath = `${uploadFolder}/${vehicleCode}_${iotCode}.png`;
+  await QRCode.toFile(imageFilePath, unlockCode, { width: 640 });
+
+  // upload to S3
+  const imageUrl = await S3Upload(imageFilePath);
+
+  // remove tmp image file
+  fs.unlinkSync(imageFilePath);
+
+  return imageUrl;
+};
+
+exports.generateUnlockCodeQRImage = generateUnlockCodeQRImage;
+
 exports.addVehicle = async (req, res, next) => {
   const { vehicleCode, iotCode } = req.body;
 
@@ -120,27 +140,17 @@ exports.addVehicle = async (req, res, next) => {
     // TODO: validate vehicle code and iot code on Segway API
 
     const unlockCode = await generateNewUnlockCode();
-
-    const vehicle = new Vehicle({ vehicleCode, iotCode, unlockCode });
-
-    // generate unlock QR code image in local temp folder
-    const uploadFolder = './upload';
-    if (!fs.existsSync(uploadFolder)) {
-      fs.mkdirSync(uploadFolder);
-    }
-    const imageFilePath = `${uploadFolder}/${vehicleCode}_${iotCode}.png`;
-    await QRCode.toFile(imageFilePath, unlockCode, { width: 640 });
-
-    // upload to S3
-    const unlockQRImage = await S3Upload(imageFilePath);
-    vehicle.unlockQRImage = unlockQRImage;
+    const unlockQRImage = await generateUnlockCodeQRImage(vehicleCode, iotCode, unlockCode);
+    const vehicle = new Vehicle({
+      vehicleCode,
+      iotCode,
+      unlockCode,
+      unlockQRImage,
+    });
 
     await vehicle.save();
 
     res.json(vehicle);
-
-    // remove tmp image file
-    fs.unlinkSync(imageFilePath);
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
