@@ -81,3 +81,7 @@ typings/
 
 # file for s3 upload
 upload/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
