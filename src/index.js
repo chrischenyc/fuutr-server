@@ -11,10 +11,10 @@ const app = require('./app');
 const logger = require('./helpers/logger');
 const { requestAccessToken, segwayClient } = require('./controllers/segway');
 
-// debug output with nice prefix
+// // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
 
-// plugin bluebird promise in mongoose
+// // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;
 
 // connect to mongo db
@@ -48,10 +48,10 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-const port = process.env.PORT;
+const port = process.env.PORT || 8080;
 app.listen(port, () => {
+  console.log(`server started on port ${port}`);
   logger.info(`server started on port ${port}`);
-
   requestAccessToken();
 });
 

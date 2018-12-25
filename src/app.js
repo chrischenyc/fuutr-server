@@ -64,7 +64,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // mount all routes on /api path
-app.use('/api', routes);
+app.use('/', routes);
 app.use('/admin', adminRoutes);
 
 // if error is not an instanceOf APIError, convert it.

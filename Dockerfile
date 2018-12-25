@@ -23,7 +23,7 @@ RUN apk del .gyp
 COPY . .
 
 # expose port 3000
-EXPOSE 3000
+EXPOSE 8080
 
 # cmd to start service
 CMD [ "node", "src/index.js" ]
