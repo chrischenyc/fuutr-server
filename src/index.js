@@ -50,7 +50,6 @@ if (process.env.NODE_ENV === 'development') {
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
-  console.log(`server started on port ${port}`);
   logger.info(`server started on port ${port}`);
   requestAccessToken();
 });
