@@ -11,13 +11,8 @@
   "scripts": {
     "start": "node src/index.js",
     "start:debug": "DEBUG=OTGRide:* nodemon src/index.js",
-    "docker:build:staging": "docker build -t otg-ride-api-staging .",
-    "docker:tag:staging": "docker tag otg-ride-api-staging:latest 257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest",
-    "docker:push:staging": "docker push 257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest",
-    "aws:cloudformation:staging": "aws cloudformation update-stack --stack-name OTG-Rider-API-Server-Staging --use-previous-template --capabilities CAPABILITY_IAM --parameters ParameterKey=DockerImageURL,ParameterValue=257597197403.dkr.ecr.ap-southeast-2.amazonaws.com/otg-ride-api-staging:latest ParameterKey=DesiredCapacity,UsePreviousValue=true ParameterKey=InstanceType,UsePreviousValue=true ParameterKey=MaxSize,UsePreviousValue=true ParameterKey=SubnetIDs,UsePreviousValue=true ParameterKey=VpcId,UsePreviousValue=true",
-    "deploy:staging": "npm run docker:build:staging && npm run docker:tag:staging && npm run docker:push:staging",
-    "postdeploy:staging": "echo RUN NEW AWS ECS TASK: https://ap-southeast-2.console.aws.amazon.com/ecs/home?region=ap-southeast-2#/clusters/otg-ride-api-staging/tasks",
-    "deploy:production": "echo production"
+    "docker:build": "docker build --rm -t otg-server:latest .",
+    "deploy:staging": "npm run docker:build && eb deploy otg-server-staging"
   },
   "repository": {
     "type": "git",
