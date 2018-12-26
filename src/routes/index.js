@@ -10,10 +10,7 @@ const rides = require('./rides');
 const vehicles = require('./vehicles');
 const transactions = require('./transactions');
 
-if (process.env.NODE_ENV !== 'production') {
-  router.get('/health-check', (req, res) => res.json({ message: `${process.env.NODE_ENV} API server is up` }));
-}
-
+router.get('/', (req, res) => res.json({ message: `${process.env.NODE_ENV} API server is up` }));
 router.use('/auth', auth);
 router.use('/payments', payments);
 router.use('/phones', phones);
