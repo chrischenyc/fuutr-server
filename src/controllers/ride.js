@@ -146,6 +146,8 @@ exports.finishRide = async (req, res, next) => {
       return;
     }
 
+    // TODO: validate current locking position, geo-fence for illegal parking area
+
     // call to unlock vehicle
     const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
