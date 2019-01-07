@@ -10,6 +10,8 @@ const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
 const S3Upload = require('../helpers/s3-upload');
 
+const { bindVehicle, queryVehicle } = require('../controllers/segway');
+
 exports.getVehicles = async (req, res, next) => {
   const { user, page, search } = req.query;
 
@@ -134,15 +136,52 @@ exports.addVehicle = async (req, res, next) => {
       next(new APIError(`IoT Code ${iotCode} exists`, httpStatus.INTERNAL_SERVER_ERROR, true));
     }
 
-    // TODO: validate vehicle code and iot code on Segway API
-
     const unlockCode = await generateNewUnlockCode();
     const unlockQRImage = await generateUnlockCodeQRImage(vehicleCode, iotCode, unlockCode);
+
+    // bind IoT code, vehicle code, and QR code on Segway
+    await bindVehicle(iotCode, vehicleCode, unlockCode);
+
+    const vehicleStatus = await queryVehicle(iotCode, vehicleCode);
+
+    const {
+      online,
+      locked,
+      networkSignal,
+      charging,
+      powerPercent,
+      speedMode,
+      speed,
+      odometer,
+      remainderRange,
+      latitude,
+      longitude,
+      altitude,
+      statusUtcTime,
+      gpsUtcTime,
+    } = vehicleStatus;
+
     const vehicle = new Vehicle({
       vehicleCode,
       iotCode,
       unlockCode,
       unlockQRImage,
+      online,
+      locked,
+      networkSignal,
+      charging,
+      powerPercent,
+      speedMode,
+      speed,
+      odometer,
+      remainderRange,
+      location: {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      },
+      altitude,
+      statusUtcTime,
+      gpsUtcTime,
     });
 
     await vehicle.save();

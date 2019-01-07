@@ -1,10 +1,6 @@
-const httpStatus = require('http-status');
 const axios = require('axios');
 const querystring = require('querystring');
 
-const Vehicle = require('../models/vehicle');
-
-const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
 const segwayClient = axios.create({
@@ -46,14 +42,14 @@ const requestAccessToken = async () => {
 
 exports.requestAccessToken = requestAccessToken;
 
-const scheduleAccessTokenRefresh = (after) => {
+exports.scheduleAccessTokenRefresh = (after) => {
   setTimeout(() => {
     requestAccessToken();
   }, after * 1000);
 };
 
 // https://api.segway.pt/doc/index.html#api-Query-VehicleQuery
-const queryVehicle = async (iotCode, vehicleCode) => {
+exports.queryVehicle = async (iotCode, vehicleCode) => {
   try {
     const params = {
       iotCode,
@@ -96,7 +92,7 @@ exports.unlockVehicle = async (iotCode, vehicleCode) => {
 };
 
 // https://api.segway.pt/doc/index.html#api-Control-VehicleLock
-const lockVehicle = async (iotCode, vehicleCode) => {
+exports.lockVehicle = async (iotCode, vehicleCode) => {
   try {
     const data = {
       iotCode,
@@ -118,11 +114,12 @@ const lockVehicle = async (iotCode, vehicleCode) => {
 };
 
 // api.segway.pt/doc/index.html#api-VehicleIoT-VehicleIoTBinding
-exports.bindVehicle = async (iotCode, vehicleCode) => {
+exports.bindVehicle = async (iotCode, vehicleCode, qrCode) => {
   try {
     const data = {
       iotCode,
       vehicleCode,
+      qrCode,
     };
 
     const response = await segwayClient({
