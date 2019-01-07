@@ -42,7 +42,7 @@ const requestAccessToken = async () => {
 
 exports.requestAccessToken = requestAccessToken;
 
-exports.scheduleAccessTokenRefresh = (after) => {
+const scheduleAccessTokenRefresh = (after) => {
   setTimeout(() => {
     requestAccessToken();
   }, after * 1000);
