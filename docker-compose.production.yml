@@ -1,8 +1,0 @@
-version: "3"
-services:
-  server:
-    env_file: .env.production
-    build: .
-    image: "otg-ride-api-production"
-    ports:
-      - "3000:3000"
