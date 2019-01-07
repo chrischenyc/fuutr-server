@@ -36,7 +36,7 @@ const requestAccessToken = async () => {
 
     scheduleAccessTokenRefresh(expires_in);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(`Segway access token error: ${error.message}`);
   }
 };
 
