@@ -22,8 +22,7 @@ exports.searchVehicles = async (req, res, next) => {
     }).select({
       iotCode: 1,
       powerPercent: 1,
-      latitude: 1,
-      longitude: 1,
+      location: 1,
       remainderRange: 1,
     });
 

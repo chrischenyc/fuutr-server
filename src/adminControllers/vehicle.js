@@ -40,6 +40,7 @@ exports.getVehicles = async (req, res, next) => {
         vehicleCode: 1,
         online: 1,
         locked: 1,
+        networkSignal: 1,
         charging: 1,
         powerPercent: 1,
         remainderRange: 1,
@@ -69,9 +70,14 @@ exports.getVehicle = async (req, res, next) => {
         vehicleCode: 1,
         online: 1,
         locked: 1,
+        networkSignal: 1,
         charging: 1,
         powerPercent: 1,
+        speedMode: 1,
+        speed: 1,
+        odometer: 1,
         remainderRange: 1,
+        location: 1,
       })
       .exec();
 
