@@ -95,6 +95,8 @@ exports.updateVehicleStatus = async (req, res, next) => {
       return;
     }
 
+    logger.info('Segway push: start updating vehicle status');
+
     Vehicle.update(
       { vehicleCode, iotCode },
       {
@@ -121,7 +123,7 @@ exports.updateVehicleStatus = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(`Segway push API error: ${error.message}`);
+    logger.error(`Segway push error: ${error.message}`);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send();
   }
 };
