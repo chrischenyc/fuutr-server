@@ -50,6 +50,7 @@
     "jsonwebtoken": "^8.4.0",
     "juice": "^5.1.0",
     "lodash": "^4.17.11",
+    "md5": "^2.2.1",
     "moment-timezone": "^0.5.23",
     "mongoose": "^5.4.2",
     "mongoose-geojson-schema": "^2.1.3",

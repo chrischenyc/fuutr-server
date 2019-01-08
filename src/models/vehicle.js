@@ -16,6 +16,7 @@ const vehicleSchema = new mongoose.Schema(
     speed: { type: Number },
     odometer: { type: Number }, // total odometer since out of factory (unit is 10m, so 1230 means 12.3km)
     remainderRange: { type: Number },
+    totalRidingSecs: { type: Number },
     location: { type: mongoose.Schema.Types.Point },
     altitude: { type: Number },
     statusUtcTime: { type: Date }, // vehicle status info's UTC time

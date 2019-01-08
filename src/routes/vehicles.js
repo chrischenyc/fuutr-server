@@ -38,4 +38,24 @@ router.get(
   VehicleController.searchVehicles
 );
 
+/**
+ * https://api.segway.pt/doc/index.html#api-Push-PushVehicleStatus
+ * POST /vehicles/status
+ * to receive periodic push updates from segway
+ */
+router.post(
+  '/status',
+  validate({
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+    },
+    data: {
+      vehicleCode: Joi.string().required(),
+      iotCode: Joi.string().required(),
+      signature: Joi.string().required(),
+    },
+  }),
+  VehicleController.updateVehicleStatus
+);
+
 module.exports = router;
