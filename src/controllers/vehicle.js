@@ -48,10 +48,15 @@ const validateSegwayPushBody = (body) => {
 
   const encryptedString = md5(rawString);
 
+  logger.info(`Segway push signature: ${signature}`);
+  logger.info(`Segway push md5: ${encryptedString}`);
+
   return signature === encryptedString;
 };
 
 exports.updateVehicleStatus = async (req, res, next) => {
+  logger.info(`Segway push request: ${JSON.stringify(req.body)}`);
+
   const {
     vehicleCode,
     iotCode,
