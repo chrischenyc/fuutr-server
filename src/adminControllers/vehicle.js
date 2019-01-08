@@ -198,3 +198,41 @@ exports.addVehicle = async (req, res, next) => {
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.editVehicle = async (req, res, next) => {
+  const { _id } = req.params;
+  const { vehicleCode, iotCode } = req.body;
+
+  try {
+    const existingVehicle = await Vehicle.findOne({ _id })
+      .select({
+        unlockCode: 1,
+      })
+      .exec();
+
+    if (!existingVehicle) {
+      next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
+    }
+
+    // re-bind IoT code, vehicle code, and existing QR code on Segway
+    await bindVehicle(iotCode, vehicleCode, existingVehicle.unlockCode);
+
+    const vehicleStatus = await queryVehicle(iotCode, vehicleCode);
+
+    await Vehicle.update(
+      { _id },
+      {
+        $set: {
+          iotCode,
+          vehicleCode,
+          ...vehicleStatus,
+        },
+      }
+    );
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};

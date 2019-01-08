@@ -54,4 +54,23 @@ router.post(
   VehicleController.addVehicle
 );
 
+/**
+ * PATCH /admin/vehicles/:id
+ */
+router.patch(
+  '/:_id',
+  requireJWT,
+  requireAdmin,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+    body: {
+      vehicleCode: Joi.string().required(),
+      iotCode: Joi.string().required(),
+    },
+  }),
+  VehicleController.editVehicle
+);
+
 module.exports = router;
