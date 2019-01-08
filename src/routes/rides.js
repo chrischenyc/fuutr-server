@@ -53,7 +53,7 @@ router.post(
     body: {
       latitude: Joi.number(),
       longitude: Joi.number(),
-      incrementalEncodedPath: Joi.string(),
+      incrementalEncodedPath: Joi.string().optional(),
       incrementalDistance: Joi.number(),
     },
   }),
