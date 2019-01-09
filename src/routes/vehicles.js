@@ -45,16 +45,17 @@ router.get(
  */
 router.post(
   '/status',
-  validate({
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-    data: {
-      vehicleCode: Joi.string().required(),
-      iotCode: Joi.string().required(),
-      signature: Joi.string().required(),
-    },
-  }),
+  // FIXME: enable validation
+  // validate({
+  //   headers: {
+  //     'content-type': 'application/x-www-form-urlencoded',
+  //   },
+  //   data: {
+  //     vehicleCode: Joi.string().required(),
+  //     iotCode: Joi.string().required(),
+  //     signature: Joi.string().required(),
+  //   },
+  // }),
   VehicleController.updateVehicleStatus
 );
 
