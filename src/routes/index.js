@@ -8,6 +8,7 @@ const phones = require('./phones');
 const users = require('./users');
 const rides = require('./rides');
 const vehicles = require('./vehicles');
+const vehicle = require('./vehicle');
 const transactions = require('./transactions');
 
 router.get('/', (req, res) => res.json({ message: `${process.env.NODE_ENV} API server is up` }));
@@ -16,6 +17,7 @@ router.use('/payments', payments);
 router.use('/phones', phones);
 router.use('/rides', rides);
 router.use('/vehicles', vehicles);
+router.use('/vehicle', vehicle);
 router.use('/users', users);
 router.use('/transactions', transactions);
 
