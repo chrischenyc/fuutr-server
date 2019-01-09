@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema(
   {
     isAdmin: { type: Boolean, default: false },
+    isCouncil: { type: Boolean, default: false },
     email: {
       type: String,
       unique: true,
