@@ -50,15 +50,10 @@ const validateSegwayPushBody = (body) => {
 
   const encryptedString = md5(rawString);
 
-  logger.info(`Segway push signature: ${signature}`);
-  logger.info(`Segway push md5: ${encryptedString}`);
-
   return signature === encryptedString;
 };
 
 exports.updateVehicleStatus = async (req, res, next) => {
-  logger.info(`Segway push request: ${JSON.stringify(req.body)}`);
-
   try {
     // validate signature
     if (!validateSegwayPushBody(req.body)) {
@@ -78,9 +73,9 @@ exports.updateVehicleStatus = async (req, res, next) => {
       return;
     }
 
-    logger.info('Segway push: start updating vehicle status');
-
     await updateVehicleStatus(vehicleCode, iotCode, req.body);
+
+    logger.info(`Segway push: status updated iotCode ${iotCode} vehicleCode ${vehicleCode}`);
 
     res.status(httpStatus.OK).send();
   } catch (error) {
