@@ -12,7 +12,7 @@ const updateVehicleStatus = async (vehicleCode, iotCode, status) => {
       ...newDoc,
       location: {
         type: 'Point',
-        coordinates: [longitude, latitude],
+        coordinates: [parseFloat(longitude), parseFloat(latitude)],
       },
     };
   }
