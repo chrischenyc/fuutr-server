@@ -13,17 +13,16 @@ const VehicleController = require('../controllers/vehicle');
  */
 router.post(
   '/status',
-  // FIXME: enable validation
-  // validate({
-  //   headers: {
-  //     'content-type': 'application/x-www-form-urlencoded',
-  //   },
-  //   data: {
-  //     vehicleCode: Joi.string().required(),
-  //     iotCode: Joi.string().required(),
-  //     signature: Joi.string().required(),
-  //   },
-  // }),
+  validate({
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+    },
+    data: {
+      vehicleCode: Joi.string().required(),
+      iotCode: Joi.string().required(),
+      signature: Joi.string().required(),
+    },
+  }),
   VehicleController.updateVehicleStatus
 );
 
