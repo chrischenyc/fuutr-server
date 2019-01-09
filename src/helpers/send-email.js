@@ -72,3 +72,12 @@ exports.sendInvoiceEmail = (to, invoiceNumber, items, total, date) => {
     date,
   });
 };
+
+exports.sendNewContactEmail = (to, name, phone, email, message) => {
+  sendEmail(to, `${name} sent a contact form`, 'admin-new-contact-form', {
+    name,
+    phone,
+    email,
+    message,
+  });
+};
