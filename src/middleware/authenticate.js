@@ -47,7 +47,7 @@ exports.requireAdmin = async (req, res, next) => {
   const { userId: _id } = req;
 
   try {
-    const user = await User.findOne({ _id, isAdmin: true }).exec();
+    const user = await User.findOne({ _id, $or: [{ isAdmin: true }, { isCouncil: true }] }).exec();
 
     if (!user) {
       res.status(httpStatus.FORBIDDEN).send();
