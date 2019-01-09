@@ -97,11 +97,10 @@ exports.updateVehicleStatus = async (req, res, next) => {
 
     logger.info('Segway push: start updating vehicle status');
 
-    Vehicle.update(
+    await Vehicle.update(
       { vehicleCode, iotCode },
       {
         $set: {
-          signature,
           online,
           locked,
           networkSignal,
