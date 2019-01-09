@@ -76,16 +76,22 @@ exports.signupWithEmail = async (req, res, next) => {
 };
 
 exports.loginWithEmail = async (req, res, next) => {
-  const { email, password, isAdmin } = req.body;
+  const { email, password, adminPortal } = req.body;
 
   try {
     let selector = { email };
-    if (!_.isNil(isAdmin) && isAdmin) {
+    if (!_.isNil(adminPortal) && adminPortal) {
       selector = { ...selector, $or: [{ isAdmin: true }, { isCouncil: true }] };
     }
 
     const user = await User.findOne(selector)
-      .select({ password: 1, displayName: 1, photo: 1 })
+      .select({
+        password: 1,
+        displayName: 1,
+        photo: 1,
+        isAdmin: 1,
+        isCouncil: 1,
+      })
       .exec();
 
     if (!user) {
@@ -99,9 +105,21 @@ exports.loginWithEmail = async (req, res, next) => {
       return;
     }
 
-    const { displayName, photo } = user;
+    const {
+      displayName, photo, isAdmin, isCouncil,
+    } = user;
 
-    res.json({ ...generateTokens(user), displayName, photo });
+    if (!_.isNil(adminPortal) && adminPortal) {
+      res.json({
+        ...generateTokens(user),
+        displayName,
+        photo,
+        isAdmin,
+        isCouncil,
+      });
+    } else {
+      res.json({ ...generateTokens(user), displayName, photo });
+    }
   } catch (error) {
     logger.error(error.message);
     next(new APIError(`Cannot log in with email ${email}`, httpStatus.UNAUTHORIZED, true), true);

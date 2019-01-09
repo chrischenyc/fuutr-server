@@ -18,7 +18,7 @@ router.post(
     },
   }),
   (req, res, next) => {
-    req.body.isAdmin = true;
+    req.body.adminPortal = true;
     next();
   },
   AuthController.loginWithEmail
