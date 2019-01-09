@@ -57,33 +57,16 @@ const validateSegwayPushBody = (body) => {
 exports.updateVehicleStatus = async (req, res, next) => {
   logger.info(`Segway push request: ${JSON.stringify(req.body)}`);
 
-  const {
-    vehicleCode,
-    iotCode,
-    signature,
-    online,
-    locked,
-    networkSignal,
-    charging,
-    powerPercent,
-    speedMode,
-    speed,
-    odometer,
-    remainderRange,
-    totalRidingSecs,
-    statusUtcTime,
-    latitude,
-    longitude,
-    altitude,
-    gpsUtcTime,
-  } = req.body;
-
   try {
     // validate signature
     if (!validateSegwayPushBody(req.body)) {
       res.status(httpStatus.BAD_REQUEST).send();
       return;
     }
+
+    const {
+      vehicleCode, iotCode, longitude, latitude,
+    } = req.body;
 
     const vehicle = await Vehicle.findOne({
       vehicleCode,
@@ -97,26 +80,28 @@ exports.updateVehicleStatus = async (req, res, next) => {
 
     logger.info('Segway push: start updating vehicle status');
 
+    let objectToUpdate = _.omit(req.body, [
+      'signature',
+      'vehicleCode',
+      'iotCode',
+      'longitude',
+      'latitude',
+    ]);
+
+    if (longitude && latitude) {
+      objectToUpdate = {
+        ...objectToUpdate,
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+      };
+    }
+
     await Vehicle.update(
       { vehicleCode, iotCode },
       {
-        $set: {
-          online,
-          locked,
-          networkSignal,
-          charging,
-          powerPercent,
-          speedMode,
-          speed,
-          odometer,
-          remainderRange,
-          totalRidingSecs,
-          statusUtcTime,
-          latitude,
-          longitude,
-          altitude,
-          gpsUtcTime,
-        },
+        $set: objectToUpdate,
       }
     );
 
