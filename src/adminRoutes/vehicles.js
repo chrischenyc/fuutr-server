@@ -91,4 +91,19 @@ router.patch(
   VehicleController.lockVehicle
 );
 
+/**
+ * PATCH /admin/vehicles/:id/query
+ */
+router.patch(
+  '/:_id/query',
+  requireJWT,
+  requireAdmin,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  VehicleController.queryVehicle
+);
+
 module.exports = router;

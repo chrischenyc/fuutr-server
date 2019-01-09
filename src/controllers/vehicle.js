@@ -7,6 +7,8 @@ const Vehicle = require('../models/vehicle');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
+const updateVehicleStatus = require('../helpers/update-vehicle-status');
+
 const { mockVehiclesInBound } = require('../helpers/mock-data');
 
 // TODO: replace with mongodb $near query: https://docs.mongodb.com/manual/reference/operator/query/near/
@@ -64,9 +66,7 @@ exports.updateVehicleStatus = async (req, res, next) => {
       return;
     }
 
-    const {
-      vehicleCode, iotCode, longitude, latitude,
-    } = req.body;
+    const { vehicleCode, iotCode } = req.body;
 
     const vehicle = await Vehicle.findOne({
       vehicleCode,
@@ -80,30 +80,7 @@ exports.updateVehicleStatus = async (req, res, next) => {
 
     logger.info('Segway push: start updating vehicle status');
 
-    let objectToUpdate = _.omit(req.body, [
-      'signature',
-      'vehicleCode',
-      'iotCode',
-      'longitude',
-      'latitude',
-    ]);
-
-    if (longitude && latitude) {
-      objectToUpdate = {
-        ...objectToUpdate,
-        location: {
-          type: 'Point',
-          coordinates: [longitude, latitude],
-        },
-      };
-    }
-
-    await Vehicle.update(
-      { vehicleCode, iotCode },
-      {
-        $set: objectToUpdate,
-      }
-    );
+    await updateVehicleStatus(vehicleCode, iotCode, req.body);
 
     res.status(httpStatus.OK).send();
   } catch (error) {
