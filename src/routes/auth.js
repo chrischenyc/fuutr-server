@@ -49,6 +49,9 @@ router.post(
 );
 
 // email log in
+/**
+ * @param isAdmin login to admin portal?
+ */
 router.post(
   '/email-login',
   validate({
@@ -57,6 +60,7 @@ router.post(
         .email()
         .required(),
       password: Joi.string().required(),
+      isAdmin: Joi.bool(),
     },
   }),
   AuthController.loginWithEmail

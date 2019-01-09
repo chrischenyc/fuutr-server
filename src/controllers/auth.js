@@ -79,9 +79,9 @@ exports.loginWithEmail = async (req, res, next) => {
   const { email, password, isAdmin } = req.body;
 
   try {
-    const selector = { email };
-    if (!_.isNil(isAdmin)) {
-      selector.isAdmin = isAdmin;
+    let selector = { email };
+    if (!_.isNil(isAdmin) && isAdmin) {
+      selector = { ...selector, $or: [{ isAdmin: true }, { isCouncil: true }] };
     }
 
     const user = await User.findOne(selector)
