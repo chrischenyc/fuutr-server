@@ -10,7 +10,9 @@ const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
 const S3Upload = require('../helpers/s3-upload');
 
-const { bindVehicle, queryVehicle } = require('../controllers/segway');
+const {
+  bindVehicle, queryVehicle, lockVehicle, unlockVehicle,
+} = require('../controllers/segway');
 
 exports.getVehicles = async (req, res, next) => {
   const { user, page, search } = req.query;
@@ -226,6 +228,44 @@ exports.editVehicle = async (req, res, next) => {
           iotCode,
           vehicleCode,
           ...vehicleStatus,
+        },
+      }
+    );
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
+exports.lockVehicle = async (req, res, next) => {
+  const { _id } = req.params;
+  const { lock } = req.body;
+
+  try {
+    const vehicle = await Vehicle.findOne({ _id })
+      .select({
+        iotCode: 1,
+        vehicleCode: 1,
+      })
+      .exec();
+
+    if (!vehicle) {
+      next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
+    }
+
+    if (lock) {
+      await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+    } else {
+      await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+    }
+
+    await Vehicle.update(
+      { _id },
+      {
+        $set: {
+          locked: lock,
         },
       }
     );

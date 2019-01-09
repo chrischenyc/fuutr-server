@@ -73,4 +73,22 @@ router.patch(
   VehicleController.editVehicle
 );
 
+/**
+ * PATCH /admin/vehicles/:id/lock
+ */
+router.patch(
+  '/:_id/lock',
+  requireJWT,
+  requireAdmin,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+    body: {
+      lock: Joi.bool().required(),
+    },
+  }),
+  VehicleController.lockVehicle
+);
+
 module.exports = router;
