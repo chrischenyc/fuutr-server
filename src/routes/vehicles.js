@@ -8,30 +8,24 @@ const { requireJWT } = require('../middleware/authenticate');
 const VehicleController = require('../controllers/vehicle');
 
 /**
- * GET /vehicles?minLatitude=&minLongitude=&maxLatitude=&maxLongitude=
+ * GET /vehicles?latitude=&longitude=&radius=
  * search vehicles nearby
  */
-// TODO: replace with radius search
 router.get(
   '/',
   requireJWT,
   validate({
     query: {
-      minLatitude: Joi.number()
+      latitude: Joi.number()
         .min(-90)
         .max(90)
         .required(),
-      minLongitude: Joi.number()
+      longitude: Joi.number()
         .min(-180)
         .max(180)
         .required(),
-      maxLatitude: Joi.number()
-        .min(-90)
-        .max(90)
-        .required(),
-      maxLongitude: Joi.number()
-        .min(-180)
-        .max(180)
+      radius: Joi.number()
+        .min(0)
         .required(),
     },
   }),

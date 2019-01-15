@@ -9,19 +9,21 @@ const logger = require('../helpers/logger');
 
 const updateVehicleStatus = require('../helpers/update-vehicle-status');
 
-// TODO: replace with mongodb $near query: https://docs.mongodb.com/manual/reference/operator/query/near/
 exports.searchVehicles = async (req, res, next) => {
-  const {
-    minLatitude, minLongitude, maxLatitude, maxLongitude,
-  } = req.query;
+  const { latitude, longitude, radius } = req.query;
 
   try {
     let vehicles = await Vehicle.find({
       online: true,
       locked: true,
       charging: false,
-      powerPercent: { $gt: 0 },
       reserved: false,
+      location: {
+        $near: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: radius,
+        },
+      },
     }).select({
       vehicleCode: 1,
       powerPercent: 1,
