@@ -3,10 +3,9 @@ require('mongoose-geojson-schema');
 
 const vehicleSchema = new mongoose.Schema(
   {
+    // -------- from segway --------
     iotCode: { type: String, required: true, unique: true },
     vehicleCode: { type: String, required: true, unique: true },
-    unlockCode: { type: String, required: true, unique: true },
-    unlockQRImage: { type: String, required: true },
     online: { type: Boolean, required: true, default: true }, // is IoT online
     locked: { type: Boolean, required: true, default: true },
     networkSignal: { type: Number },
@@ -21,6 +20,13 @@ const vehicleSchema = new mongoose.Schema(
     altitude: { type: Number },
     statusUtcTime: { type: Date }, // vehicle status info's UTC time
     gpsUtcTime: { type: Date }, // GPS get the location's UTC time
+
+    // -------- business logic --------
+    unlockCode: { type: String, required: true, unique: true },
+    unlockQRImage: { type: String, required: true },
+    reserved: { type: Boolean, required: true, default: false },
+    reservedAt: { type: Date },
+    reservedBy: { type: mongoose.Schema.Types.ObjectId },
   },
   { timestamps: true, versionKey: false }
 ).index({ location: '2dsphere' });
