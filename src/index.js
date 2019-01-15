@@ -57,7 +57,8 @@ app.listen(port, () => {
 
   Vehicle.find({}).then((vehicles) => {
     vehicles.forEach((vehicle) => {
-      Vehicle.update({ _id: vehicle._id }, { $set: { reserved: false } });
+      vehicle.reserved = false;
+      vehicle.save();
     });
   });
 });

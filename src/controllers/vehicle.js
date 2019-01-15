@@ -9,8 +9,6 @@ const logger = require('../helpers/logger');
 
 const updateVehicleStatus = require('../helpers/update-vehicle-status');
 
-const { mockVehiclesInBound } = require('../helpers/mock-data');
-
 // TODO: replace with mongodb $near query: https://docs.mongodb.com/manual/reference/operator/query/near/
 exports.searchVehicles = async (req, res, next) => {
   const {
@@ -18,21 +16,30 @@ exports.searchVehicles = async (req, res, next) => {
   } = req.query;
 
   try {
-    const vehicles = await Vehicle.find({
+    let vehicles = await Vehicle.find({
       online: true,
       locked: true,
       charging: false,
       powerPercent: { $gt: 0 },
+      reserved: false,
     }).select({
-      iotCode: 1,
+      vehicleCode: 1,
       powerPercent: 1,
       location: 1,
       remainderRange: 1,
     });
 
-    // FIXME: mock data!!!
-    // res.json(vehicles);
-    res.json(mockVehiclesInBound(minLatitude, minLongitude, maxLatitude, maxLongitude));
+    vehicles = vehicles.map(vehicle => _.omit(
+      {
+        ...vehicle,
+        vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
+        longitude: vehicle.location.coordinates[0],
+        latitude: vehicle.location.coordinates[1],
+      },
+      ['location']
+    ));
+
+    res.json(vehicles);
   } catch (error) {
     logger.error(error.message);
     next(new APIError("couldn't find scooters", httpStatus.INTERNAL_SERVER_ERROR, true));
