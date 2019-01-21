@@ -113,6 +113,8 @@ exports.updateVehicleStatus = async (req, res, next) => {
   }
 };
 
+let resetVehicleReserveTimer;
+
 exports.reserveVehicle = async (req, res, next) => {
   const { _id } = req.params;
   const { reserve } = req.body;
@@ -146,15 +148,26 @@ exports.reserveVehicle = async (req, res, next) => {
         vehicle.reserved = true;
         vehicle.reservedBy = userId;
         const now = new Date();
-        vehicle.reservedUntil = new Date(
-          now.getSeconds() + process.env.APP_VEHICLE_RESERVE_DURATION
-        );
+        const reservedUntil = new Date(now.getSeconds() + process.env.APP_VEHICLE_RESERVE_DURATION);
+        vehicle.reservedUntil = reservedUntil;
+
+        // reset reserve state
+        clearTimeout(resetVehicleReserveTimer);
+
+        resetVehicleReserveTimer = setTimeout(() => {
+          vehicle.reserved = false;
+          vehicle.reservedBy = undefined;
+          vehicle.reservedUntil = undefined;
+          vehicle.save();
+        }, process.env.APP_VEHICLE_RESERVE_DURATION * 1000);
       } else {
         next(new APIError('Sorry, this scooter has been reserved', httpStatus.OK, true));
         return;
       }
     } else if (vehicle.reserved && vehicle.reservedBy.equals(userId)) {
       // attempt to un-reserve a vehicle
+      clearTimeout(resetVehicleReserveTimer);
+
       vehicle.reserved = false;
       vehicle.reservedBy = undefined;
       vehicle.reservedUntil = undefined;
