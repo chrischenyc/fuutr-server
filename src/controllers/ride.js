@@ -35,10 +35,23 @@ exports.unlockVehicle = async (req, res, next) => {
       online: true,
       locked: true,
       charging: false,
-    }).exec();
+    })
+      .select({
+        reserved: 1,
+        reservedBy: 1,
+        iotCode: 1,
+        vehicleCode: 1,
+      })
+      .exec();
 
     if (!vehicle) {
       logger.error(`Unlock code ${unlockCode} not found`);
+      next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
+    }
+
+    if (vehicle.reserved && !vehicle.reservedBy.equals(userId)) {
+      logger.error(`Trying to unlock ${vehicle._id} which has been reserved by another user`);
       next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
       return;
     }
@@ -50,6 +63,13 @@ exports.unlockVehicle = async (req, res, next) => {
 
       next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
     }
+
+    // update Vehicle object
+    vehicle.reserved = false;
+    vehicle.reservedBy = undefined;
+    vehicle.reservedUntil = undefined;
+    vehicle.locked = false;
+    await vehicle.save();
 
     // create Ride object
     const ride = new Ride({
