@@ -11,20 +11,10 @@ const updateVehicleStatus = require('../helpers/update-vehicle-status');
 
 exports.searchVehicles = async (req, res, next) => {
   const { latitude, longitude, radius } = req.query;
+  const { userId } = req;
 
   try {
-    let vehicles = await Vehicle.find({
-      online: true,
-      locked: true,
-      charging: false,
-      reserved: false,
-      location: {
-        $near: {
-          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
-          $maxDistance: radius,
-        },
-      },
-    }).select({
+    const selector = {
       vehicleCode: 1,
       powerPercent: 1,
       location: 1,
@@ -32,7 +22,29 @@ exports.searchVehicles = async (req, res, next) => {
       reserved: 1,
       reservedUntil: 1,
       reservedBy: 1,
-    });
+    };
+
+    // if user has been reserving a vehicle, return just that one
+    let vehicles = await Vehicle.find({
+      reserved: true,
+      reservedBy: userId,
+    }).select(selector);
+
+    // otherwise, return all nearby vehicles
+    if (vehicles.length === 0) {
+      vehicles = await Vehicle.find({
+        online: true,
+        locked: true,
+        charging: false,
+        reserved: false,
+        location: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+            $maxDistance: radius,
+          },
+        },
+      }).select(selector);
+    }
 
     vehicles = vehicles.map(vehicle => _.omit(
       {
@@ -141,7 +153,7 @@ exports.reserveVehicle = async (req, res, next) => {
         next(new APIError('Sorry, this scooter has been reserved', httpStatus.OK, true));
         return;
       }
-    } else if (vehicle.reserved && vehicle.reservedBy === userId) {
+    } else if (vehicle.reserved && vehicle.reservedBy.equals(userId)) {
       // attempt to un-reserve a vehicle
       vehicle.reserved = false;
       vehicle.reservedBy = undefined;
