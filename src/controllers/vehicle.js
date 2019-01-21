@@ -33,6 +33,7 @@ exports.searchVehicles = async (req, res, next) => {
 
     vehicles = vehicles.map(vehicle => _.omit(
       {
+        _id: vehicle._id,
         powerPercent: vehicle.powerPercent,
         remainderRange: (vehicle.remainderRange * 10.0) / 1000.0,
         vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
@@ -91,5 +92,60 @@ exports.updateVehicleStatus = async (req, res, next) => {
   } catch (error) {
     logger.error(`Segway push error: ${error.message}`);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send();
+  }
+};
+
+exports.reserveVehicle = async (req, res, next) => {
+  const { _id } = req.params;
+  const { reserve } = req.body;
+  const { userId } = req;
+
+  try {
+    const vehicle = await Vehicle.findOne({ _id })
+      .select({
+        reserved: 1,
+        reservedBy: 1,
+        reservedAt: 1,
+      })
+      .exec();
+
+    if (!vehicle) {
+      next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.BAD_REQUEST, true));
+      return;
+    }
+
+    if (!vehicle.online || !vehicle.locked || vehicle.charging) {
+      next(new APIError(`Vehicle id ${_id} can't be reserved`, httpStatus.BAD_REQUEST, true));
+      return;
+    }
+
+    if (reserve) {
+      // attempt to reserve a vehicle
+      if (!vehicle.reserved) {
+        vehicle.reserved = true;
+        vehicle.reservedBy = userId;
+        vehicle.reservedAt = Date.now();
+      } else {
+        next(new APIError('Sorry, this scooter has been reserved', httpStatus.OK, true));
+        return;
+      }
+    } else {
+      // attempt to un-reserve a vehicle
+      if (vehicle.reserved) {
+        vehicle.reserved = false;
+        vehicle.reservedBy = nil;
+        vehicle.reservedAt = nil;
+      } else {
+        next(new APIError('This scooter is not reserved', httpStatus.BAD_REQUEST, true));
+        return;
+      }
+    }
+
+    await vehicle.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
