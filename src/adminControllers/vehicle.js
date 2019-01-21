@@ -48,6 +48,7 @@ exports.getVehicles = async (req, res, next) => {
         powerPercent: 1,
         remainderRange: 1,
         location: 1,
+        reserved: 1,
       })
       .limit(adminTablePaginationLimit)
       .skip(page * adminTablePaginationLimit)
@@ -82,6 +83,7 @@ exports.getVehicle = async (req, res, next) => {
         odometer: 1,
         remainderRange: 1,
         location: 1,
+        reserved: 1,
       })
       .exec();
 

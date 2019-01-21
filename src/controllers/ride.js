@@ -62,6 +62,7 @@ exports.unlockVehicle = async (req, res, next) => {
       logger.error(`Segway API error: ${segwayResult.message}`);
 
       next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
     }
 
     // update Vehicle object
@@ -175,6 +176,8 @@ exports.finishRide = async (req, res, next) => {
       logger.error(`Segway API error: ${segwayResult.message}`);
 
       next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+
+      return;
     }
 
     // update vehicle status
