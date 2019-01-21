@@ -144,27 +144,21 @@ exports.reserveVehicle = async (req, res, next) => {
     }
 
     let success = false;
+    const now = new Date();
 
     if (reserve) {
       // attempt to reserve a vehicle
       if (!vehicle.reserved) {
         // user has to wait for 15 mins before next reserve
         const user = await User.findOne({ _id: userId })
-          .select({ lastVehicleReservedAt: 1 })
+          .select({ canReserveVehicleAfter: 1 })
           .exec();
 
-        const now = new Date();
-
-        if (
-          user.lastVehicleReservedAt
-          && (now - user.lastVehicleReservedAt) / 1000
-            < parseInt(process.env.APP_VEHICLE_RESERVE_WAITING_PERIOD, 10)
-        ) {
+        if (user.canReserveVehicleAfter && now < user.canReserveVehicleAfter) {
           next(
             new APIError(
               `You need wait for ${Math.round(
-                process.env.APP_VEHICLE_RESERVE_WAITING_PERIOD
-                  - (now - user.lastVehicleReservedAt) / 1000
+                (user.canReserveVehicleAfter - now) / 1000
               )} seconds to reserve again`,
               httpStatus.BAD_REQUEST,
               true
@@ -210,7 +204,16 @@ exports.reserveVehicle = async (req, res, next) => {
 
     // record user vehicle reserve history
     if (success) {
-      await User.update({ _id: userId }, { $set: { lastVehicleReservedAt: Date.now() } });
+      await User.update(
+        { _id: userId },
+        {
+          $set: {
+            canReserveVehicleAfter: new Date(
+              now.getTime() + process.env.APP_VEHICLE_RESERVE_WAITING_PERIOD * 1000
+            ),
+          },
+        }
+      );
     }
 
     await vehicle.save();

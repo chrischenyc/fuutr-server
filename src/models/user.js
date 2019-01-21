@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
       sparse: true, // stripeCustomerId may be null, need sparse indexing here
       select: false,
     },
-    lastVehicleReservedAt: { type: Date, select: false },
+    canReserveVehicleAfter: { type: Date, select: false }, // user needs to wait for 15 mins before next reserve
   },
   { timestamps: true, versionKey: false }
 );

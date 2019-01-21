@@ -21,6 +21,7 @@ exports.getProfile = async (req, res) => {
       displayName: 1,
       photo: 1,
       balance: 1,
+      canReserveVehicleAfter: 1,
     })
     .exec();
 
