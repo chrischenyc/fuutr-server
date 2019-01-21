@@ -32,25 +32,18 @@ router.get(
   VehicleController.searchVehicles
 );
 
-/**
- * https://api.segway.pt/doc/index.html#api-Push-PushVehicleStatus
- * POST /vehicles/status
- * to receive periodic push updates from segway
- */
-router.post(
-  '/status',
-  // FIXME: enable validation
-  // validate({
-  //   headers: {
-  //     'content-type': 'application/x-www-form-urlencoded',
-  //   },
-  //   data: {
-  //     vehicleCode: Joi.string().required(),
-  //     iotCode: Joi.string().required(),
-  //     signature: Joi.string().required(),
-  //   },
-  // }),
-  VehicleController.updateVehicleStatus
+router.patch(
+  '/:_id/reserve',
+  requireJWT,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+    body: {
+      reserve: Joi.bool().required(),
+    },
+  }),
+  VehicleController.reserveVehicle
 );
 
 module.exports = router;

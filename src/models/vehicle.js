@@ -25,7 +25,7 @@ const vehicleSchema = new mongoose.Schema(
     unlockCode: { type: String, required: true, unique: true },
     unlockQRImage: { type: String, required: true },
     reserved: { type: Boolean, required: true, default: false },
-    reservedAt: { type: Date },
+    reservedUntil: { type: Date },
     reservedBy: { type: mongoose.Schema.Types.ObjectId },
   },
   { timestamps: true, versionKey: false }

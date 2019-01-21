@@ -29,6 +29,9 @@ exports.searchVehicles = async (req, res, next) => {
       powerPercent: 1,
       location: 1,
       remainderRange: 1,
+      reserved: 1,
+      reservedUntil: 1,
+      reservedBy: 1,
     });
 
     vehicles = vehicles.map(vehicle => _.omit(
@@ -39,6 +42,9 @@ exports.searchVehicles = async (req, res, next) => {
         vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
         longitude: vehicle.location.coordinates[0],
         latitude: vehicle.location.coordinates[1],
+        reserved: vehicle.reserved,
+        reservedUntil: vehicle.reservedUntil,
+        reservedBy: vehicle.reservedBy,
       },
       ['location']
     ));
@@ -103,9 +109,12 @@ exports.reserveVehicle = async (req, res, next) => {
   try {
     const vehicle = await Vehicle.findOne({ _id })
       .select({
+        online: 1,
+        locked: 1,
+        charging: 1,
         reserved: 1,
         reservedBy: 1,
-        reservedAt: 1,
+        reservedUntil: 1,
       })
       .exec();
 
@@ -124,26 +133,27 @@ exports.reserveVehicle = async (req, res, next) => {
       if (!vehicle.reserved) {
         vehicle.reserved = true;
         vehicle.reservedBy = userId;
-        vehicle.reservedAt = Date.now();
+        const now = new Date();
+        vehicle.reservedUntil = new Date(
+          now.getSeconds() + process.env.APP_VEHICLE_RESERVE_DURATION
+        );
       } else {
         next(new APIError('Sorry, this scooter has been reserved', httpStatus.OK, true));
         return;
       }
-    } else {
+    } else if (vehicle.reserved && vehicle.reservedBy === userId) {
       // attempt to un-reserve a vehicle
-      if (vehicle.reserved) {
-        vehicle.reserved = false;
-        vehicle.reservedBy = nil;
-        vehicle.reservedAt = nil;
-      } else {
-        next(new APIError('This scooter is not reserved', httpStatus.BAD_REQUEST, true));
-        return;
-      }
+      vehicle.reserved = false;
+      vehicle.reservedBy = undefined;
+      vehicle.reservedUntil = undefined;
+    } else {
+      next(new APIError('This scooter is not reserved', httpStatus.BAD_REQUEST, true));
+      return;
     }
 
     await vehicle.save();
 
-    res.status(httpStatus.OK).send();
+    res.json(vehicle);
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
