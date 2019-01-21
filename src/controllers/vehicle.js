@@ -3,6 +3,7 @@ const _ = require('lodash');
 const md5 = require('md5');
 
 const Vehicle = require('../models/vehicle');
+const User = require('../models/user');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
@@ -142,14 +143,43 @@ exports.reserveVehicle = async (req, res, next) => {
       return;
     }
 
+    let success = false;
+
     if (reserve) {
       // attempt to reserve a vehicle
       if (!vehicle.reserved) {
+        // user has to wait for 15 mins before next reserve
+        const user = await User.findOne({ _id: userId })
+          .select({ lastVehicleReservedAt: 1 })
+          .exec();
+
+        const now = new Date();
+
+        if (
+          user.lastVehicleReservedAt
+          && (now - user.lastVehicleReservedAt) / 1000
+            < parseInt(process.env.APP_VEHICLE_RESERVE_WAITING_PERIOD, 10)
+        ) {
+          next(
+            new APIError(
+              `You need wait for ${Math.round(
+                process.env.APP_VEHICLE_RESERVE_WAITING_PERIOD
+                  - (now - user.lastVehicleReservedAt) / 1000
+              )} seconds to reserve again`,
+              httpStatus.BAD_REQUEST,
+              true
+            )
+          );
+          return;
+        }
+
         vehicle.reserved = true;
         vehicle.reservedBy = userId;
-        const now = new Date();
+
         const reservedUntil = new Date(now.getSeconds() + process.env.APP_VEHICLE_RESERVE_DURATION);
         vehicle.reservedUntil = reservedUntil;
+
+        success = true;
 
         // reset reserve state
         clearTimeout(resetVehicleReserveTimer);
@@ -171,9 +201,16 @@ exports.reserveVehicle = async (req, res, next) => {
       vehicle.reserved = false;
       vehicle.reservedBy = undefined;
       vehicle.reservedUntil = undefined;
+
+      success = true;
     } else {
       next(new APIError('This scooter is not reserved', httpStatus.BAD_REQUEST, true));
       return;
+    }
+
+    // record user vehicle reserve history
+    if (success) {
+      await User.update({ _id: userId }, { $set: { lastVehicleReservedAt: Date.now() } });
     }
 
     await vehicle.save();
