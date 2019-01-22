@@ -9,6 +9,7 @@ const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
 const updateVehicleStatus = require('../helpers/update-vehicle-status');
+const { addTimer, clearTimer } = require('../helpers/timer-manager');
 
 exports.searchVehicles = async (req, res, next) => {
   const { latitude, longitude, radius } = req.query;
@@ -21,7 +22,7 @@ exports.searchVehicles = async (req, res, next) => {
       location: 1,
       remainderRange: 1,
       reserved: 1,
-      reservedBy: 1,
+      reservedUntil: 1,
     };
 
     // if user has been reserving a vehicle, return just that one
@@ -47,8 +48,8 @@ exports.searchVehicles = async (req, res, next) => {
       }).select(selector);
     }
 
-    vehicles = vehicles.map(vehicle => _.omit(
-      {
+    vehicles = vehicles.map((vehicle) => {
+      let result = {
         _id: vehicle._id,
         powerPercent: vehicle.powerPercent,
         remainderRange: (vehicle.remainderRange * 10.0) / 1000.0,
@@ -56,10 +57,14 @@ exports.searchVehicles = async (req, res, next) => {
         longitude: vehicle.location.coordinates[0],
         latitude: vehicle.location.coordinates[1],
         reserved: vehicle.reserved,
-        reservedBy: vehicle.reservedBy,
-      },
-      ['location']
-    ));
+      };
+
+      if (vehicle.reservedUntil) {
+        result = { ...result, reservedUntil: vehicle.reservedUntil };
+      }
+
+      return result;
+    });
 
     res.json(vehicles);
   } catch (error) {
@@ -113,9 +118,6 @@ exports.updateVehicleStatus = async (req, res, next) => {
   }
 };
 
-// FIXME: thread unsafe
-let resetVehicleReserveTimer;
-
 exports.reserveVehicle = async (req, res, next) => {
   const { _id } = req.params;
   const { reserve } = req.body;
@@ -129,10 +131,15 @@ exports.reserveVehicle = async (req, res, next) => {
         charging: 1,
         reserved: 1,
         reservedBy: 1,
+        reserveTimeoutKey: 1,
       })
       .exec();
 
-    if (!vehicle) {
+    const user = await User.findOne({ _id: userId })
+      .select({ canReserveVehicleAfter: 1 })
+      .exec();
+
+    if (!vehicle || !user) {
       next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.BAD_REQUEST, true));
       return;
     }
@@ -149,9 +156,6 @@ exports.reserveVehicle = async (req, res, next) => {
       // attempt to reserve a vehicle
       if (!vehicle.reserved) {
         // user has to wait for 15 mins before next reserve
-        const user = await User.findOne({ _id: userId })
-          .select({ canReserveVehicleAfter: 1 })
-          .exec();
 
         if (user.canReserveVehicleAfter && now < user.canReserveVehicleAfter) {
           next(
@@ -168,27 +172,43 @@ exports.reserveVehicle = async (req, res, next) => {
 
         vehicle.reserved = true;
         vehicle.reservedBy = userId;
+        const reservedUntil = new Date(
+          now.getTime() + parseInt(process.env.APP_VEHICLE_RESERVE_MAX_DURATION, 10) * 1000
+        );
+        vehicle.reservedUntil = reservedUntil;
 
-        success = true;
+        // cancel previously scheduled job
+        if (vehicle.reserveTimeoutKey) {
+          clearTimer(vehicle.reserveTimeoutKey);
+        }
 
-        // reset reserve state
-        clearTimeout(resetVehicleReserveTimer);
-
-        resetVehicleReserveTimer = setTimeout(() => {
+        // schedule a delayed job to reset reserve state
+        const timer = setTimeout(() => {
           vehicle.reserved = false;
           vehicle.reservedBy = undefined;
+          vehicle.reserveTimeoutKey = undefined;
+          vehicle.reservedUntil = undefined;
           vehicle.save();
         }, process.env.APP_VEHICLE_RESERVE_MAX_DURATION * 1000);
+
+        vehicle.reserveTimeoutKey = addTimer(timer);
+
+        success = true;
       } else {
         next(new APIError('Sorry, this scooter has been reserved', httpStatus.OK, true));
         return;
       }
     } else if (vehicle.reserved && vehicle.reservedBy.equals(userId)) {
-      // attempt to un-reserve a vehicle
-      clearTimeout(resetVehicleReserveTimer);
+      // cancel previously scheduled job
+      if (vehicle.reserveTimeoutKey) {
+        clearTimer(vehicle.reserveTimeoutKey);
+      }
 
+      // un-reserve a vehicle
       vehicle.reserved = false;
       vehicle.reservedBy = undefined;
+      vehicle.reserveTimeoutKey = undefined;
+      vehicle.reservedUntil = undefined;
 
       success = true;
     } else {
@@ -198,16 +218,10 @@ exports.reserveVehicle = async (req, res, next) => {
 
     // record user vehicle reserve history
     if (success) {
-      await User.update(
-        { _id: userId },
-        {
-          $set: {
-            canReserveVehicleAfter: new Date(
-              now.getTime() + process.env.APP_VEHICLE_RESERVE_WAITING_PERIOD * 1000
-            ),
-          },
-        }
+      user.canReserveVehicleAfter = new Date(
+        now.getTime() + parseInt(process.env.APP_VEHICLE_RESERVE_WAITING_PERIOD, 10) * 1000
       );
+      await user.save();
     }
 
     await vehicle.save();

@@ -69,6 +69,8 @@ exports.unlockVehicle = async (req, res, next) => {
     // update Vehicle object
     vehicle.reserved = false;
     vehicle.reservedBy = undefined;
+    vehicle.reserveTimeoutKey = undefined;
+    vehicle.reservedUntil = undefined;
     vehicle.locked = false;
     vehicle.inRide = true;
     await vehicle.save();
@@ -182,7 +184,9 @@ exports.pauseRide = async (req, res, next) => {
     await vehicle.save();
 
     ride.paused = true;
-    ride.pausedUntil = new Date(now.getTime() + process.env.APP_RIDE_PAUSE_MAX_DURATION * 1000);
+    ride.pausedUntil = new Date(
+      now.getTime() + parseInt(process.env.APP_RIDE_PAUSE_MAX_DURATION, 10) * 1000
+    );
 
     // close current ride segment
     const lastSegment = ride.segments.pop();
