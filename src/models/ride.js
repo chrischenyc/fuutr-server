@@ -39,6 +39,7 @@ const rideSchema = new mongoose.Schema(
     distance: { type: Number, required: true, default: 0 },
     paused: { type: Boolean, required: true, default: false },
     pausedUntil: { type: Date },
+    pauseTimeoutKey: { type: String },
     completed: { type: Boolean, required: true, default: false },
     totalCost: { type: Number, required: true, default: 0 },
   },

@@ -10,6 +10,7 @@ const secondsBetweenDates = require('../helpers/seconds-between-dates');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { unlockVehicle, lockVehicle } = require('./segway');
+const { addTimer, clearTimer } = require('../helpers/timer-manager');
 
 exports.unlockVehicle = async (req, res, next) => {
   const { unlockCode, latitude, longitude } = req.body;
@@ -188,6 +189,18 @@ exports.pauseRide = async (req, res, next) => {
       now.getTime() + parseInt(process.env.APP_RIDE_PAUSE_MAX_DURATION, 10) * 1000
     );
 
+    // cancel previously scheduled job
+    if (ride.pauseTimeoutKey) {
+      clearTimer(ride.pauseTimeoutKey);
+    }
+
+    // schedule a delayed job to reset reserve state
+    const timer = setTimeout(() => {
+      finishRide(req, res);
+    }, process.env.APP_RIDE_PAUSE_MAX_DURATION * 1000);
+
+    ride.pauseTimeoutKey = addTimer(timer);
+
     // close current ride segment
     const lastSegment = ride.segments.pop();
     lastSegment.end = Date.now();
@@ -201,8 +214,6 @@ exports.pauseRide = async (req, res, next) => {
     ride.segments.push(newSegment);
 
     await ride.save();
-
-    // TODO: add cron job that's going to lock the scooter
 
     res.json(ride);
   } catch (error) {
@@ -241,8 +252,14 @@ exports.resumeRide = async (req, res, next) => {
     vehicle.locked = false;
     await vehicle.save();
 
+    // cancel previously scheduled job
+    if (ride.pauseTimeoutKey) {
+      clearTimer(ride.pauseTimeoutKey);
+    }
+
     ride.paused = false;
     ride.pausedUntil = undefined;
+    ride.pauseTimeoutKey = undefined;
 
     // close current paused segment
     const lastSegment = ride.segments.pop();
@@ -258,8 +275,6 @@ exports.resumeRide = async (req, res, next) => {
 
     await ride.save();
 
-    // TODO: dismiss cron job that's going to unlock the scooter
-
     res.json(ride);
   } catch (error) {
     logger.error(error.message);
@@ -267,7 +282,7 @@ exports.resumeRide = async (req, res, next) => {
   }
 };
 
-exports.finishRide = async (req, res, next) => {
+const finishRide = async (req, res, next) => {
   const {
     latitude, longitude, incrementalEncodedPath, incrementalDistance,
   } = req.body;
@@ -314,6 +329,11 @@ exports.finishRide = async (req, res, next) => {
     }
     ride.segments.push(lastSegment);
 
+    // cancel previously scheduled job
+    if (ride.pauseTimeoutKey) {
+      clearTimer(ride.pauseTimeoutKey);
+    }
+
     // update ride
     ride.lockTime = Date.now();
     if (latitude && longitude) {
@@ -322,6 +342,7 @@ exports.finishRide = async (req, res, next) => {
     ride.duration = secondsBetweenDates(ride.unlockTime, ride.lockTime);
     ride.paused = false;
     ride.pausedUntil = undefined;
+    ride.pauseTimeoutKey = undefined;
     ride.completed = true;
     updateRideWithIncrementalData(ride, incrementalEncodedPath, incrementalDistance);
 
@@ -353,6 +374,8 @@ exports.finishRide = async (req, res, next) => {
     next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.finishRide = finishRide;
 
 exports.pastRides = async (req, res, next) => {
   const { userId } = req;
