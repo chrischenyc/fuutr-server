@@ -406,3 +406,17 @@ exports.getOngoingRide = async (req, res, next) => {
     next(new APIError("couldn't find current ride"));
   }
 };
+
+exports.getRide = async (req, res, next) => {
+  const { _id } = req.params;
+  const { userId } = req;
+
+  try {
+    const ride = await Ride.findOne({ _id, user: userId }).exec();
+
+    res.json(ride);
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};

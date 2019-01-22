@@ -8,7 +8,7 @@ const PaymentController = require('../controllers/payment');
 const { requireJWT } = require('../middleware/authenticate');
 
 /**
- * POST /api/payments/me/stripe-ephemeral-keys
+ * POST /payments/me/stripe-ephemeral-keys
  *
  * Generate an ephemeral key for the logged in customer.
  * https://stripe.com/docs/mobile/ios/standard#prepare-your-api
@@ -21,7 +21,7 @@ router.post(
 );
 
 /**
- * PUT /api/payments/me/top-up
+ * PUT /payments/me/top-up
  * top up user balance
  * @param amount
  * @param source - stripe payment source
@@ -34,7 +34,7 @@ router.put(
 );
 
 /**
- * GET /api/payments/me
+ * GET /payments/me
  * list history payments
  */
 router.get('/me', requireJWT, PaymentController.getHistoryPayments);
