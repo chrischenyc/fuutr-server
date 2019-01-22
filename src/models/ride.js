@@ -27,7 +27,6 @@ const rideSchema = new mongoose.Schema(
           cost: { type: Number },
         },
       ],
-      select: false,
     },
 
     lockTime: { type: Date },

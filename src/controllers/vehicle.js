@@ -113,6 +113,7 @@ exports.updateVehicleStatus = async (req, res, next) => {
   }
 };
 
+// FIXME: thread unsafe
 let resetVehicleReserveTimer;
 
 exports.reserveVehicle = async (req, res, next) => {

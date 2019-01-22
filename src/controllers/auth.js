@@ -63,7 +63,6 @@ exports.signupWithEmail = async (req, res, next) => {
     const newUser = new User({ email, password: hash, stripeCustomerId: stripeCustomer.id });
     await newUser.save();
 
-    // TODO: send out email verification email
     sendWelcomeEmail(email);
 
     res.status(httpStatus.CREATED).json(generateTokens(newUser));

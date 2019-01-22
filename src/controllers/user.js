@@ -83,11 +83,8 @@ exports.updateEmail = async (req, res, next) => {
       res.status(httpStatus.NO_CONTENT).send();
       return;
     }
-    const { email: previousEmail } = user;
-    // TODO: send email alert to previousEmail
 
     user.email = email;
-    // TODO: send verification email to new email
 
     await user.save();
 
@@ -123,7 +120,6 @@ exports.updatePhone = async (req, res, next) => {
 
     user.phoneNumber = phoneNumber;
     user.countryCode = countryCode;
-    // TODO: send SMS to new number
 
     await user.save();
 

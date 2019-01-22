@@ -131,9 +131,7 @@ exports.updateRide = async (req, res, next) => {
   const { userId } = req;
 
   try {
-    const ride = await Ride.findOne({ _id, user: userId })
-      .select({ route: 1, distance: 1 })
-      .exec();
+    const ride = await Ride.findOne({ _id, user: userId }).exec();
 
     if (!ride) {
       next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
@@ -156,9 +154,7 @@ exports.pauseRide = async (req, res, next) => {
   const { userId } = req;
 
   try {
-    const ride = await Ride.findOne({ _id, user: userId, paused: false })
-      .select({ vehicle: 1, segments: 1, rideMinuteCost: 1 })
-      .exec();
+    const ride = await Ride.findOne({ _id, user: userId, paused: false }).exec();
 
     if (!ride) {
       next(new APIError("couldn't pause ride", httpStatus.INTERNAL_SERVER_ERROR, true));
@@ -216,9 +212,7 @@ exports.resumeRide = async (req, res, next) => {
   const { userId } = req;
 
   try {
-    const ride = await Ride.findOne({ _id, user: userId, paused: true })
-      .select({ vehicle: 1, segments: 1, pauseMinuteCost: 1 })
-      .exec();
+    const ride = await Ride.findOne({ _id, user: userId, paused: true }).exec();
 
     if (!ride) {
       next(new APIError("couldn't resume ride", httpStatus.INTERNAL_SERVER_ERROR, true));
@@ -279,16 +273,7 @@ exports.finishRide = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: userId }).exec();
 
-    const ride = await Ride.findOne({ _id, user: userId })
-      .select({
-        vehicle: 1,
-        segments: 1,
-        rideMinuteCost: 1,
-        pauseMinuteCost: 1,
-        unlockCost: 1,
-        unlockTime: 1,
-      })
-      .exec();
+    const ride = await Ride.findOne({ _id, user: userId }).exec();
 
     const vehicle = await Vehicle.findOne({ _id: ride.vehicle }).exec();
 
