@@ -32,8 +32,45 @@ router.post(
 router.patch(
   '/:_id',
   requireJWT,
-  validate({ body: { incrementalEncodedPath: Joi.string(), incrementalDistance: Joi.number() } }),
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+    body: { incrementalEncodedPath: Joi.string(), incrementalDistance: Joi.number() },
+  }),
   RideController.updateRide
+);
+
+/**
+ * PATCH /api/rides/:_id/pause
+ * pause an ongoing ride
+ *
+ */
+router.patch(
+  '/:_id/pause',
+  requireJWT,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  RideController.pauseRide
+);
+
+/**
+ * PATCH /api/rides/:_id/resume
+ * resume a paused ride
+ *
+ */
+router.patch(
+  '/:_id/resume',
+  requireJWT,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  RideController.resumeRide
 );
 
 /**
@@ -50,6 +87,9 @@ router.post(
   '/:_id/finish',
   requireJWT,
   validate({
+    params: {
+      _id: Joi.string().required(),
+    },
     body: {
       latitude: Joi.number(),
       longitude: Joi.number(),

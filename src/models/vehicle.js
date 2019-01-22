@@ -25,8 +25,8 @@ const vehicleSchema = new mongoose.Schema(
     unlockCode: { type: String, required: true, unique: true },
     unlockQRImage: { type: String, required: true },
     reserved: { type: Boolean, required: true, default: false },
-    reservedUntil: { type: Date },
     reservedBy: { type: mongoose.Schema.Types.ObjectId },
+    inRide: { type: Boolean, required: true, default: false },
   },
   { timestamps: true, versionKey: false }
 ).index({ location: '2dsphere' });

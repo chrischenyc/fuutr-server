@@ -21,7 +21,6 @@ exports.searchVehicles = async (req, res, next) => {
       location: 1,
       remainderRange: 1,
       reserved: 1,
-      reservedUntil: 1,
       reservedBy: 1,
     };
 
@@ -36,6 +35,7 @@ exports.searchVehicles = async (req, res, next) => {
       vehicles = await Vehicle.find({
         online: true,
         locked: true,
+        inRide: false,
         charging: false,
         reserved: false,
         location: {
@@ -56,7 +56,6 @@ exports.searchVehicles = async (req, res, next) => {
         longitude: vehicle.location.coordinates[0],
         latitude: vehicle.location.coordinates[1],
         reserved: vehicle.reserved,
-        reservedUntil: vehicle.reservedUntil,
         reservedBy: vehicle.reservedBy,
       },
       ['location']
@@ -129,7 +128,6 @@ exports.reserveVehicle = async (req, res, next) => {
         charging: 1,
         reserved: 1,
         reservedBy: 1,
-        reservedUntil: 1,
       })
       .exec();
 
@@ -170,9 +168,6 @@ exports.reserveVehicle = async (req, res, next) => {
         vehicle.reserved = true;
         vehicle.reservedBy = userId;
 
-        const reservedUntil = new Date(now.getSeconds() + process.env.APP_VEHICLE_RESERVE_DURATION);
-        vehicle.reservedUntil = reservedUntil;
-
         success = true;
 
         // reset reserve state
@@ -181,9 +176,8 @@ exports.reserveVehicle = async (req, res, next) => {
         resetVehicleReserveTimer = setTimeout(() => {
           vehicle.reserved = false;
           vehicle.reservedBy = undefined;
-          vehicle.reservedUntil = undefined;
           vehicle.save();
-        }, process.env.APP_VEHICLE_RESERVE_DURATION * 1000);
+        }, process.env.APP_VEHICLE_RESERVE_MAX_DURATION * 1000);
       } else {
         next(new APIError('Sorry, this scooter has been reserved', httpStatus.OK, true));
         return;
@@ -194,7 +188,6 @@ exports.reserveVehicle = async (req, res, next) => {
 
       vehicle.reserved = false;
       vehicle.reservedBy = undefined;
-      vehicle.reservedUntil = undefined;
 
       success = true;
     } else {

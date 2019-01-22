@@ -35,6 +35,7 @@ exports.unlockVehicle = async (req, res, next) => {
       online: true,
       locked: true,
       charging: false,
+      inRide: false,
     })
       .select({
         reserved: 1,
@@ -58,18 +59,18 @@ exports.unlockVehicle = async (req, res, next) => {
 
     const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    if (!segwayResult.success) {
-      logger.error(`Segway API error: ${segwayResult.message}`);
+    // if (!segwayResult.success) {
+    //   logger.error(`Segway API error: ${segwayResult.message}`);
 
-      next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
-      return;
-    }
+    //   next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+    //   return;
+    // }
 
     // update Vehicle object
     vehicle.reserved = false;
     vehicle.reservedBy = undefined;
-    vehicle.reservedUntil = undefined;
     vehicle.locked = false;
+    vehicle.inRide = true;
     await vehicle.save();
 
     // create Ride object
@@ -77,11 +78,12 @@ exports.unlockVehicle = async (req, res, next) => {
       user: userId,
       vehicle: vehicle._id,
       unlockCost: process.env.APP_UNLOCK_COST,
-      minuteCost: process.env.APP_MINUTE_COST,
-      totalCost: process.env.APP_UNLOCK_COST,
+      rideMinuteCost: process.env.APP_RIDE_MINUTE_COST,
+      pauseMinuteCost: process.env.APP_PAUSE_MINUTE_COST,
+      segments: [{ start: Date.now(), paused: false }],
     });
+
     if (latitude && longitude) {
-      // GeoJSON spec
       ride.unlockLocation = { type: 'Point', coordinates: [longitude, latitude] };
     }
 
@@ -129,12 +131,11 @@ exports.updateRide = async (req, res, next) => {
   const { userId } = req;
 
   try {
-    const user = await User.findOne({ _id: userId }).exec();
-    const ride = await Ride.findOne({ _id })
+    const ride = await Ride.findOne({ _id, user: userId })
       .select({ route: 1, distance: 1 })
       .exec();
 
-    if (!user || !ride) {
+    if (!ride) {
       next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
       return;
     }
@@ -150,6 +151,124 @@ exports.updateRide = async (req, res, next) => {
   }
 };
 
+exports.pauseRide = async (req, res, next) => {
+  const { _id } = req.params;
+  const { userId } = req;
+
+  try {
+    const ride = await Ride.findOne({ _id, user: userId, paused: false })
+      .select({ vehicle: 1, segments: 1, rideMinuteCost: 1 })
+      .exec();
+
+    if (!ride) {
+      next(new APIError("couldn't pause ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
+    }
+
+    const vehicle = await Vehicle.findOne({ _id: ride.vehicle })
+      .select({ iotCode: 1, vehicleCode: 1 })
+      .exec();
+
+    // call to lock vehicle
+    const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+
+    // if (!segwayResult.success) {
+    //   logger.error(`Segway API error: ${segwayResult.message}`);
+
+    //   next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+
+    //   return;
+    // }
+
+    // update vehicle status
+    const now = new Date();
+    vehicle.locked = true;
+    await vehicle.save();
+
+    ride.paused = true;
+    ride.pausedUntil = new Date(now.getTime() + process.env.APP_RIDE_PAUSE_MAX_DURATION * 1000);
+
+    // close current ride segment
+    const lastSegment = ride.segments.pop();
+    lastSegment.end = Date.now();
+    lastSegment.cost = ride.rideMinuteCost * ((lastSegment.end - lastSegment.start) / 60000);
+    ride.segments.push(lastSegment);
+    // open a new paused segment
+    const newSegment = {
+      start: Date.now(),
+      paused: true,
+    };
+    ride.segments.push(newSegment);
+
+    await ride.save();
+
+    // TODO: add cron job that's going to lock the scooter
+
+    res.json(ride);
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
+exports.resumeRide = async (req, res, next) => {
+  const { _id } = req.params;
+  const { userId } = req;
+
+  try {
+    const ride = await Ride.findOne({ _id, user: userId, paused: true })
+      .select({ vehicle: 1, segments: 1, pauseMinuteCost: 1 })
+      .exec();
+
+    if (!ride) {
+      next(new APIError("couldn't resume ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
+    }
+
+    const vehicle = await Vehicle.findOne({ _id: ride.vehicle })
+      .select({ iotCode: 1, vehicleCode: 1 })
+      .exec();
+
+    const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+
+    // if (!segwayResult.success) {
+    //   logger.error(`Segway API error: ${segwayResult.message}`);
+
+    //   next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+
+    //   return;
+    // }
+
+    // update vehicle status
+    vehicle.locked = false;
+    await vehicle.save();
+
+    ride.paused = false;
+    ride.pausedUntil = undefined;
+
+    // close current paused segment
+    const lastSegment = ride.segments.pop();
+    lastSegment.end = Date.now();
+    lastSegment.cost = ride.pauseMinuteCost * ((lastSegment.end - lastSegment.start) / 60000);
+    ride.segments.push(lastSegment);
+    // open a new ride segment
+    const newSegment = {
+      start: Date.now(),
+      paused: false,
+    };
+    ride.segments.push(newSegment);
+
+    await ride.save();
+
+    // TODO: dismiss cron job that's going to unlock the scooter
+
+    res.json(ride);
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
 exports.finishRide = async (req, res, next) => {
   const {
     latitude, longitude, incrementalEncodedPath, incrementalDistance,
@@ -159,42 +278,69 @@ exports.finishRide = async (req, res, next) => {
 
   try {
     const user = await User.findOne({ _id: userId }).exec();
-    const ride = await Ride.findOne({ _id }).exec();
+
+    const ride = await Ride.findOne({ _id, user: userId })
+      .select({
+        vehicle: 1,
+        segments: 1,
+        rideMinuteCost: 1,
+        pauseMinuteCost: 1,
+        unlockCost: 1,
+        unlockTime: 1,
+      })
+      .exec();
+
     const vehicle = await Vehicle.findOne({ _id: ride.vehicle }).exec();
 
-    if (!user || !vehicle || !ride) {
+    if (!vehicle || !ride) {
       next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
       return;
     }
 
     // TODO: validate current locking position, geo-fence for illegal parking area
 
-    // call to unlock vehicle
+    // call to lock vehicle
     const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    if (!segwayResult.success) {
-      logger.error(`Segway API error: ${segwayResult.message}`);
+    // if (!segwayResult.success) {
+    //   logger.error(`Segway API error: ${segwayResult.message}`);
 
-      next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+    //   next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
-      return;
-    }
+    //   return;
+    // }
 
     // update vehicle status
     vehicle.locked = true;
+    vehicle.inRide = false;
     await vehicle.save();
+
+    // close current ride segment
+    const lastSegment = ride.segments.pop();
+    lastSegment.end = Date.now();
+    if (lastSegment.paused) {
+      lastSegment.cost = ride.pauseMinuteCost * ((lastSegment.end - lastSegment.start) / 60000);
+    } else {
+      lastSegment.cost = ride.rideMinuteCost * ((lastSegment.end - lastSegment.start) / 60000);
+    }
+    ride.segments.push(lastSegment);
 
     // update ride
     ride.lockTime = Date.now();
-    ride.duration = secondsBetweenDates(ride.unlockTime, ride.lockTime);
-    ride.completed = true;
-    ride.totalCost = ride.unlockCost + ride.minuteCost * (ride.duration / 60.0);
     if (latitude && longitude) {
-      // GeoJSON spec
       ride.lockLocation = { type: 'Point', coordinates: [longitude, latitude] };
     }
-
+    ride.duration = secondsBetweenDates(ride.unlockTime, ride.lockTime);
+    ride.paused = false;
+    ride.pausedUntil = undefined;
+    ride.completed = true;
     updateRideWithIncrementalData(ride, incrementalEncodedPath, incrementalDistance);
+
+    // calculate total cost
+    ride.totalCost = ride.unlockCost;
+    ride.segments.forEach((segment) => {
+      ride.totalCost += segment.cost;
+    });
 
     await ride.save();
 
