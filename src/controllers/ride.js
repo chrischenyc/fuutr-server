@@ -60,12 +60,14 @@ exports.unlockVehicle = async (req, res, next) => {
 
     const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (!segwayResult.success) {
-    //   logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //   next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
-    //   return;
-    // }
+        next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        return;
+      }
+    }
 
     // update Vehicle object
     vehicle.reserved = false;
@@ -171,13 +173,15 @@ exports.pauseRide = async (req, res, next) => {
     // call to lock vehicle
     const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (!segwayResult.success) {
-    //   logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //   next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
-    //   return;
-    // }
+        return;
+      }
+    }
 
     // update vehicle status
     const now = new Date();
@@ -240,13 +244,15 @@ exports.resumeRide = async (req, res, next) => {
 
     const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (!segwayResult.success) {
-    //   logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //   next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
-    //   return;
-    // }
+        return;
+      }
+    }
 
     // update vehicle status
     vehicle.locked = false;
@@ -306,13 +312,15 @@ const finishRide = async (req, res, next) => {
     // call to lock vehicle
     const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (!segwayResult.success) {
-    //   logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //   next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
-    //   return;
-    // }
+        return;
+      }
+    }
 
     // update vehicle status
     vehicle.locked = true;
