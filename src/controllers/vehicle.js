@@ -40,7 +40,7 @@ exports.searchVehicles = async (req, res, next) => {
         charging: false,
         reserved: false,
         location: {
-          $near: {
+          $nearSphere: {
             $geometry: { type: 'Point', coordinates: [longitude, latitude] },
             $maxDistance: radius,
           },
