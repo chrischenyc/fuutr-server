@@ -87,6 +87,13 @@ router.post(
   AuthController.refreshToken
 );
 
+// POST /auth/logout
+router.post(
+  '/logout',
+  validate({ body: { refreshToken: Joi.string().required() } }),
+  AuthController.logout
+);
+
 // request password reset verification code
 router.get(
   '/reset-password-send-code',

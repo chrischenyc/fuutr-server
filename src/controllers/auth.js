@@ -186,6 +186,35 @@ exports.refreshToken = async (req, res) => {
   }
 };
 
+exports.logout = async (req, res) => {
+  const { authorization } = req.headers;
+  const { refreshToken } = req.body;
+
+  const bearer = authorization && authorization.split(' ')[0];
+  const token = authorization && authorization.split(' ')[1];
+
+  if (bearer !== 'Bearer' || !token) {
+    res.status(httpStatus.UNAUTHORIZED).send();
+    return;
+  }
+
+  try {
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
+    const { _id } = decoded;
+    if (!_id) {
+      res.status(httpStatus.UNAUTHORIZED).send();
+      return;
+    }
+
+    await RefreshToken.remove({ token: refreshToken, user: _id, expired: false });
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error.message);
+    res.status(httpStatus.UNAUTHORIZED).send();
+  }
+};
+
 exports.sendPasswordResetCode = async (req, res, next) => {
   const { email } = req.query;
 
