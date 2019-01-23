@@ -12,4 +12,4 @@ const zoneSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 ).index({ polygon: '2dsphere' });
 
-module.exports = mongoose.model('Ride', zoneSchema);
+module.exports = mongoose.model('Zone', zoneSchema);
