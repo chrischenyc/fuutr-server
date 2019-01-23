@@ -26,7 +26,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true, // facebookId may be null, need sparse indexing here
-      select: false,
     },
     displayName: { type: String, trim: true },
     photo: { type: String },
@@ -35,9 +34,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true, // stripeCustomerId may be null, need sparse indexing here
-      select: false,
     },
-    canReserveVehicleAfter: { type: Date, select: false }, // user needs to wait for 15 mins before next reserve
+    canReserveVehicleAfter: { type: Date }, // user needs to wait for 15 mins before next reserve
   },
   { timestamps: true, versionKey: false }
 );

@@ -3,11 +3,7 @@ require('mongoose-geojson-schema');
 
 const rideSchema = new mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      select: false,
-    },
+    user: { type: mongoose.Schema.Types.ObjectId, required: true },
     vehicle: { type: mongoose.Schema.Types.ObjectId, required: true },
 
     unlockCost: { type: Number, required: true },
@@ -15,7 +11,7 @@ const rideSchema = new mongoose.Schema(
     pauseMinuteCost: { type: Number, required: true },
 
     unlockTime: { type: Date, required: true, default: Date.now },
-    unlockLocation: { type: mongoose.Schema.Types.Point, select: false },
+    unlockLocation: { type: mongoose.Schema.Types.Point },
 
     // user can pause/resume a ride
     segments: {
@@ -30,7 +26,7 @@ const rideSchema = new mongoose.Schema(
     },
 
     lockTime: { type: Date },
-    lockLocation: { type: mongoose.Schema.Types.Point, select: false },
+    lockLocation: { type: mongoose.Schema.Types.Point },
 
     route: { type: mongoose.Schema.Types.LineString },
     encodedPath: { type: String },
