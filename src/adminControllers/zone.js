@@ -34,119 +34,50 @@ exports.getZones = async (req, res, next) => {
   }
 };
 
-/*
 exports.addZone = async (req, res, next) => {
-  const { vehicleCode, iotCode } = req.body;
+  const {
+    active, parking, speedMode, note,
+  } = req.body;
 
   try {
-    let existingVehicle = await Vehicle.findOne({ vehicleCode }).exec();
-
-    if (existingVehicle) {
-      next(
-        new APIError(`Vehicle Code ${vehicleCode} exists`, httpStatus.INTERNAL_SERVER_ERROR, true)
-      );
-    }
-
-    existingVehicle = await Vehicle.findOne({ iotCode }).exec();
-
-    if (existingVehicle) {
-      next(new APIError(`IoT Code ${iotCode} exists`, httpStatus.INTERNAL_SERVER_ERROR, true));
-    }
-
-    const unlockCode = await generateNewUnlockCode();
-    const unlockQRImage = await generateUnlockCodeQRImage(vehicleCode, iotCode, unlockCode);
-
-    // bind IoT code, vehicle code, and QR code on Segway
-    await bindVehicle(iotCode, vehicleCode, unlockCode);
-
-    const vehicleStatus = await queryVehicle(iotCode, vehicleCode);
-
-    const {
-      online,
-      locked,
-      networkSignal,
-      charging,
-      powerPercent,
+    const zone = new Zones({
+      active,
+      parking,
       speedMode,
-      speed,
-      odometer,
-      remainderRange,
-      latitude,
-      longitude,
-      altitude,
-      statusUtcTime,
-      gpsUtcTime,
-    } = vehicleStatus;
-
-    const vehicle = new Vehicle({
-      vehicleCode,
-      iotCode,
-      unlockCode,
-      unlockQRImage,
-      online,
-      locked,
-      networkSignal,
-      charging,
-      powerPercent,
-      speedMode,
-      speed,
-      odometer,
-      remainderRange,
-      location: {
-        type: 'Point',
-        coordinates: [longitude, latitude],
-      },
-      altitude,
-      statusUtcTime,
-      gpsUtcTime,
+      note,
     });
 
-    await vehicle.save();
+    await zone.save();
 
-    res.json(vehicle);
+    res.json(zone);
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
-*/
 
-/*
-exports.editVehicle = async (req, res, next) => {
+exports.editZone = async (req, res, next) => {
   const { _id } = req.params;
-  const { vehicleCode, iotCode } = req.body;
+  const {
+    active, parking, speedMode, note,
+  } = req.body;
 
   try {
-    const existingVehicle = await Vehicle.findOne({ _id })
-      .select({
-        unlockCode: 1,
-      })
-      .exec();
+    const existingZone = await Zones.findOne({ _id }).exec();
 
-    if (!existingVehicle) {
-      next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
+    if (!existingZone) {
+      next(new APIError(`Zone id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
     }
 
-    // re-bind IoT code, vehicle code, and existing QR code on Segway
-    await bindVehicle(iotCode, vehicleCode, existingVehicle.unlockCode);
+    existingZone.active = active;
+    existingZone.parking = parking;
+    existingZone.speedMode = speedMode;
+    existingZone.note = note || undefined;
+    await existingZone.save();
 
-    const vehicleStatus = await queryVehicle(iotCode, vehicleCode);
-
-    await Vehicle.update(
-      { _id },
-      {
-        $set: {
-          iotCode,
-          vehicleCode,
-          ...vehicleStatus,
-        },
-      }
-    );
-
-    res.status(httpStatus.OK).send();
+    res.json(existingZone);
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
-*/

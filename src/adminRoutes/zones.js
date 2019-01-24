@@ -25,25 +25,26 @@ router.get(
 /**
  * POST /admin/zones
  */
-/*
+
 router.post(
   '/',
   requireJWT,
   requireAdmin,
   validate({
     body: {
-      vehicleCode: Joi.string().required(),
-      iotCode: Joi.string().required(),
+      active: Joi.bool().required(),
+      parking: Joi.bool().required(),
+      speedMode: Joi.number().required(),
+      note: Joi.string().allow(''),
     },
   }),
-  ZoneController.addVehicle
+  ZoneController.addZone
 );
-*/
 
 /**
- * PATCH /admin/vehicles/:id
+ * PATCH /admin/zones/:id
  */
-/*
+
 router.patch(
   '/:_id',
   requireJWT,
@@ -53,12 +54,13 @@ router.patch(
       _id: Joi.string().required(),
     },
     body: {
-      vehicleCode: Joi.string().required(),
-      iotCode: Joi.string().required(),
+      active: Joi.bool().required(),
+      parking: Joi.bool().required(),
+      speedMode: Joi.number().required(),
+      note: Joi.string().allow(''),
     },
   }),
-  ZoneController.editVehicle
+  ZoneController.editZone
 );
-*/
 
 module.exports = router;
