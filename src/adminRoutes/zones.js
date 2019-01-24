@@ -63,4 +63,20 @@ router.patch(
   ZoneController.editZone
 );
 
+/**
+ * DELETE /admin/zones/:id
+ */
+
+router.delete(
+  '/:_id',
+  requireJWT,
+  requireAdmin,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  ZoneController.deleteZone
+);
+
 module.exports = router;

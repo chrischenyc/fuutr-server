@@ -81,3 +81,16 @@ exports.editZone = async (req, res, next) => {
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
+
+exports.deleteZone = async (req, res, next) => {
+  const { _id } = req.params;
+
+  try {
+    await Zones.findOneAndRemove({ _id }).exec();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(error.message);
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
