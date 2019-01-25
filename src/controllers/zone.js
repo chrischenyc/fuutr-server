@@ -9,7 +9,19 @@ exports.getZones = async (req, res, next) => {
   try {
     const selector = { active: true };
 
-    const zones = await Zones.find(selector);
+    let zones = await Zones.find(selector);
+    zones = zones.map((zone) => {
+      const polygon = zone.polygon.coordinates[0];
+      polygon.pop();
+
+      return {
+        active: zone.active,
+        parking: zone.parking,
+        speedMode: zone.speedMode,
+        note: zone.note,
+        polygon,
+      };
+    });
 
     res.json(zones);
   } catch (error) {
