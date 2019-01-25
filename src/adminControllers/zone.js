@@ -36,11 +36,12 @@ exports.getZones = async (req, res, next) => {
 
 exports.addZone = async (req, res, next) => {
   const {
-    active, parking, speedMode, note,
+    polygon, active, parking, speedMode, note,
   } = req.body;
 
   try {
     const zone = new Zones({
+      polygon,
       active,
       parking,
       speedMode,
