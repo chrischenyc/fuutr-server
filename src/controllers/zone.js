@@ -14,13 +14,36 @@ exports.getZones = async (req, res, next) => {
       const polygon = zone.polygon.coordinates[0];
       polygon.pop();
 
-      return {
+      let result = {
         active: zone.active,
         parking: zone.parking,
         speedMode: zone.speedMode,
-        note: zone.note,
         polygon,
       };
+
+      if (!zone.parking) {
+        result = {
+          ...result,
+          title: 'No-Parking Zone',
+          message: 'Parking scooters here may lead to fine.',
+        };
+      } else if (zone.speedMode === 1) {
+        result = {
+          ...result,
+          title: 'Speed Limit Zone',
+          message:
+            'Scooter top speed will be automatically limited to the lower range once entering.',
+        };
+      } else if (zone.speedMode === 2) {
+        result = {
+          ...result,
+          title: 'Speed Limit Zone',
+          message:
+            'Scooter top speed will be automatically limited to the mid range once entering.',
+        };
+      }
+
+      return result;
     });
 
     res.json(zones);
