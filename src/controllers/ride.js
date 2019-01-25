@@ -60,7 +60,7 @@ exports.unlockVehicle = async (req, res, next) => {
 
     const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
       if (!segwayResult.success) {
         logger.error(`Segway API error: ${segwayResult.message}`);
 
@@ -173,7 +173,7 @@ exports.pauseRide = async (req, res, next) => {
     // call to lock vehicle
     const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
       if (!segwayResult.success) {
         logger.error(`Segway API error: ${segwayResult.message}`);
 
@@ -244,7 +244,7 @@ exports.resumeRide = async (req, res, next) => {
 
     const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
       if (!segwayResult.success) {
         logger.error(`Segway API error: ${segwayResult.message}`);
 
@@ -312,7 +312,7 @@ const finishRide = async (req, res, next) => {
     // call to lock vehicle
     const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
       if (!segwayResult.success) {
         logger.error(`Segway API error: ${segwayResult.message}`);
 
