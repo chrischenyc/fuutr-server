@@ -48,11 +48,17 @@ exports.unlockVehicle = async (req, res, next) => {
 
     if (vehicle.reserved && !vehicle.reservedBy.equals(userId)) {
       logger.error(`Trying to unlock ${vehicle._id} which has been reserved by another user`);
-      next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+      next(
+        new APIError(
+          'Sorry, this scooter is being reserved',
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
       return;
     }
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
       const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
@@ -175,7 +181,7 @@ exports.pauseRide = async (req, res, next) => {
       return;
     }
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
       const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
@@ -244,7 +250,7 @@ exports.resumeRide = async (req, res, next) => {
 
     const vehicle = await Vehicle.findOne({ _id: ride.vehicle }).exec();
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
       const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
@@ -322,7 +328,7 @@ const finishRide = async (req, res, next) => {
       return;
     }
 
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
       const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
