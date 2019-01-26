@@ -76,9 +76,9 @@ exports.unlockVehicle = async (req, res, next) => {
     const ride = new Ride({
       user: userId,
       vehicle: vehicle._id,
-      unlockCost: process.env.APP_UNLOCK_COST,
-      rideMinuteCost: process.env.APP_RIDE_MINUTE_COST,
-      pauseMinuteCost: process.env.APP_PAUSE_MINUTE_COST,
+      unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
+      rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
+      pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
       segments: [{ start: Date.now(), paused: false }],
     });
 

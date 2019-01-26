@@ -11,6 +11,28 @@ const logger = require('../helpers/logger');
 const updateVehicleStatus = require('../helpers/update-vehicle-status');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 
+// convert mongo document object to an object to be returned
+const normalizeVehicle = (vehicle) => {
+  let result = {
+    _id: vehicle._id,
+    powerPercent: vehicle.powerPercent,
+    remainderRange: (vehicle.remainderRange * 10.0) / 1000.0,
+    vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
+    longitude: vehicle.location.coordinates[0],
+    latitude: vehicle.location.coordinates[1],
+    reserved: vehicle.reserved,
+    unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
+    rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
+    pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
+  };
+
+  if (vehicle.reservedUntil) {
+    result = { ...result, reservedUntil: vehicle.reservedUntil };
+  }
+
+  return result;
+};
+
 exports.searchVehicles = async (req, res, next) => {
   const { latitude, longitude, radius } = req.query;
   const { userId } = req;
@@ -48,23 +70,7 @@ exports.searchVehicles = async (req, res, next) => {
       }).select(selector);
     }
 
-    vehicles = vehicles.map((vehicle) => {
-      let result = {
-        _id: vehicle._id,
-        powerPercent: vehicle.powerPercent,
-        remainderRange: (vehicle.remainderRange * 10.0) / 1000.0,
-        vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
-        longitude: vehicle.location.coordinates[0],
-        latitude: vehicle.location.coordinates[1],
-        reserved: vehicle.reserved,
-      };
-
-      if (vehicle.reservedUntil) {
-        result = { ...result, reservedUntil: vehicle.reservedUntil };
-      }
-
-      return result;
-    });
+    vehicles = vehicles.map(vehicle => normalizeVehicle(vehicle));
 
     res.json(vehicles);
   } catch (error) {
@@ -226,7 +232,7 @@ exports.reserveVehicle = async (req, res, next) => {
 
     await vehicle.save();
 
-    res.json(vehicle);
+    res.json(normalizeVehicle(vehicle));
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
