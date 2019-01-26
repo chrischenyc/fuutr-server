@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const _ = require('lodash');
 const md5 = require('md5');
+const moment = require('moment');
 
 const Vehicle = require('../models/vehicle');
 const User = require('../models/user');
@@ -40,20 +41,11 @@ exports.searchVehicles = async (req, res, next) => {
   const { userId } = req;
 
   try {
-    const selector = {
-      vehicleCode: 1,
-      powerPercent: 1,
-      location: 1,
-      remainderRange: 1,
-      reserved: 1,
-      reservedUntil: 1,
-    };
-
     // if user has been reserving a vehicle, return just that one
     let vehicles = await Vehicle.find({
       reserved: true,
       reservedBy: userId,
-    }).select(selector);
+    });
 
     // otherwise, return all nearby vehicles
     if (vehicles.length === 0) {
@@ -69,7 +61,7 @@ exports.searchVehicles = async (req, res, next) => {
             $maxDistance: radius,
           },
         },
-      }).select(selector);
+      });
     }
 
     vehicles = vehicles.map(vehicle => normalizeVehicleResult(vehicle));
@@ -160,20 +152,9 @@ exports.reserveVehicle = async (req, res, next) => {
   const { userId } = req;
 
   try {
-    const vehicle = await Vehicle.findOne({ _id })
-      .select({
-        online: 1,
-        locked: 1,
-        charging: 1,
-        reserved: 1,
-        reservedBy: 1,
-        reserveTimeoutKey: 1,
-      })
-      .exec();
+    const vehicle = await Vehicle.findOne({ _id }).exec();
 
-    const user = await User.findOne({ _id: userId })
-      .select({ canReserveVehicleAfter: 1 })
-      .exec();
+    const user = await User.findOne({ _id: userId }).exec();
 
     if (!vehicle || !user) {
       next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.BAD_REQUEST, true));
@@ -196,9 +177,9 @@ exports.reserveVehicle = async (req, res, next) => {
         if (user.canReserveVehicleAfter && now < user.canReserveVehicleAfter) {
           next(
             new APIError(
-              `You need wait for ${Math.round(
-                (user.canReserveVehicleAfter - now) / 1000
-              )} seconds to reserve again`,
+              `You need wait for ${moment
+                .duration((user.canReserveVehicleAfter - now) / 1000, 'seconds')
+                .humanize()} to reserve again`,
               httpStatus.BAD_REQUEST,
               true
             )
