@@ -12,7 +12,7 @@ const updateVehicleStatus = require('../helpers/update-vehicle-status');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 
 // convert mongo document object to an object to be returned
-const normalizeVehicle = (vehicle) => {
+const normalizeVehicleResult = (vehicle) => {
   let result = {
     _id: vehicle._id,
     powerPercent: vehicle.powerPercent,
@@ -70,7 +70,7 @@ exports.searchVehicles = async (req, res, next) => {
       }).select(selector);
     }
 
-    vehicles = vehicles.map(vehicle => normalizeVehicle(vehicle));
+    vehicles = vehicles.map(vehicle => normalizeVehicleResult(vehicle));
 
     res.json(vehicles);
   } catch (error) {
@@ -232,7 +232,7 @@ exports.reserveVehicle = async (req, res, next) => {
 
     await vehicle.save();
 
-    res.json(normalizeVehicle(vehicle));
+    res.json(normalizeVehicleResult(vehicle));
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
