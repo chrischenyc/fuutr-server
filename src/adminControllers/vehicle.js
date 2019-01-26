@@ -37,19 +37,6 @@ exports.getVehicles = async (req, res, next) => {
     }
 
     const vehicles = await Vehicle.find(selector)
-      .select({
-        unlockCode: 1,
-        iotCode: 1,
-        vehicleCode: 1,
-        online: 1,
-        locked: 1,
-        networkSignal: 1,
-        charging: 1,
-        powerPercent: 1,
-        remainderRange: 1,
-        location: 1,
-        reserved: 1,
-      })
       .limit(adminTablePaginationLimit)
       .skip(page * adminTablePaginationLimit)
       .sort({ createdAt: -1 });
@@ -67,25 +54,7 @@ exports.getVehicle = async (req, res, next) => {
   const { _id } = req.params;
 
   try {
-    const vehicle = await Vehicle.findOne({ _id })
-      .select({
-        unlockCode: 1,
-        unlockQRImage: 1,
-        iotCode: 1,
-        vehicleCode: 1,
-        online: 1,
-        locked: 1,
-        networkSignal: 1,
-        charging: 1,
-        powerPercent: 1,
-        speedMode: 1,
-        speed: 1,
-        odometer: 1,
-        remainderRange: 1,
-        location: 1,
-        reserved: 1,
-      })
-      .exec();
+    const vehicle = await Vehicle.findOne({ _id }).exec();
 
     res.json(vehicle);
   } catch (error) {
