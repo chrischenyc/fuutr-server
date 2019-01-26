@@ -113,6 +113,29 @@ exports.lockVehicle = async (iotCode, vehicleCode) => {
   }
 };
 
+// https://api.segway.pt/doc/index.html#api-Control-VehicleSpeedMode
+exports.updateVehicleSpeedMode = async (iotCode, vehicleCode, speedMode) => {
+  try {
+    const data = {
+      iotCode,
+      vehicleCode,
+      speedMode,
+    };
+
+    const response = await segwayClient({
+      method: 'post',
+      data,
+      url: '/api/vehicle/control/speed-mod',
+    });
+
+    return response.data;
+  } catch (error) {
+    logger.error(error.response.data.message);
+
+    return null;
+  }
+};
+
 // api.segway.pt/doc/index.html#api-VehicleIoT-VehicleIoTBinding
 exports.bindVehicle = async (iotCode, vehicleCode, qrCode) => {
   try {

@@ -4,12 +4,14 @@ const md5 = require('md5');
 
 const Vehicle = require('../models/vehicle');
 const User = require('../models/user');
+const Zone = require('../models/zone');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
 const updateVehicleStatus = require('../helpers/update-vehicle-status');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
+const { updateVehicleSpeedMode } = require('./segway');
 
 // convert mongo document object to an object to be returned
 const normalizeVehicleResult = (vehicle) => {
@@ -93,7 +95,7 @@ const validateSegwayPushBody = (body) => {
   return signature === encryptedString;
 };
 
-exports.updateVehicleStatus = async (req, res, next) => {
+exports.receiveVehicleStatusPush = async (req, res, next) => {
   try {
     // validate signature
     if (!validateSegwayPushBody(req.body)) {
@@ -113,9 +115,34 @@ exports.updateVehicleStatus = async (req, res, next) => {
       return;
     }
 
-    await updateVehicleStatus(vehicleCode, iotCode, req.body);
-
+    const updatedVehicle = await updateVehicleStatus(vehicleCode, iotCode, req.body);
     logger.info(`Segway push: status updated iotCode ${iotCode} vehicleCode ${vehicleCode}`);
+
+    const { locked, location } = updatedVehicle;
+    logger.info(`Speed limit zone: locked ${locked} location ${location}`);
+
+    if (!locked) {
+      const speedLimitZones = await Zone.find({
+        active: true,
+        speedMode: { $in: [1, 2] },
+        polygon: {
+          $geoIntersects: { $geometry: location },
+        },
+      }).sort({ speedMode: 1 });
+
+      if (speedLimitZones.length > 0) {
+        const { speedMode } = speedLimitZones[0];
+
+        logger.info(`Speed limit zone: vehicle inside speed limit zone ${speedMode}`);
+
+        const segwayResult = await updateVehicleSpeedMode(iotCode, vehicleCode, speedMode);
+        if (!segwayResult.success) {
+          logger.error(`Segway API error, can't update speed mode: ${segwayResult}`);
+        }
+      } else {
+        logger.info('Speed limit zone: vehicle outside speed limit zone');
+      }
+    }
 
     res.status(httpStatus.OK).send();
   } catch (error) {

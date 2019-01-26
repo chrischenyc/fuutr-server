@@ -23,7 +23,7 @@ router.post(
       signature: Joi.string().required(),
     },
   }),
-  VehicleController.updateVehicleStatus
+  VehicleController.receiveVehicleStatusPush
 );
 
 module.exports = router;

@@ -17,12 +17,14 @@ const updateVehicleStatus = async (vehicleCode, iotCode, status) => {
     };
   }
 
-  await Vehicle.update(
+  const newVehicle = await Vehicle.findOneAndUpdate(
     { vehicleCode, iotCode },
     {
       $set: newDoc,
     }
   );
+
+  return newVehicle;
 };
 
 module.exports = updateVehicleStatus;
