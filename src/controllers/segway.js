@@ -125,7 +125,7 @@ exports.updateVehicleSpeedMode = async (iotCode, vehicleCode, speedMode) => {
     const response = await segwayClient({
       method: 'post',
       data,
-      url: '/api/vehicle/control/speed-mod',
+      url: '/api/vehicle/control/speed-mode',
     });
 
     return response.data;
