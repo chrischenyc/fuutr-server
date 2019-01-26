@@ -118,7 +118,7 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
     const updatedVehicle = await updateVehicleStatus(vehicleCode, iotCode, req.body);
     logger.info(`Segway push: status updated iotCode ${iotCode} vehicleCode ${vehicleCode}`);
 
-    const { locked, location } = updatedVehicle;
+    const { locked, location, speedMode } = updatedVehicle;
     logger.info(`Speed limit zone: locked ${locked} location ${location}`);
 
     if (!locked) {
@@ -130,17 +130,23 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
         },
       }).sort({ speedMode: 1 });
 
+      let newSpeedMode = speedMode;
+
       if (speedLimitZones.length > 0) {
-        const { speedMode } = speedLimitZones[0];
+        newSpeedMode = speedLimitZones[0].speedMode;
+      } else {
+        newSpeedMode = 3;
+      }
 
-        logger.info(`Speed limit zone: vehicle inside speed limit zone ${speedMode}`);
+      if (speedMode !== newSpeedMode) {
+        logger.info(`Speed limit zone: update vehicle speed limit zone ${newSpeedMode}`);
 
-        const segwayResult = await updateVehicleSpeedMode(iotCode, vehicleCode, speedMode);
+        const segwayResult = await updateVehicleSpeedMode(iotCode, vehicleCode, newSpeedMode);
         if (!segwayResult.success) {
           logger.error(`Segway API error, can't update speed mode: ${segwayResult}`);
         }
       } else {
-        logger.info('Speed limit zone: vehicle outside speed limit zone');
+        logger.info(`Speed limit zone: keep vehicle speed limit zone ${newSpeedMode}`);
       }
     }
 
