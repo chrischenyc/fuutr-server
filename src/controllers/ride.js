@@ -62,7 +62,7 @@ exports.unlockVehicle = async (req, res, next) => {
 
     if (process.env.NODE_ENV !== 'development') {
       if (!segwayResult.success) {
-        logger.error(`Segway API error: ${segwayResult.message}`);
+        logger.error(`Segway API error: ${segwayResult}`);
 
         next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
         return;
