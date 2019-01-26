@@ -13,17 +13,7 @@ exports.getProfile = async (req, res) => {
     return;
   }
 
-  const user = await User.findOne({ _id })
-    .select({
-      email: 1,
-      phoneNumber: 1,
-      countryCode: 1,
-      displayName: 1,
-      photo: 1,
-      balance: 1,
-      canReserveVehicleAfter: 1,
-    })
-    .exec();
+  const user = await User.findOne({ _id }).exec();
 
   if (!user) {
     res.status(httpStatus.UNAUTHORIZED).send();

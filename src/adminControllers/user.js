@@ -22,16 +22,6 @@ exports.getUsers = async (req, res, next) => {
     }
 
     const users = await User.find(selector)
-      .select({
-        isAdmin: 1,
-        isCouncil: 1,
-        displayName: 1,
-        email: 1,
-        countryCode: 1,
-        phoneNumber: 1,
-        balance: 1,
-        createdAt: 1,
-      })
       .limit(adminTablePaginationLimit)
       .skip(page * adminTablePaginationLimit)
       .sort({ _id: 1 });
@@ -49,19 +39,7 @@ exports.getUser = async (req, res, next) => {
   const { _id } = req.params;
 
   try {
-    const user = await User.findOne({ _id })
-      .select({
-        isAdmin: 1,
-        isCouncil: 1,
-        displayName: 1,
-        email: 1,
-        countryCode: 1,
-        phoneNumber: 1,
-        balance: 1,
-        createdAt: 1,
-        photo: 1,
-      })
-      .exec();
+    const user = await User.findOne({ _id }).exec();
 
     res.json(user);
   } catch (error) {

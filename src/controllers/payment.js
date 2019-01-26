@@ -14,9 +14,7 @@ exports.generateStripeEphemeralKeys = async (req, res, next) => {
   const { userId: _id } = req;
 
   try {
-    const user = await User.findOne({ _id })
-      .select({ stripeCustomerId: 1 })
-      .exec();
+    const user = await User.findOne({ _id }).exec();
     // Create ephemeral key for customer.
     const ephemeralKey = await stripe.ephemeralKeys.create(
       { customer: user.stripeCustomerId },
@@ -35,9 +33,7 @@ exports.topUpBalance = async (req, res, next) => {
   const { userId: _id } = req;
 
   try {
-    const user = await User.findOne({ _id })
-      .select({ stripeCustomerId: 1, balance: 1, email: 1 })
-      .exec();
+    const user = await User.findOne({ _id }).exec();
 
     // Create a charge and set its destination to the pilot's account.
     const description = 'balance top up';
@@ -100,14 +96,7 @@ exports.topUpBalance = async (req, res, next) => {
 exports.getHistoryPayments = async (req, res, next) => {
   try {
     const { userId } = req;
-    const payments = await Payment.find({ user: userId })
-      .select({
-        amount: 1,
-        lastFour: 1,
-        description: 1,
-        createdAt: 1,
-      })
-      .sort({ createdAt: -1 });
+    const payments = await Payment.find({ user: userId }).sort({ createdAt: -1 });
 
     res.json(payments);
   } catch (error) {

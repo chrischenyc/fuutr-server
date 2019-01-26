@@ -22,15 +22,6 @@ exports.getRides = async (req, res, next) => {
     }
 
     const rides = await Ride.find(selector)
-      .select({
-        user: 1,
-        vehicle: 1,
-        duration: 1,
-        distance: 1,
-        completed: 1,
-        totalCost: 1,
-        createdAt: 1,
-      })
       .limit(adminTablePaginationLimit)
       .skip(page * adminTablePaginationLimit)
       .sort({ createdAt: -1 });
@@ -48,24 +39,7 @@ exports.getRide = async (req, res, next) => {
   const { _id } = req.params;
 
   try {
-    const ride = await Ride.findOne({ _id })
-      .select({
-        user: 1,
-        vehicle: 1,
-        unlockTime: 1,
-        lockTime: 1,
-        unlockLocation: 1,
-        lockLocation: 1,
-        route: 1,
-        encodedPath: 1,
-        duration: 1,
-        distance: 1,
-        completed: 1,
-        unlockCost: 1,
-        minuteCost: 1,
-        totalCost: 1,
-      })
-      .exec();
+    const ride = await Ride.findOne({ _id }).exec();
 
     res.json(ride);
   } catch (error) {

@@ -67,9 +67,7 @@ const generateNewUnlockCode = async () => {
   let isUnique = false;
   let unlockCode = null;
 
-  const vehicles = await Vehicle.find({ unlockCode: { $exists: 1 } }).select({
-    unlockCode: 1,
-  });
+  const vehicles = await Vehicle.find({ unlockCode: { $exists: 1 } });
 
   const existingUnlockCodes = vehicles.map(vehicle => vehicle.unlockCode);
 
@@ -179,11 +177,7 @@ exports.editVehicle = async (req, res, next) => {
   const { vehicleCode, iotCode } = req.body;
 
   try {
-    const existingVehicle = await Vehicle.findOne({ _id })
-      .select({
-        unlockCode: 1,
-      })
-      .exec();
+    const existingVehicle = await Vehicle.findOne({ _id }).exec();
 
     if (!existingVehicle) {
       next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
@@ -217,12 +211,7 @@ exports.lockVehicle = async (req, res, next) => {
   const { lock } = req.body;
 
   try {
-    const vehicle = await Vehicle.findOne({ _id })
-      .select({
-        iotCode: 1,
-        vehicleCode: 1,
-      })
-      .exec();
+    const vehicle = await Vehicle.findOne({ _id }).exec();
 
     if (!vehicle) {
       next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
@@ -254,12 +243,7 @@ exports.queryVehicle = async (req, res, next) => {
   const { _id } = req.params;
 
   try {
-    const vehicle = await Vehicle.findOne({ _id })
-      .select({
-        iotCode: 1,
-        vehicleCode: 1,
-      })
-      .exec();
+    const vehicle = await Vehicle.findOne({ _id }).exec();
 
     if (!vehicle) {
       next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));

@@ -17,12 +17,6 @@ exports.getPayments = async (req, res, next) => {
     }
 
     const payments = await Payment.find(selector)
-      .select({
-        user: 1,
-        amount: 1,
-        description: 1,
-        createdAt: 1,
-      })
       .limit(adminTablePaginationLimit)
       .skip(page * adminTablePaginationLimit)
       .sort({ createdAt: -1 });
@@ -40,16 +34,7 @@ exports.getPayment = async (req, res, next) => {
   const { _id } = req.params;
 
   try {
-    const payment = await Payment.findOne({ _id })
-      .select({
-        user: 1,
-        amount: 1,
-        description: 1,
-        createdAt: 1,
-        stripeChargeId: 1,
-        lastFour: 1,
-      })
-      .exec();
+    const payment = await Payment.findOne({ _id }).exec();
 
     res.json(payment);
   } catch (error) {

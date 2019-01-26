@@ -17,13 +17,6 @@ exports.getTransactions = async (req, res, next) => {
     }
 
     const transactions = await Transaction.find(selector)
-      .select({
-        user: 1,
-        amount: 1,
-        type: 1,
-        balance: 1,
-        createdAt: 1,
-      })
       .limit(adminTablePaginationLimit)
       .skip(page * adminTablePaginationLimit)
       .sort({ createdAt: -1 });
