@@ -19,7 +19,7 @@ const normalizeVehicleResult = (vehicle) => {
   let result = {
     _id: vehicle._id,
     powerPercent: vehicle.powerPercent,
-    remainderRange: (vehicle.remainderRange * 10.0) / 1000.0,
+    remainderRange: vehicle.remainderRange * 10.0,
     vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
     longitude: vehicle.location.coordinates[0],
     latitude: vehicle.location.coordinates[1],
