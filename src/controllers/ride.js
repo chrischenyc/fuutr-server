@@ -58,17 +58,16 @@ exports.unlockVehicle = async (req, res, next) => {
       return;
     }
 
-    // FIXME: temp code to bypass segway API
-    // const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+    const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
-    //   if (!segwayResult.success) {
-    //     logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //     next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
-    //     return;
-    //   }
-    // }
+        next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        return;
+      }
+    }
 
     // update Vehicle object
     vehicle.reserved = false;
@@ -172,18 +171,17 @@ exports.pauseRide = async (req, res, next) => {
       .exec();
 
     // call to lock vehicle
-    // FIXME: temp code to bypass segway API
-    // const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+    const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
-    //   if (!segwayResult.success) {
-    //     logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //     next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
-    //     return;
-    //   }
-    // }
+        return;
+      }
+    }
 
     // update vehicle status
     const now = new Date();
@@ -244,18 +242,17 @@ exports.resumeRide = async (req, res, next) => {
       .select({ iotCode: 1, vehicleCode: 1 })
       .exec();
 
-    // FIXME: temp code to bypass segway API
-    // const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+    const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
-    //   if (!segwayResult.success) {
-    //     logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //     next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
-    //     return;
-    //   }
-    // }
+        return;
+      }
+    }
 
     // update vehicle status
     vehicle.locked = false;
@@ -312,19 +309,17 @@ const finishRide = async (req, res, next) => {
 
     // TODO: validate current locking position, geo-fence for illegal parking area
 
-    // call to lock vehicle
-    // FIXME: temp code to bypass segway API
-    // const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+    const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-    // if (process.env.NODE_ENV !== 'development' || process.env.NODE_ENV !== 'staging') {
-    //   if (!segwayResult.success) {
-    //     logger.error(`Segway API error: ${segwayResult.message}`);
+    if (process.env.NODE_ENV !== 'development') {
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${segwayResult.message}`);
 
-    //     next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
-    //     return;
-    //   }
-    // }
+        return;
+      }
+    }
 
     // update vehicle status
     vehicle.locked = true;
