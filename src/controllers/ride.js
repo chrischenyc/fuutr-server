@@ -5,6 +5,7 @@ const Ride = require('../models/ride');
 const User = require('../models/user');
 const Vehicle = require('../models/vehicle');
 const Transaction = require('../models/transaction');
+const Zone = require('../models/zone');
 
 const secondsBetweenDates = require('../helpers/seconds-between-dates');
 const APIError = require('../helpers/api-error');
@@ -37,14 +38,7 @@ exports.unlockVehicle = async (req, res, next) => {
       locked: true,
       charging: false,
       inRide: false,
-    })
-      .select({
-        reserved: 1,
-        reservedBy: 1,
-        iotCode: 1,
-        vehicleCode: 1,
-      })
-      .exec();
+    }).exec();
 
     if (!vehicle) {
       logger.error(`Unlock code ${unlockCode} not found`);
@@ -166,9 +160,20 @@ exports.pauseRide = async (req, res, next) => {
       return;
     }
 
-    const vehicle = await Vehicle.findOne({ _id: ride.vehicle })
-      .select({ iotCode: 1, vehicleCode: 1 })
-      .exec();
+    const vehicle = await Vehicle.findOne({ _id: ride.vehicle }).exec();
+
+    // validate current locking position, geo-fence for illegal parking area
+    const noParkingZones = await Zone.find({
+      active: true,
+      parking: false,
+      polygon: {
+        $geoIntersects: { $geometry: vehicle.location },
+      },
+    });
+    if (noParkingZones.length > 0) {
+      next(new APIError("You can't park the scooter here", httpStatus.NOT_ACCEPTABLE, true));
+      return;
+    }
 
     if (process.env.NODE_ENV !== 'development') {
       const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
@@ -237,9 +242,7 @@ exports.resumeRide = async (req, res, next) => {
       return;
     }
 
-    const vehicle = await Vehicle.findOne({ _id: ride.vehicle })
-      .select({ iotCode: 1, vehicleCode: 1 })
-      .exec();
+    const vehicle = await Vehicle.findOne({ _id: ride.vehicle }).exec();
 
     if (process.env.NODE_ENV !== 'development') {
       const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
@@ -306,7 +309,18 @@ const finishRide = async (req, res, next) => {
       return;
     }
 
-    // TODO: validate current locking position, geo-fence for illegal parking area
+    // validate current locking position, geo-fence for illegal parking area
+    const noParkingZones = await Zone.find({
+      active: true,
+      parking: false,
+      polygon: {
+        $geoIntersects: { $geometry: vehicle.location },
+      },
+    });
+    if (noParkingZones.length > 0) {
+      next(new APIError("You can't park the scooter here", httpStatus.NOT_ACCEPTABLE, true));
+      return;
+    }
 
     if (process.env.NODE_ENV !== 'development') {
       const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
