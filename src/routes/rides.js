@@ -39,6 +39,7 @@ router.get(
 );
 
 /**
+ * TODO: remove this API, update ride route from segway push data
  * PATCH /rides/:_id
  * to update an ongoing ride with the new route and distance travelled
  *
@@ -95,6 +96,7 @@ router.patch(
  *
  * @param latitude
  * @param longitude
+ * TODO: remove incremental params, as the route data will be collected via segway push
  * @param incrementalEncodedPath - incremental path from last update
  * @param incrementalDistance - incremental distance from last update
  * @return the updated Ride object
