@@ -15,7 +15,7 @@ const { addTimer, clearTimer } = require('../helpers/timer-manager');
 const { updateVehicleSpeedMode } = require('./segway');
 
 // convert mongo document object to an object to be returned
-const normalizeVehicleResult = (vehicle) => {
+const normalizeVehicleResult = (vehicle, user) => {
   let result = {
     _id: vehicle._id,
     powerPercent: vehicle.powerPercent,
@@ -33,6 +33,10 @@ const normalizeVehicleResult = (vehicle) => {
     result = { ...result, reservedUntil: vehicle.reservedUntil };
   }
 
+  if (user.canReserveVehicleAfter && user.canReserveVehicleAfter > Date.now()) {
+    result = { ...result, canReserveAfter: user.canReserveVehicleAfter };
+  }
+
   return result;
 };
 
@@ -41,6 +45,8 @@ exports.searchVehicles = async (req, res, next) => {
   const { userId } = req;
 
   try {
+    const user = await User.findOne({ _id: userId }).exec();
+
     // if user has been reserving a vehicle, return just that one
     let vehicles = await Vehicle.find({
       reserved: true,
@@ -64,7 +70,7 @@ exports.searchVehicles = async (req, res, next) => {
       });
     }
 
-    vehicles = vehicles.map(vehicle => normalizeVehicleResult(vehicle));
+    vehicles = vehicles.map(vehicle => normalizeVehicleResult(vehicle, user));
 
     res.json(vehicles);
   } catch (error) {
@@ -243,7 +249,7 @@ exports.reserveVehicle = async (req, res, next) => {
 
     await vehicle.save();
 
-    res.json(normalizeVehicleResult(vehicle));
+    res.json(normalizeVehicleResult(vehicle, user));
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
