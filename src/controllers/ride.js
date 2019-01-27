@@ -177,7 +177,7 @@ exports.pauseRide = async (req, res, next) => {
       },
     });
     if (noParkingZones.length > 0) {
-      next(new APIError("You can't park the scooter here", httpStatus.NOT_ACCEPTABLE, true));
+      next(new APIError('no-parking', httpStatus.NOT_ACCEPTABLE, true));
       return;
     }
 
@@ -324,7 +324,7 @@ const finishRide = async (req, res, next) => {
       },
     });
     if (noParkingZones.length > 0) {
-      next(new APIError("You can't park the scooter here", httpStatus.NOT_ACCEPTABLE, true));
+      next(new APIError('no-parking', httpStatus.NOT_ACCEPTABLE, true));
       return;
     }
 
