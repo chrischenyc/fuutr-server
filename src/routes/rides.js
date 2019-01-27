@@ -111,8 +111,10 @@ router.post(
     body: {
       latitude: Joi.number(),
       longitude: Joi.number(),
-      incrementalEncodedPath: Joi.string().optional(),
-      incrementalDistance: Joi.number(),
+      incrementalEncodedPath: Joi.string()
+        .allow('')
+        .optional(),
+      incrementalDistance: Joi.number().optional(),
     },
   }),
   RideController.finishRide
