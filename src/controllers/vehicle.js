@@ -114,7 +114,11 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
     }
 
     const updatedVehicle = await updateVehicleStatus(vehicleCode, iotCode, req.body);
-    logger.info(`Segway push: status updated iotCode ${iotCode} vehicleCode ${vehicleCode}`);
+    logger.info(
+      `Segway push: status updated vehicle ${
+        vehicle._id
+      } iotCode ${iotCode} vehicleCode ${vehicleCode}`
+    );
 
     const { locked, location, speedMode } = updatedVehicle;
 
