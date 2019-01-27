@@ -14,7 +14,7 @@ const vehicleSchema = new mongoose.Schema(
     speedMode: { type: Number }, // speed mode (0: can't read; 1: low speed; 2: medium speed; 3: high speed;)
     speed: { type: Number },
     odometer: { type: Number }, // total odometer since out of factory (unit is 10m, so 1230 means 12.3km)
-    remainderRange: { type: Number },
+    remainderRange: { type: Number }, // unit is 10m
     totalRidingSecs: { type: Number },
     location: { type: mongoose.Schema.Types.Point },
     altitude: { type: Number },

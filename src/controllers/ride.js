@@ -132,6 +132,7 @@ exports.unlockVehicle = async (req, res, next) => {
       rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
       pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
       segments: [{ start: Date.now(), paused: false }],
+      initialRemainderRange: vehicle.remainderRange * 10, // convert 10m to 1m
     });
 
     if (latitude && longitude) {
