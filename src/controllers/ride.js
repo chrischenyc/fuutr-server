@@ -32,25 +32,69 @@ exports.unlockVehicle = async (req, res, next) => {
     }
 
     // find vehicle
-    const vehicle = await Vehicle.findOne({
-      unlockCode,
-      online: true,
-      locked: true,
-      charging: false,
-      inRide: false,
-    }).exec();
+    const vehicle = await Vehicle.findOne({ unlockCode }).exec();
 
     if (!vehicle) {
-      logger.error(`Unlock code ${unlockCode} not found`);
-      next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
-      return;
-    }
-
-    if (vehicle.reserved && !vehicle.reservedBy.equals(userId)) {
-      logger.error(`Trying to unlock ${vehicle._id} which has been reserved by another user`);
+      logger.error(`Start Ride: Unlock code ${unlockCode} not found`);
       next(
         new APIError(
-          'Sorry, this scooter is being reserved',
+          'Invalid unlock code, please try again',
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
+      return;
+    }
+    if (!vehicle.online) {
+      logger.error(`Start Ride: Vehicle ${vehicle._id} is offline`);
+      next(
+        new APIError(
+          "Couldn't unlock this vehicle, it appears to be offline",
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
+      return;
+    }
+    if (vehicle.charging) {
+      logger.error(`Start Ride: Vehicle ${vehicle._id} is being charged`);
+      next(
+        new APIError(
+          "Couldn't unlock this vehicle, it appears to be being charged at the moment",
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
+      return;
+    }
+    if (!vehicle.locked) {
+      logger.error(`Start Ride: Vehicle ${vehicle._id} is unlocked`);
+      next(
+        new APIError(
+          "Couldn't unlock this vehicle, it appears to be unlocked already",
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
+      return;
+    }
+    if (vehicle.inRide) {
+      logger.error(`Start Ride: Vehicle ${vehicle._id} is during ride`);
+      next(
+        new APIError(
+          "Couldn't unlock this vehicle, it appears to be in use at the moment",
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
+      return;
+    }
+    if (vehicle.reserved && !vehicle.reservedBy.equals(userId)) {
+      logger.error(`Start Ride: Vehicle ${vehicle._id} is being reserved`);
+
+      next(
+        new APIError(
+          "Couldn't unlock this vehicle, it appears to be reserved by someone else",
           httpStatus.INTERNAL_SERVER_ERROR,
           true
         )
@@ -67,6 +111,8 @@ exports.unlockVehicle = async (req, res, next) => {
         next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
         return;
       }
+
+      logger.info(`Start Ride: Vehicle ${vehicle._id} unlocked by user ${userId}`);
     }
 
     // update Vehicle object
@@ -191,6 +237,8 @@ exports.pauseRide = async (req, res, next) => {
 
         return;
       }
+
+      logger.info(`Pause Ride: Vehicle ${vehicle._id} locked by user ${userId}`);
     }
 
     // update vehicle status
@@ -260,6 +308,8 @@ exports.resumeRide = async (req, res, next) => {
 
         return;
       }
+
+      logger.info(`Resume Ride: Vehicle ${vehicle._id} unlocked by user ${userId}`);
     }
 
     // update vehicle status
@@ -338,6 +388,8 @@ const finishRide = async (req, res, next) => {
 
         return;
       }
+
+      logger.info(`Finish Ride: Vehicle ${vehicle._id} locked by user ${userId}`);
     }
 
     // update vehicle status
