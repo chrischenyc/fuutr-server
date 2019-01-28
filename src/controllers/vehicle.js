@@ -24,6 +24,7 @@ const normalizeVehicleResult = (vehicle, user) => {
     vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
     longitude: vehicle.location.coordinates[0],
     latitude: vehicle.location.coordinates[1],
+    address: vehicle.address,
     reserved: vehicle.reserved,
     locked: vehicle.locked,
     inRide: vehicle.inRide,
