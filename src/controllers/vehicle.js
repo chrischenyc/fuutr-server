@@ -174,8 +174,6 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       && location
       && (!_.isEqual(previousLocation, location) || _.isNil(previousAddress))
     ) {
-      logger.info(`should update vehicle address ${updatedVehicle._id}`);
-
       // reverse location into address
       // https://developers.google.com/maps/documentation/geocoding/intro
       axios
@@ -194,13 +192,12 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
             const { formatted_address } = response.data.results[0];
 
             logger.info(formatted_address);
+            Vehicle.update({ vehicleCode, iotCode }, { $set: { address: formatted_address } });
           }
         })
         .catch((error) => {
           logger.error(error);
         });
-
-      // TODO: save to database
     }
 
     res.status(httpStatus.OK).send();
