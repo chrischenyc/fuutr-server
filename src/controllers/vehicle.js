@@ -6,6 +6,7 @@ const moment = require('moment');
 const Vehicle = require('../models/vehicle');
 const User = require('../models/user');
 const Zone = require('../models/zone');
+const Ride = require('../models/ride');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
@@ -24,6 +25,8 @@ const normalizeVehicleResult = (vehicle, user) => {
     longitude: vehicle.location.coordinates[0],
     latitude: vehicle.location.coordinates[1],
     reserved: vehicle.reserved,
+    locked: vehicle.locked,
+    inRide: vehicle.inRide,
     unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
     rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
     pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
@@ -47,11 +50,21 @@ exports.searchVehicles = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: userId }).exec();
 
-    // if user has been reserving a vehicle, return just that one
+    // TODO: move returning reserved vehicle to vehicle reserve API response
+    // if a vehicle is being reserved by current user, return just that one
     let vehicles = await Vehicle.find({
       reserved: true,
       reservedBy: userId,
     });
+
+    // TODO: move returning vehicle in a paused ride to ride pause API response
+    // TODO: if the vehicle is in a ride by current user and is paused, return just that one
+    if (vehicles.length === 0) {
+      const ride = await Ride.findOne({ user: userId, paused: true, completed: false }).exec();
+      if (ride) {
+        vehicles = await Vehicle.find({ _id: ride.vehicle });
+      }
+    }
 
     // otherwise, return all nearby vehicles
     if (vehicles.length === 0) {
