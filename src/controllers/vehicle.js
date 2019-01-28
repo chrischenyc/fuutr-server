@@ -126,6 +126,8 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       return;
     }
 
+    const { location: previousLocation, address: previousAddress } = vehicle;
+
     const updatedVehicle = await updateVehicleStatus(vehicleCode, iotCode, req.body);
     logger.info(
       `Segway push: status updated vehicle ${
@@ -135,6 +137,7 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
 
     const { locked, location, speedMode } = updatedVehicle;
 
+    // geo-fenced speed limit
     if (!locked) {
       const speedLimitZones = await Zone.find({
         active: true,
@@ -160,6 +163,18 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
           logger.error(`Segway API error, can't update speed mode: ${segwayResult}`);
         }
       }
+    }
+
+    // reverse-geo query for locked vehicle's new address
+    if (
+      locked
+      && previousLocation
+      && location
+      && (!_.isEqual(previousLocation, location) || _.isNil(previousAddress))
+    ) {
+      // TODO: reverse location into address
+      logger.info(`should update vehicle address ${updatedVehicle._id}`);
+      // TODO: save to database
     }
 
     res.status(httpStatus.OK).send();
