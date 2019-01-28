@@ -8,7 +8,7 @@ const updateVehicleStatus = async (vehicleCode, iotCode, status) => {
 
   let newDoc = _.omit(status, ['signature', 'vehicleCode', 'iotCode', 'longitude', 'latitude']);
 
-  if (longitude && latitude && !(latitude === 0 && longitude === 0)) {
+  if (longitude && latitude && !(parseFloat(latitude) === 0 && parseFloat(longitude) === 0)) {
     logger.info(
       `Update vehicle code ${vehicleCode} iot code ${iotCode} GPS: https://www.google.com/maps/@${latitude},${longitude},15z/`
     );
