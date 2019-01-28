@@ -188,6 +188,8 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
         logger.info(formatted_address);
         updatedVehicle.address = formatted_address;
         await updatedVehicle.save();
+
+        logger.info(`Update vehicle ${updatedVehicle._id} address to${formatted_address}`);
       }
     }
 
