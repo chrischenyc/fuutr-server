@@ -10,7 +10,7 @@ const updateVehicleStatus = async (vehicleCode, iotCode, status) => {
 
   if (longitude && latitude) {
     logger.info(
-      `Update vehicle code ${vehicleCode} iot code ${iotCode} GPS: ${latitude}/${longitude}`
+      `Update vehicle code ${vehicleCode} iot code ${iotCode} GPS: https://www.google.com/maps/@${latitude},${longitude},15z/`
     );
     newDoc = {
       ...newDoc,
