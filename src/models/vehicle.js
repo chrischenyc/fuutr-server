@@ -29,6 +29,7 @@ const vehicleSchema = new mongoose.Schema(
     reservedUntil: { type: Date },
     reserveTimeoutKey: { type: String },
     inRide: { type: Boolean, required: true, default: false },
+    address: { type: String }, // reverse-geo location, updated during receiving segway push
   },
   { timestamps: true, versionKey: false }
 ).index({ location: '2dsphere' });
