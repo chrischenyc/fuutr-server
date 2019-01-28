@@ -176,28 +176,19 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
     ) {
       // reverse location into address
       // https://developers.google.com/maps/documentation/geocoding/intro
-      axios
-        .get(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.coordinates[1]},${
-            location.coordinates[0]
-          }&key=${process.env.GOOGLE_MAPS_API_KEY}&language=en-Au`
-        )
-        .then((response) => {
-          if (
-            response
-            && response.data
-            && response.data.results
-            && response.data.results.length > 0
-          ) {
-            const { formatted_address } = response.data.results[0];
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.coordinates[1]},${
+          location.coordinates[0]
+        }&key=${process.env.GOOGLE_MAPS_API_KEY}&language=en-Au`
+      );
 
-            logger.info(formatted_address);
-            Vehicle.update({ vehicleCode, iotCode }, { $set: { address: formatted_address } });
-          }
-        })
-        .catch((error) => {
-          logger.error(error);
-        });
+      if (response && response.data && response.data.results && response.data.results.length > 0) {
+        const { formatted_address } = response.data.results[0];
+
+        logger.info(formatted_address);
+        updatedVehicle.address = formatted_address;
+        await updatedVehicle.save();
+      }
     }
 
     res.status(httpStatus.OK).send();
