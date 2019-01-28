@@ -25,21 +25,21 @@ exports.getZones = async (req, res, next) => {
         result = {
           ...result,
           title: 'No-Parking Zone',
-          message: 'Parking scooters here may lead to fine.',
+          message: 'You cannot end a ride in this area, please park in an accepted zone.',
         };
       } else if (zone.speedMode === 1) {
         result = {
           ...result,
-          title: 'Speed Limit Zone',
+          title: 'Geo-Fenced Speed Zone',
           message:
-            'Scooter top speed will be automatically limited to the lower range once entering.',
+            'In high traffic locations like this one, Scooter top speed will be capped via our system. Please prepare to slow down in these areas.',
         };
       } else if (zone.speedMode === 2) {
         result = {
           ...result,
-          title: 'Speed Limit Zone',
+          title: 'Geo-Fenced Speed Zone',
           message:
-            'Scooter top speed will be automatically limited to the mid range once entering.',
+            'In high traffic locations like this one, Scooter top speed will be capped via our system. Please prepare to slow down in these areas.',
         };
       }
 
