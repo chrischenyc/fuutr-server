@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const _ = require('lodash');
 const md5 = require('md5');
 const moment = require('moment');
+const axios = require('axios');
 
 const Vehicle = require('../models/vehicle');
 const User = require('../models/user');
@@ -173,8 +174,22 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       && location
       && (!_.isEqual(previousLocation, location) || _.isNil(previousAddress))
     ) {
-      // TODO: reverse location into address
       logger.info(`should update vehicle address ${updatedVehicle._id}`);
+
+      // reverse location into address
+      axios
+        .get(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.coordinates[1]},${
+            location.coordinates[0]
+          }&key=${process.env.GOOGLE_MAPS_API_KEY}`
+        )
+        .then((response) => {
+          logger.info(JSON.stringify(response.data));
+        })
+        .catch((error) => {
+          logger.error(error);
+        });
+
       // TODO: save to database
     }
 

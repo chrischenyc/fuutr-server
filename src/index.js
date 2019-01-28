@@ -52,20 +52,6 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => {
   logger.info(`server started on port ${port}`);
   requestAccessToken();
-
-  // test geo
-  axios
-    .get(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=40.714224,-73.961452&key=${
-        process.env.GOOGLE_MAPS_API_KEY
-      }`
-    )
-    .then((response) => {
-      logger.info(response);
-    })
-    .catch((error) => {
-      logger.error(error);
-    });
 });
 
 module.exports = app;
