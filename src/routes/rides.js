@@ -17,9 +17,9 @@ router.post(
   '/start',
   requireJWT,
   validate({
-    body: { unlockCode: Joi.string().required(), latitude: Joi.number(), longitude: Joi.number() },
+    body: { unlockCode: Joi.string().required() },
   }),
-  RideController.unlockVehicle
+  RideController.startRide
 );
 
 /**

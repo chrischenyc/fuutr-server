@@ -13,8 +13,8 @@ const logger = require('../helpers/logger');
 const { unlockVehicle, lockVehicle } = require('./segway');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 
-exports.unlockVehicle = async (req, res, next) => {
-  const { unlockCode, latitude, longitude } = req.body;
+exports.startRide = async (req, res, next) => {
+  const { unlockCode } = req.body;
   const { userId } = req;
 
   try {
@@ -102,6 +102,7 @@ exports.unlockVehicle = async (req, res, next) => {
       return;
     }
 
+    // a flag to bypass actual IoT unlock/lock
     if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
       const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
@@ -115,15 +116,6 @@ exports.unlockVehicle = async (req, res, next) => {
       logger.info(`Start Ride: Vehicle ${vehicle._id} unlocked by user ${userId}`);
     }
 
-    // update Vehicle object
-    vehicle.reserved = false;
-    vehicle.reservedBy = undefined;
-    vehicle.reserveTimeoutKey = undefined;
-    vehicle.reservedUntil = undefined;
-    vehicle.locked = false;
-    vehicle.inRide = true;
-    await vehicle.save();
-
     // create Ride object
     const ride = new Ride({
       user: userId,
@@ -133,13 +125,19 @@ exports.unlockVehicle = async (req, res, next) => {
       pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
       segments: [{ start: Date.now(), paused: false }],
       initialRemainderRange: vehicle.remainderRange * 10, // convert 10m to 1m
+      unlockLocation: vehicle.location,
     });
 
-    if (latitude && longitude) {
-      ride.unlockLocation = { type: 'Point', coordinates: [longitude, latitude] };
-    }
-
     await ride.save();
+
+    // TODO: defer updating Vehicle object
+    vehicle.reserved = false;
+    vehicle.reservedBy = undefined;
+    vehicle.reserveTimeoutKey = undefined;
+    vehicle.reservedUntil = undefined;
+    vehicle.locked = false;
+    vehicle.inRide = true;
+    await vehicle.save();
 
     res.json(ride);
   } catch (error) {
