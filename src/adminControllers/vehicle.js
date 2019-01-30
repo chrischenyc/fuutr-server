@@ -9,7 +9,6 @@ const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
 const S3Upload = require('../helpers/s3-upload');
-const updateVehicleStatus = require('../helpers/update-vehicle-status');
 
 const {
   bindVehicle, queryVehicle, lockVehicle, unlockVehicle,
@@ -231,29 +230,6 @@ exports.lockVehicle = async (req, res, next) => {
         },
       }
     );
-
-    res.status(httpStatus.OK).send();
-  } catch (error) {
-    logger.error(error.message);
-    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
-  }
-};
-
-exports.queryVehicle = async (req, res, next) => {
-  const { _id } = req.params;
-
-  try {
-    const vehicle = await Vehicle.findOne({ _id }).exec();
-
-    if (!vehicle) {
-      next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
-    }
-
-    const { iotCode, vehicleCode } = vehicle;
-
-    const vehicleStatus = await queryVehicle(iotCode, vehicleCode);
-
-    await updateVehicleStatus(vehicleCode, iotCode, vehicleStatus);
 
     res.status(httpStatus.OK).send();
   } catch (error) {
