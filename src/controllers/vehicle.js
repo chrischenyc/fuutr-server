@@ -137,10 +137,12 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       } iotCode ${iotCode} vehicleCode ${vehicleCode}`
     );
 
-    const { locked, location, speedMode } = updatedVehicle;
+    const {
+      inRide, locked, location, speedMode,
+    } = updatedVehicle;
 
-    // geo-fenced speed limit
-    if (!locked) {
+    // geo-fenced speed limit during a ride
+    if (inRide && !locked) {
       const speedLimitZones = await Zone.find({
         active: true,
         speedMode: { $in: [1, 2] },
@@ -167,9 +169,9 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       }
     }
 
-    // reverse-geo query for locked vehicle's new address
+    // reverse-geo query for vehicle's new address
     if (
-      locked
+      !inRide
       && previousLocation
       && location
       && (!_.isEqual(previousLocation, location) || _.isNil(previousAddress))
@@ -185,7 +187,6 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       if (response && response.data && response.data.results && response.data.results.length > 0) {
         const { formatted_address } = response.data.results[0];
 
-        logger.info(formatted_address);
         updatedVehicle.address = formatted_address;
         await updatedVehicle.save();
 

@@ -9,9 +9,9 @@ const router = express.Router();
 
 /**
  * POST /rides/start
- * request to unlock a vehicle that is online, locked, and not being charged
+ * request to unlock a vehicle
  * @param unlockCode
- * @return a new Ride object
+ * @return a new Ride object if operation is successful
  */
 router.post(
   '/start',
@@ -61,7 +61,6 @@ router.patch(
 /**
  * PATCH /rides/:_id/pause
  * pause an ongoing ride
- *
  */
 router.patch(
   '/:_id/pause',
@@ -77,7 +76,6 @@ router.patch(
 /**
  * PATCH /rides/:_id/resume
  * resume a paused ride
- *
  */
 router.patch(
   '/:_id/resume',
@@ -94,11 +92,6 @@ router.patch(
  * POST /rides/:id/finish
  * request to finish an ongoing ride
  *
- * @param latitude
- * @param longitude
- * TODO: remove incremental params, as the route data will be collected via segway push
- * @param incrementalEncodedPath - incremental path from last update
- * @param incrementalDistance - incremental distance from last update
  * @return the updated Ride object
  */
 router.post(
@@ -107,14 +100,6 @@ router.post(
   validate({
     params: {
       _id: Joi.string().required(),
-    },
-    body: {
-      latitude: Joi.number(),
-      longitude: Joi.number(),
-      incrementalEncodedPath: Joi.string()
-        .allow('')
-        .optional(),
-      incrementalDistance: Joi.number().optional(),
     },
   }),
   RideController.finishRide
