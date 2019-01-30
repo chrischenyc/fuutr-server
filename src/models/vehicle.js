@@ -16,12 +16,12 @@ const vehicleSchema = new mongoose.Schema(
     odometer: { type: Number }, // total odometer since out of factory (unit is 10m, so 1230 means 12.3km)
     remainderRange: { type: Number }, // unit is 10m
     totalRidingSecs: { type: Number },
-    location: { type: mongoose.Schema.Types.Point },
     altitude: { type: Number },
     statusUtcTime: { type: Date }, // vehicle status info's UTC time
     gpsUtcTime: { type: Date }, // GPS get the location's UTC time
 
     // -------- business logic --------
+    location: { type: mongoose.Schema.Types.Point },
     unlockCode: { type: String, required: true, unique: true },
     unlockQRImage: { type: String, required: true },
     reserved: { type: Boolean, required: true, default: false },

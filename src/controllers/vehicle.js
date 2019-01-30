@@ -12,7 +12,6 @@ const Ride = require('../models/ride');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 
-const updateVehicleStatus = require('../helpers/update-vehicle-status');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 const { updateVehicleSpeedMode } = require('./segway');
 
@@ -94,6 +93,7 @@ exports.searchVehicles = async (req, res, next) => {
   }
 };
 
+// https://apac-api.segway.pt/doc/index.html#api-Push-PushVehicleStatus
 const validateSegwayPushBody = (body) => {
   const { signature } = body;
 
@@ -108,7 +108,7 @@ const validateSegwayPushBody = (body) => {
   return signature === encryptedString;
 };
 
-exports.receiveVehicleStatusPush = async (req, res, next) => {
+exports.receiveVehicleStatusPush = async (req, res) => {
   try {
     // validate signature
     if (!validateSegwayPushBody(req.body)) {
@@ -116,8 +116,27 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       return;
     }
 
-    const { vehicleCode, iotCode } = req.body;
+    const {
+      iotCode,
+      vehicleCode,
+      online,
+      locked,
+      networkSignal,
+      charging,
+      powerPercent,
+      speedMode,
+      speed,
+      odometer,
+      remainderRange,
+      totalRidingSecs,
+      latitude,
+      longitude,
+      altitude,
+      statusUtcTime,
+      gpsUtcTime,
+    } = req.body;
 
+    // match with an existing vehicle
     const vehicle = await Vehicle.findOne({
       vehicleCode,
       iotCode,
@@ -128,24 +147,44 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       return;
     }
 
-    const { location: previousLocation, address: previousAddress } = vehicle;
+    const { location: previousLocation, address: previousAddress, inRide } = vehicle;
 
-    const updatedVehicle = await updateVehicleStatus(vehicleCode, iotCode, req.body);
-    logger.info(
-      `Segway push: status updated vehicle ${
-        vehicle._id
-      } iotCode ${iotCode} vehicleCode ${vehicleCode}`
-    );
+    // the values that will eventually be $set to the Vehicle document
+    let valuesToUpdate = {
+      online,
+      locked,
+      networkSignal,
+      charging,
+      powerPercent,
+      speedMode,
+      speed,
+      odometer,
+      remainderRange,
+      totalRidingSecs,
+      altitude,
+      statusUtcTime,
+      gpsUtcTime,
+    };
 
-    const {
-      inRide, locked, location, speedMode,
-    } = updatedVehicle;
+    // convert new lat/lng to GeoJSON format
+    // sometime Segway pushes 0.0/0.0, we need to filter invalid lat/lng
+    if (longitude && latitude && !(parseFloat(latitude) === 0 && parseFloat(longitude) === 0)) {
+      valuesToUpdate = {
+        ...valuesToUpdate,
+        location: {
+          type: 'Point',
+          coordinates: [parseFloat(longitude), parseFloat(latitude)],
+        },
+      };
+    }
 
-    // geo-fenced speed limit during a ride
-    if (inRide && !locked) {
-      const speedLimitZones = await Zone.find({
+    const { location } = valuesToUpdate;
+
+    // geo-fenced speed limit: update vehicle's speed mode during a ride
+    if (location && inRide && !locked) {
+      const insideSpeedZones = await Zone.find({
         active: true,
-        speedMode: { $in: [1, 2] },
+        speedMode: { $in: [1, 2] }, // 1 and 2 are low and middle speed mode
         polygon: {
           $geoIntersects: { $geometry: location },
         },
@@ -153,30 +192,33 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
 
       let newSpeedMode = speedMode;
 
-      if (speedLimitZones.length > 0) {
-        newSpeedMode = speedLimitZones[0].speedMode;
+      if (insideSpeedZones.length > 0) {
+        newSpeedMode = insideSpeedZones[0].speedMode;
       } else {
+        // use 3 the fastest speed mode if vehicle is outside any speed zone
         newSpeedMode = 3;
       }
 
       if (speedMode !== newSpeedMode) {
-        logger.info(`Speed limit zone: update vehicle speed mode to ${newSpeedMode}`);
-
         const segwayResult = await updateVehicleSpeedMode(iotCode, vehicleCode, newSpeedMode);
         if (!segwayResult.success) {
           logger.error(`Segway API error, can't update speed mode: ${segwayResult}`);
+        } else {
+          logger.info(
+            `Segway speed mode: update vehicle ${vehicle._id} speed mode to ${newSpeedMode}`
+          );
         }
       }
     }
 
-    // reverse-geo query for vehicle's new address
+    // reverse-geo query vehicle's new address when it's not in use
+    // if location is new or vehicle doesn't have an address
+    // this info is mainly used in search view
     if (
       !inRide
-      && previousLocation
       && location
       && (!_.isEqual(previousLocation, location) || _.isNil(previousAddress))
     ) {
-      // reverse location into address
       // https://developers.google.com/maps/documentation/geocoding/intro
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.coordinates[1]},${
@@ -185,14 +227,26 @@ exports.receiveVehicleStatusPush = async (req, res, next) => {
       );
 
       if (response && response.data && response.data.results && response.data.results.length > 0) {
-        const { formatted_address } = response.data.results[0];
+        const { formatted_address: address } = response.data.results[0];
 
-        updatedVehicle.address = formatted_address;
-        await updatedVehicle.save();
+        valuesToUpdate.address = address;
 
-        logger.info(`Update vehicle ${updatedVehicle._id} address to${formatted_address}`);
+        logger.info(`Update vehicle ${vehicle._id} address to${address}`);
       }
     }
+
+    await Vehicle.update(
+      { vehicleCode, iotCode },
+      {
+        $set: valuesToUpdate,
+      }
+    );
+
+    logger.info(
+      `Segway push: status updated vehicle ${
+        vehicle._id
+      } iotCode ${iotCode} vehicleCode ${vehicleCode}`
+    );
 
     res.status(httpStatus.OK).send();
   } catch (error) {
