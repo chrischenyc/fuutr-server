@@ -20,15 +20,13 @@ exports.search = async (req, res, next) => {
 
     const user = await User.findOne({ _id: userId }).exec();
 
-    // TODO: move returning reserved vehicle to vehicle reserve API response
     // if a vehicle is being reserved by current user, return just that one
     let vehicles = await Vehicle.find({
       reserved: true,
       reservedBy: userId,
     });
 
-    // TODO: move returning vehicle in a paused ride to ride pause API response
-    // TODO: if the vehicle is in a ride by current user and is paused, return just that one
+    // if the vehicle is in a paused ride by current user, return just that one
     if (vehicles.length === 0) {
       const ride = await Ride.findOne({ user: userId, paused: true, completed: false }).exec();
       if (ride) {
