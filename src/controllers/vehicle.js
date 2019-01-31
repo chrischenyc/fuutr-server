@@ -7,7 +7,6 @@ const axios = require('axios');
 const Vehicle = require('../models/vehicle');
 const User = require('../models/user');
 const Zone = require('../models/zone');
-const Ride = require('../models/ride');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
@@ -15,83 +14,7 @@ const logger = require('../helpers/logger');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 const { updateVehicleSpeedMode } = require('./segway');
 
-// convert mongo document object to an object to be returned
-const normalizeVehicleResult = (vehicle, user) => {
-  let result = {
-    _id: vehicle._id,
-    powerPercent: vehicle.powerPercent,
-    remainderRange: vehicle.remainderRange * 10.0,
-    vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
-    longitude: vehicle.location.coordinates[0],
-    latitude: vehicle.location.coordinates[1],
-    address: vehicle.address,
-    reserved: vehicle.reserved,
-    locked: vehicle.locked,
-    inRide: vehicle.inRide,
-    unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
-    rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
-    pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
-  };
-
-  if (vehicle.reservedUntil) {
-    result = { ...result, reservedUntil: vehicle.reservedUntil };
-  }
-
-  if (user.canReserveVehicleAfter && user.canReserveVehicleAfter > Date.now()) {
-    result = { ...result, canReserveAfter: user.canReserveVehicleAfter };
-  }
-
-  return result;
-};
-
-exports.searchVehicles = async (req, res, next) => {
-  const { latitude, longitude, radius } = req.query;
-  const { userId } = req;
-
-  try {
-    const user = await User.findOne({ _id: userId }).exec();
-
-    // TODO: move returning reserved vehicle to vehicle reserve API response
-    // if a vehicle is being reserved by current user, return just that one
-    let vehicles = await Vehicle.find({
-      reserved: true,
-      reservedBy: userId,
-    });
-
-    // TODO: move returning vehicle in a paused ride to ride pause API response
-    // TODO: if the vehicle is in a ride by current user and is paused, return just that one
-    if (vehicles.length === 0) {
-      const ride = await Ride.findOne({ user: userId, paused: true, completed: false }).exec();
-      if (ride) {
-        vehicles = await Vehicle.find({ _id: ride.vehicle });
-      }
-    }
-
-    // otherwise, return all nearby vehicles
-    if (vehicles.length === 0) {
-      vehicles = await Vehicle.find({
-        online: true,
-        locked: true,
-        inRide: false,
-        charging: false,
-        reserved: false,
-        location: {
-          $nearSphere: {
-            $geometry: { type: 'Point', coordinates: [longitude, latitude] },
-            $maxDistance: radius,
-          },
-        },
-      });
-    }
-
-    vehicles = vehicles.map(vehicle => normalizeVehicleResult(vehicle, user));
-
-    res.json(vehicles);
-  } catch (error) {
-    logger.error(error.message);
-    next(new APIError("couldn't find scooters", httpStatus.INTERNAL_SERVER_ERROR, true));
-  }
-};
+const normalizeVehicle = require('../helpers/normalize-vehicle');
 
 // https://apac-api.segway.pt/doc/index.html#api-Push-PushVehicleStatus
 const validateSegwayPushBody = (body) => {
@@ -352,7 +275,7 @@ exports.reserveVehicle = async (req, res, next) => {
 
     await vehicle.save();
 
-    res.json(normalizeVehicleResult(vehicle, user));
+    res.json(normalizeVehicle(vehicle, user));
   } catch (error) {
     logger.error(error.message);
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
