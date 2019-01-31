@@ -111,7 +111,7 @@ router.post(
  *
  * @return an array of Ride objects
  */
-router.get('/me', requireJWT, RideController.pastRides);
+router.get('/me/history', requireJWT, RideController.pastRides);
 
 /**
  * GET /rides/me/ongoing
