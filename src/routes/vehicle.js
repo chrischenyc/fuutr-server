@@ -5,6 +5,7 @@ const Joi = require('joi');
 const router = express.Router();
 
 const VehicleController = require('../controllers/vehicle');
+const SegwayController = require('../controllers/segway');
 
 /**
  * https://api.segway.pt/doc/index.html#api-Push-PushVehicleStatus
@@ -23,7 +24,7 @@ router.post(
       signature: Joi.string().required(),
     },
   }),
-  VehicleController.receiveVehicleStatusPush
+  SegwayController.receiveVehicleStatusPush
 );
 
 module.exports = router;
