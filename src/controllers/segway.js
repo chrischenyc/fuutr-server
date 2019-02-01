@@ -111,6 +111,8 @@ exports.receiveVehicleStatusPush = async (req, res) => {
     const { location: previousLocation, address: previousAddress, inRide } = vehicle;
 
     // the values that will eventually be $set to the Vehicle document
+    logger.info(`status update reminderRange: ${remainderRange}`);
+
     let valuesToUpdate = {
       online,
       locked,
