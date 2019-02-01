@@ -77,6 +77,8 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       return;
     }
 
+    logger.info(JSON.stringify(req.body));
+
     const {
       iotCode,
       vehicleCode,
