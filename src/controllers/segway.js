@@ -124,7 +124,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       speedMode,
       speed,
       odometer: odometer * 10,
-      remainderRange: remainderRange * 10,
+      remainderRange: parseFloat(remainderRange) * 10,
       totalRidingSecs,
       altitude,
       statusUtcTime,
