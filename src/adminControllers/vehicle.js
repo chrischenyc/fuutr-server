@@ -131,7 +131,7 @@ exports.addVehicle = async (req, res, next) => {
       speedMode,
       speed,
       odometer,
-      remainderRange,
+      remainingRange,
       latitude,
       longitude,
       altitude,
@@ -152,7 +152,7 @@ exports.addVehicle = async (req, res, next) => {
       speedMode,
       speed,
       odometer,
-      remainderRange,
+      remainingRange: remainingRange * 10,
       location: {
         type: 'Point',
         coordinates: [longitude, latitude],

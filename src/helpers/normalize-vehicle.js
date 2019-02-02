@@ -3,7 +3,7 @@ module.exports = (vehicle, user) => {
   let result = {
     _id: vehicle._id,
     powerPercent: vehicle.powerPercent,
-    remainderRange: vehicle.remainderRange,
+    remainingRange: vehicle.remainingRange,
     vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
     longitude: vehicle.location.coordinates[0],
     latitude: vehicle.location.coordinates[1],
