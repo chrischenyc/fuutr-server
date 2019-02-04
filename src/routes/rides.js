@@ -39,26 +39,6 @@ router.get(
 );
 
 /**
- * TODO: remove this API, update ride route from segway push data
- * PATCH /rides/:_id
- * to update an ongoing ride with the new route and distance travelled
- *
- * @param incrementalEncodedPath - incremental path from last update
- * @param incrementalDistance - incremental distance from last update
- */
-router.patch(
-  '/:_id',
-  requireJWT,
-  validate({
-    params: {
-      _id: Joi.string().required(),
-    },
-    body: { incrementalEncodedPath: Joi.string(), incrementalDistance: Joi.number() },
-  }),
-  RideController.updateRide
-);
-
-/**
  * PATCH /rides/:_id/pause
  * pause an ongoing ride
  */

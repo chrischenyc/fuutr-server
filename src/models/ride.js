@@ -29,7 +29,7 @@ const rideSchema = new mongoose.Schema(
     lockLocation: { type: mongoose.Schema.Types.Point },
 
     route: { type: mongoose.Schema.Types.LineString },
-    encodedPath: { type: String },
+    encodedPath: { type: String }, // TODO: do we need this redundancy?
 
     duration: { type: Number, required: true, default: 0 },
     distance: { type: Number, required: true, default: 0 },

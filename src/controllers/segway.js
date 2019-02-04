@@ -3,6 +3,7 @@ const querystring = require('querystring');
 const _ = require('lodash');
 const md5 = require('md5');
 const httpStatus = require('http-status');
+const polyline = require('@mapbox/polyline');
 
 const Ride = require('../models/ride');
 const Vehicle = require('../models/vehicle');
@@ -194,7 +195,9 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       if (speedMode !== newSpeedMode) {
         const segwayResult = await updateVehicleSpeedMode(iotCode, vehicleCode, newSpeedMode);
         if (!segwayResult.success) {
-          logger.error(`Segway API error, can't update speed mode: ${segwayResult}`);
+          logger.error(
+            `Segway API error, can't update speed mode: ${JSON.stringify(segwayResult)}`
+          );
         } else {
           logger.info(
             `Segway speed mode: update vehicle ${vehicle._id} speed mode to ${newSpeedMode}`
@@ -208,6 +211,10 @@ exports.receiveVehicleStatusPush = async (req, res) => {
         type: 'LineString',
         coordinates: [...ride.route.coordinates, ...location.coordinates],
       };
+
+      ride.encodedPath = polyline.encode(
+        ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
+      );
       await ride.save();
     }
 

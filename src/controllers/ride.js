@@ -107,7 +107,7 @@ exports.startRide = async (req, res, next) => {
       const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
-        logger.error(`Segway API error: ${segwayResult}`);
+        logger.error(`Segway API error: ${JSON.stringify(segwayResult)}`);
 
         next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
         return;
@@ -146,59 +146,6 @@ exports.startRide = async (req, res, next) => {
   }
 };
 
-const updateRideWithIncrementalData = (ride, incrementalEncodedPath, incrementalDistance) => {
-  if (incrementalDistance === 0) {
-    return;
-  }
-
-  if (incrementalDistance) {
-    ride.distance += incrementalDistance;
-  }
-
-  if (incrementalEncodedPath) {
-    const coordinates = polyline
-      .decode(incrementalEncodedPath)
-      .map(coordinate => [coordinate[1], coordinate[0]]); // flip lat/lon to lon/lat
-
-    if (ride.route) {
-      ride.route = {
-        type: 'LineString',
-        coordinates: [...ride.route.coordinates, ...coordinates],
-      };
-    } else {
-      ride.route = { type: 'LineString', coordinates };
-    }
-
-    ride.encodedPath = polyline.encode(
-      ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
-    );
-  }
-};
-
-exports.updateRide = async (req, res, next) => {
-  const { _id } = req.params;
-  const { incrementalEncodedPath, incrementalDistance } = req.body;
-  const { userId } = req;
-
-  try {
-    const ride = await Ride.findOne({ _id, user: userId }).exec();
-
-    if (!ride) {
-      next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
-      return;
-    }
-
-    updateRideWithIncrementalData(ride, incrementalEncodedPath, incrementalDistance);
-
-    await ride.save();
-
-    res.status(httpStatus.OK).send();
-  } catch (error) {
-    logger.error(error.message);
-    next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
-  }
-};
-
 exports.pauseRide = async (req, res, next) => {
   const { _id } = req.params;
   const { userId } = req;
@@ -230,7 +177,7 @@ exports.pauseRide = async (req, res, next) => {
       const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
-        logger.error(`Segway API error: ${segwayResult.message}`);
+        logger.error(`Segway API error: ${JSON.stringify(segwayResult)}`);
 
         next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
@@ -301,7 +248,7 @@ exports.resumeRide = async (req, res, next) => {
       const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
-        logger.error(`Segway API error: ${segwayResult.message}`);
+        logger.error(`Segway API error: ${JSON.stringify(segwayResult)}`);
 
         next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
@@ -346,20 +293,15 @@ exports.resumeRide = async (req, res, next) => {
 };
 
 const finishRide = async (req, res, next) => {
-  const {
-    latitude, longitude, incrementalEncodedPath, incrementalDistance,
-  } = req.body;
   const { userId } = req;
   const { _id } = req.params;
 
   try {
     const user = await User.findOne({ _id: userId }).exec();
-
     const ride = await Ride.findOne({ _id, user: userId }).exec();
-
     const vehicle = await Vehicle.findOne({ _id: ride.vehicle }).exec();
 
-    if (!vehicle || !ride) {
+    if (!user || !vehicle || !ride) {
       next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
       return;
     }
@@ -377,11 +319,12 @@ const finishRide = async (req, res, next) => {
       return;
     }
 
+    // during development, we may not want to call segway IoT API to unlock the vehicle
     if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
       const segwayResult = await lockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
       if (!segwayResult.success) {
-        logger.error(`Segway API error: ${segwayResult.message}`);
+        logger.error(`Segway API error: ${JSON.stringify(segwayResult)}`);
 
         next(new APIError("couldn't lock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
 
@@ -413,15 +356,12 @@ const finishRide = async (req, res, next) => {
 
     // update ride
     ride.lockTime = Date.now();
-    if (latitude && longitude) {
-      ride.lockLocation = { type: 'Point', coordinates: [longitude, latitude] };
-    }
+    ride.lockLocation = vehicle.location;
     ride.duration = secondsBetweenDates(ride.unlockTime, ride.lockTime);
     ride.paused = false;
     ride.pausedUntil = undefined;
     ride.pauseTimeoutKey = undefined;
     ride.completed = true;
-    updateRideWithIncrementalData(ride, incrementalEncodedPath, incrementalDistance);
 
     // calculate total cost
     ride.totalCost = ride.unlockCost;
