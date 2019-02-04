@@ -133,6 +133,8 @@ exports.receiveVehicleStatusPush = async (req, res) => {
     locked = parseBoolean(locked);
     charging = parseBoolean(charging);
     speedMode = parseInt(speedMode, 10);
+    odometer = parseInt(odometer, 10);
+    remainingRange = parseInt(remainingRange, 10);
     latitude = parseFloat(latitude);
     longitude = parseFloat(longitude);
 
