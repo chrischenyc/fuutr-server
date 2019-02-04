@@ -124,7 +124,7 @@ exports.startRide = async (req, res, next) => {
       rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
       pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
       segments: [{ start: Date.now(), paused: false }],
-      initialRemainingRange: vehicle.remainingRange * 10, // convert 10m to 1m
+      initialRemainingRange: vehicle.remainingRange,
       unlockLocation: vehicle.location,
     });
 
@@ -141,7 +141,7 @@ exports.startRide = async (req, res, next) => {
 
     res.json(ride);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(`Ride.start error: ${JSON.stringify(error)}`);
     next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -375,19 +375,15 @@ const finishRide = async (req, res, next) => {
         type: 'LineString',
         coordinates: [...ride.route.coordinates, vehicle.location.coordinates],
       };
-    } else {
-      ride.route = {
-        type: 'LineString',
-        coordinates: [ride.unlockLocation.coordinates, vehicle.location.coordinates],
-      };
-    }
 
-    ride.encodedPath = polyline.encode(
-      ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
-    );
+      ride.encodedPath = polyline.encode(
+        ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
+      );
+    }
 
     await ride.save();
 
+    // TODO: defer other DB saving
     // update user balance
     user.balance -= ride.totalCost;
     await user.save();
@@ -404,7 +400,7 @@ const finishRide = async (req, res, next) => {
 
     res.json(ride);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(`Ride.finish error: ${JSON.stringify(error)}`);
     next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
