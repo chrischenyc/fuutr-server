@@ -68,7 +68,7 @@ exports.startRide = async (req, res, next) => {
       return;
     }
     if (!vehicle.locked) {
-      logger.error(`Start Ride: Vehicle ${vehicle._id} is unlocked`);
+      logger.error(`Start Ride: Vehicle ${vehicle._id} is locked`);
       next(
         new APIError(
           "Couldn't unlock this vehicle, it appears to be unlocked already",
@@ -368,6 +368,23 @@ const finishRide = async (req, res, next) => {
     ride.segments.forEach((segment) => {
       ride.totalCost += segment.cost;
     });
+
+    // route
+    if (ride.route) {
+      ride.route = {
+        type: 'LineString',
+        coordinates: [...ride.route.coordinates, vehicle.location.coordinates],
+      };
+    } else {
+      ride.route = {
+        type: 'LineString',
+        coordinates: [ride.unlockLocation.coordinates, vehicle.location.coordinates],
+      };
+    }
+
+    ride.encodedPath = polyline.encode(
+      ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
+    );
 
     await ride.save();
 

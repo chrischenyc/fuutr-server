@@ -11,6 +11,7 @@ const Zone = require('../models/zone');
 
 const logger = require('../helpers/logger');
 const sameLocation = require('../helpers/same-location');
+const parseBoolean = require('../helpers/parse-boolean');
 
 const segwayClient = axios.create({
   baseURL: 'https://api.segway.pt',
@@ -105,9 +106,10 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       return;
     }
 
-    logger.info(JSON.stringify(req.body));
+    // print raw data
+    // logger.info(JSON.stringify(req.body));
 
-    const {
+    let {
       iotCode,
       vehicleCode,
       online,
@@ -127,6 +129,13 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       gpsUtcTime,
     } = req.body;
 
+    online = parseBoolean(online);
+    locked = parseBoolean(locked);
+    charging = parseBoolean(charging);
+    speedMode = parseInt(speedMode, 10);
+    latitude = parseFloat(latitude);
+    longitude = parseFloat(longitude);
+
     // match with an existing vehicle
     const vehicle = await Vehicle.findOne({
       vehicleCode,
@@ -135,6 +144,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
 
     if (!vehicle) {
       res.status(httpStatus.INTERNAL_SERVER_ERROR).send();
+      logger.error("Segway vehicle status push, can't find vehicle");
       return;
     }
 
@@ -159,21 +169,21 @@ exports.receiveVehicleStatusPush = async (req, res) => {
 
     // convert new lat/lng to GeoJSON format
     // sometime Segway pushes 0.0/0.0, we need to filter invalid lat/lng
-    if (longitude && latitude && !(parseFloat(latitude) === 0 && parseFloat(longitude) === 0)) {
+    if (!_.isNil(longitude) && !_.isNil(latitude) && !(latitude === 0 && longitude === 0)) {
       valuesToUpdate = {
         ...valuesToUpdate,
         location: {
           type: 'Point',
-          coordinates: [parseFloat(longitude), parseFloat(latitude)],
+          coordinates: [longitude, latitude],
         },
       };
     }
 
     const { location } = valuesToUpdate;
 
-    // update vehicle's speed mode during a ride
-    // update ride route
-    if (location && inRide && !locked) {
+    // update vehicle's speed mode during a ride if necessary
+
+    if (!_.isNil(location) && inRide && !locked) {
       // geo-fenced speed limit
       const insideSpeedZones = await Zone.find({
         active: true,
@@ -202,20 +212,38 @@ exports.receiveVehicleStatusPush = async (req, res) => {
           logger.info(
             `Segway speed mode: update vehicle ${vehicle._id} speed mode to ${newSpeedMode}`
           );
+
+          valuesToUpdate.speedMode = newSpeedMode;
         }
       }
 
       // expand ride route with newly acquired location
-      const ride = Ride.findOne({ completed: false, paused: false, vehicle: vehicle._id }).exec();
-      ride.route = {
-        type: 'LineString',
-        coordinates: [...ride.route.coordinates, ...location.coordinates],
-      };
+      const ride = await Ride.findOne({
+        completed: false,
+        vehicle: vehicle._id,
+      }).exec();
 
-      ride.encodedPath = polyline.encode(
-        ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
-      );
-      await ride.save();
+      if (ride) {
+        if (ride.route) {
+          ride.route = {
+            type: 'LineString',
+            coordinates: [...ride.route.coordinates, location.coordinates],
+          };
+        } else {
+          ride.route = {
+            type: 'LineString',
+            coordinates: [ride.unlockLocation.coordinates, location.coordinates],
+          };
+        }
+
+        ride.encodedPath = polyline.encode(
+          ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
+        );
+
+        await ride.save();
+      } else {
+        logger.error(`couldn't find ride with vehicle ${vehicle._id}`);
+      }
     }
 
     // reverse-geo query vehicle's new address when it's not in use
@@ -238,7 +266,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
 
         valuesToUpdate.address = address;
 
-        logger.info(`Update vehicle ${vehicle._id} address to${address}`);
+        logger.info(`Update vehicle ${vehicle._id} address to ${address}`);
       }
     }
 
@@ -249,15 +277,11 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       }
     );
 
-    logger.info(
-      `Segway push: status updated vehicle ${
-        vehicle._id
-      } iotCode ${iotCode} vehicleCode ${vehicleCode}`
-    );
+    logger.info(`Vehicle code ${vehicleCode} status updated`);
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(`Segway push error: ${error.message}`);
+    logger.error(`Process Segway vehicle status push error: ${JSON.stringify(error)}`);
     res.status(httpStatus.INTERNAL_SERVER_ERROR).send();
   }
 };
