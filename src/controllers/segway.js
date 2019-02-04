@@ -4,10 +4,12 @@ const _ = require('lodash');
 const md5 = require('md5');
 const httpStatus = require('http-status');
 
+const Ride = require('../models/ride');
 const Vehicle = require('../models/vehicle');
 const Zone = require('../models/zone');
 
 const logger = require('../helpers/logger');
+const sameLocation = require('../helpers/same-location');
 
 const segwayClient = axios.create({
   baseURL: 'https://api.segway.pt',
@@ -68,6 +70,31 @@ const validateSegwayPushBody = (body) => {
 
   return signature === encryptedString;
 };
+
+// https://api.segway.pt/doc/index.html#api-Control-VehicleSpeedMode
+const updateVehicleSpeedMode = async (iotCode, vehicleCode, speedMode) => {
+  try {
+    const data = {
+      iotCode,
+      vehicleCode,
+      speedMode,
+    };
+
+    const response = await segwayClient({
+      method: 'post',
+      data,
+      url: '/api/vehicle/control/speed-mode',
+    });
+
+    return response.data;
+  } catch (error) {
+    logger.error(error.response.data.message);
+
+    return null;
+  }
+};
+
+exports.updateVehicleSpeedMode = updateVehicleSpeedMode;
 
 exports.receiveVehicleStatusPush = async (req, res) => {
   try {
@@ -143,8 +170,10 @@ exports.receiveVehicleStatusPush = async (req, res) => {
 
     const { location } = valuesToUpdate;
 
-    // geo-fenced speed limit: update vehicle's speed mode during a ride
+    // update vehicle's speed mode during a ride
+    // update ride route
     if (location && inRide && !locked) {
+      // geo-fenced speed limit
       const insideSpeedZones = await Zone.find({
         active: true,
         speedMode: { $in: [1, 2] }, // 1 and 2 are low and middle speed mode
@@ -172,6 +201,14 @@ exports.receiveVehicleStatusPush = async (req, res) => {
           );
         }
       }
+
+      // expand ride route with newly acquired location
+      const ride = Ride.findOne({ completed: false, paused: false, vehicle: vehicle._id }).exec();
+      ride.route = {
+        type: 'LineString',
+        coordinates: [...ride.route.coordinates, ...location.coordinates],
+      };
+      await ride.save();
     }
 
     // reverse-geo query vehicle's new address when it's not in use
@@ -180,7 +217,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
     if (
       !inRide
       && location
-      && (!_.isEqual(previousLocation, location) || _.isNil(previousAddress))
+      && (!sameLocation(previousLocation, location) || _.isNil(previousAddress))
     ) {
       // https://developers.google.com/maps/documentation/geocoding/intro
       const response = await axios.get(
@@ -282,31 +319,6 @@ exports.lockVehicle = async (iotCode, vehicleCode) => {
     return null;
   }
 };
-
-// https://api.segway.pt/doc/index.html#api-Control-VehicleSpeedMode
-const updateVehicleSpeedMode = async (iotCode, vehicleCode, speedMode) => {
-  try {
-    const data = {
-      iotCode,
-      vehicleCode,
-      speedMode,
-    };
-
-    const response = await segwayClient({
-      method: 'post',
-      data,
-      url: '/api/vehicle/control/speed-mode',
-    });
-
-    return response.data;
-  } catch (error) {
-    logger.error(error.response.data.message);
-
-    return null;
-  }
-};
-
-exports.updateVehicleSpeedMode = updateVehicleSpeedMode;
 
 // api.segway.pt/doc/index.html#api-VehicleIoT-VehicleIoTBinding
 exports.bindVehicle = async (iotCode, vehicleCode, qrCode) => {
