@@ -17,6 +17,7 @@ exports.startPhoneVerification = async (req, res, next) => {
         via: 'sms',
         phone_number: phoneNumber,
         country_code: countryCode,
+        code_length: 6,
       },
     });
 
