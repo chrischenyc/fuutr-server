@@ -34,6 +34,23 @@ router.post(
   AuthController.signupWithPhone
 );
 
+/**
+ * POST /auth/email-verify
+ *
+ * @return { verified: true } if email is registered
+ */
+router.post(
+  '/email-verify',
+  validate({
+    body: {
+      email: Joi.string()
+        .email()
+        .required(),
+    },
+  }),
+  AuthController.verifyEmail
+);
+
 // email sign up
 router.post(
   '/email-signup',

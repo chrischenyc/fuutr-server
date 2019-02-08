@@ -21,9 +21,9 @@ exports.signupWithPhone = async (req, res, next) => {
 
   try {
     // return matched User record or create a new one
-    const existingUser = await User.findOne({ phoneNumber, countryCode }).exec();
-    if (existingUser) {
-      res.json(generateTokens(existingUser));
+    const user = await User.findOne({ phoneNumber, countryCode }).exec();
+    if (user) {
+      res.json(generateTokens(user));
       return;
     }
 
@@ -47,12 +47,31 @@ exports.signupWithPhone = async (req, res, next) => {
   }
 };
 
+exports.verifyEmail = async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email }).exec();
+
+    if (user) {
+      res.json({ displayName: user.displayName });
+
+      return;
+    }
+
+    res.json({ displayName: null });
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    next(new APIError(`Cannot verify email ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
 exports.signupWithEmail = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email }).exec();
-    if (existingUser) {
+    const user = await User.findOne({ email }).exec();
+    if (user) {
       next(new APIError('Email is taken', httpStatus.CONFLICT, true));
       return;
     }
