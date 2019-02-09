@@ -16,7 +16,7 @@ const {
 
 const { sendWelcomeEmail, sendPasswordResetCodeEmail } = require('../helpers/send-email');
 
-exports.signupWithPhone = async (req, res, next) => {
+exports.signInWithPhone = async (req, res, next) => {
   const { phoneNumber, countryCode } = req.body;
 
   try {

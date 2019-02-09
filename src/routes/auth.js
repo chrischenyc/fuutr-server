@@ -31,7 +31,7 @@ router.post(
     },
   }),
   PhoneController.checkVerificationCode,
-  AuthController.signupWithPhone
+  AuthController.signInWithPhone
 );
 
 /**
