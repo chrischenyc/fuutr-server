@@ -1,4 +1,4 @@
-# Express & mongoose REST API for OTG Ride apps
+# Express & mongoose REST API for FUUTR apps and admin portal
 
 ## Overview
 

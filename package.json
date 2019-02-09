@@ -1,7 +1,7 @@
 {
   "name": "otg-server",
   "version": "1.0.0",
-  "description": "OTG Ride API server",
+  "description": "FUUTR API server",
   "author": "Chris Chen <chris@otgride.com>",
   "main": "src/index.js",
   "private": true,

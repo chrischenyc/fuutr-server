@@ -43,7 +43,7 @@ exports.topUpBalance = async (req, res, next) => {
       currency: 'aud',
       customer: user.stripeCustomerId,
       description,
-      statement_descriptor: 'OTG Ride',
+      statement_descriptor: process.env.APP_COMPANY,
     });
 
     const dollarAmount = amount / 100.0;
