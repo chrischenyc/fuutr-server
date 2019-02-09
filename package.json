@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node src/index.js",
     "start:debug": "DEBUG=FUUTR:* nodemon src/index.js",
-    "docker:build": "docker build --rm -t otg-server:latest .",
+    "docker:build": "docker build --rm -t fuutr-server:latest .",
     "deploy:staging": "npm run docker:build && eb deploy otg-server-staging"
   },
   "repository": {
