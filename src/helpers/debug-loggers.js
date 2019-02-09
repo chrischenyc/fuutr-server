@@ -1,4 +1,4 @@
-const databaseDebug = require('debug')('OTGRide:database');
-const axiosDebug = require('debug')('OTGRide:axios');
+const databaseDebug = require('debug')('FUUTR:database');
+const axiosDebug = require('debug')('FUUTR:axios');
 
 module.exports = { databaseDebug, axiosDebug };

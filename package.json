@@ -1,8 +1,8 @@
 {
-  "name": "otg-server",
+  "name": "fuutr-server",
   "version": "1.0.0",
   "description": "FUUTR API server",
-  "author": "Chris Chen <chris@otgride.com>",
+  "author": "Chris Chen <chrischen79@gmail.com>",
   "main": "src/index.js",
   "private": true,
   "engines": {
@@ -10,13 +10,13 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "start:debug": "DEBUG=OTGRide:* nodemon src/index.js",
+    "start:debug": "DEBUG=FUUTR:* nodemon src/index.js",
     "docker:build": "docker build --rm -t otg-server:latest .",
     "deploy:staging": "npm run docker:build && eb deploy otg-server-staging"
   },
   "repository": {
     "type": "git",
-    "url": "git@bitbucket.org:otg-ride-dev/server.git"
+    "url": "https://bitbucket.org/fuutr/server"
   },
   "keywords": [
     "express",
