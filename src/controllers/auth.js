@@ -11,7 +11,7 @@ const logger = require('../helpers/logger');
 const {
   generateTokens,
   generateAccessToken,
-  fourDigitsToken,
+  sixDigitsToken,
 } = require('../helpers/token-generator');
 
 const { sendWelcomeEmail, sendPasswordResetCodeEmail } = require('../helpers/send-email');
@@ -245,7 +245,7 @@ exports.sendPasswordResetCode = async (req, res, next) => {
       throw Error('User not found');
     }
 
-    const code = fourDigitsToken();
+    const code = sixDigitsToken();
     const hashedToken = await bcrypt.hash(code, process.env.BCRYPT_SALT);
     user.passwordResetTokens.push({ hashedToken });
     await user.save();

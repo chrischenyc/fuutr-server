@@ -16,7 +16,7 @@ const passwordSchema = Joi.string()
   );
 
 const passwordResetCodeSchema = Joi.string()
-  .regex(/^[0-9]{4}$/)
+  .regex(/^[0-9]{6}$/)
   .required()
   .error(() => 'Invalid password reset code.');
 

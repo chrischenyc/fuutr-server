@@ -25,7 +25,7 @@ exports.generateTokens = (user) => {
   };
 };
 
-exports.fourDigitsToken = () => {
+exports.sixDigitsToken = () => {
   const number = Math.floor(100000 + Math.random() * 900000);
-  return String(number).substring(0, 4);
+  return String(number).substring(0, 6);
 };
