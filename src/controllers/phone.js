@@ -27,7 +27,7 @@ exports.startPhoneVerification = async (req, res, next) => {
       throw Error('twilio response is not successful');
     }
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
 
     next(
       new APIError(
@@ -61,7 +61,7 @@ exports.checkVerificationCode = async (req, res, next) => {
       throw Error('twilio response is not successful');
     }
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
 
     next(
       new APIError("Couldn't verify your code, please try again.", httpStatus.UNAUTHORIZED, true)

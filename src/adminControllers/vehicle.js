@@ -44,7 +44,7 @@ exports.getVehicles = async (req, res, next) => {
 
     res.json({ vehicles, pages: Math.ceil(total / adminTablePaginationLimit) });
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -57,7 +57,7 @@ exports.getVehicle = async (req, res, next) => {
 
     res.json(vehicle);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -166,7 +166,7 @@ exports.addVehicle = async (req, res, next) => {
 
     res.json(vehicle);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -200,7 +200,7 @@ exports.editVehicle = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -233,7 +233,7 @@ exports.lockVehicle = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

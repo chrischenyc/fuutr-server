@@ -69,7 +69,7 @@ exports.search = async (req, res, next) => {
 
     res.json({ vehicles, zones });
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError('something went wrong', httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

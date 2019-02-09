@@ -225,7 +225,7 @@ exports.pauseRide = async (req, res, next) => {
 
     res.json(ride);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -287,7 +287,7 @@ exports.resumeRide = async (req, res, next) => {
 
     res.json(ride);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError("couldn't update ride", httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -415,7 +415,7 @@ exports.pastRides = async (req, res, next) => {
 
     res.json(rides);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(
       new APIError("couldn't retrieve your ride history", httpStatus.INTERNAL_SERVER_ERROR, true)
     );
@@ -446,7 +446,7 @@ exports.getRide = async (req, res, next) => {
 
     res.json(ride);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

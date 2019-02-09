@@ -25,7 +25,7 @@ exports.getPayments = async (req, res, next) => {
 
     res.json({ payments, pages: Math.ceil(total / adminTablePaginationLimit) });
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -38,7 +38,7 @@ exports.getPayment = async (req, res, next) => {
 
     res.json(payment);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

@@ -11,7 +11,7 @@ exports.userTransactions = async (req, res, next) => {
 
     res.json(transactions);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
 
     next(
       new APIError(

@@ -25,7 +25,7 @@ exports.addContact = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

@@ -46,7 +46,7 @@ exports.updateProfile = async (req, res) => {
     await user.save();
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     res.status(httpStatus.UNAUTHORIZED).send();
   }
 };
@@ -80,7 +80,7 @@ exports.updateEmail = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(`Couldn't update email to ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -115,7 +115,7 @@ exports.updatePhone = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
 
     next(
       new APIError(

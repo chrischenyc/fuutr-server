@@ -29,7 +29,7 @@ exports.getZones = async (req, res, next) => {
 
     res.json({ zones, pages: Math.ceil(total / adminTablePaginationLimit) });
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -52,7 +52,7 @@ exports.addZone = async (req, res, next) => {
 
     res.json(zone);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -78,7 +78,7 @@ exports.editZone = async (req, res, next) => {
 
     res.json(existingZone);
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
@@ -91,7 +91,7 @@ exports.deleteZone = async (req, res, next) => {
 
     res.status(httpStatus.OK).send();
   } catch (error) {
-    logger.error(error.message);
+    logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };
