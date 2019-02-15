@@ -14,7 +14,11 @@ const {
   sixDigitsToken,
 } = require('../helpers/token-generator');
 
-const { sendWelcomeEmail, sendPasswordResetCodeEmail } = require('../helpers/send-email');
+const {
+  sendWelcomeEmail,
+  sendPasswordResetCodeEmail,
+  sendUpdateEmailCodeEmail,
+} = require('../helpers/send-email');
 
 exports.signInWithPhone = async (req, res, next) => {
   const { phoneNumber, countryCode } = req.body;
@@ -238,16 +242,14 @@ exports.sendPasswordResetCode = async (req, res, next) => {
   const { email } = req.query;
 
   try {
-    const user = await User.findOne({ email })
-      .select({ passwordResetTokens: 1 })
-      .exec();
+    const user = await User.findOne({ email }).exec();
     if (!user) {
       throw Error('User not found');
     }
 
     const code = sixDigitsToken();
     const hashedToken = await bcrypt.hash(code, process.env.BCRYPT_SALT);
-    user.passwordResetTokens.push({ hashedToken });
+    user.passwordResetToken = hashedToken;
     await user.save();
 
     sendPasswordResetCodeEmail(email, code);
@@ -273,7 +275,7 @@ exports.verifyPasswordResetCode = async (req, res, next) => {
 
     const user = await User.findOne({
       email,
-      'passwordResetTokens.hashedToken': { $in: hashedToken },
+      passwordResetToken: hashedToken,
     }).exec();
 
     if (!user) {
@@ -301,10 +303,8 @@ exports.resetPassword = async (req, res, next) => {
 
     const user = await User.findOne({
       email,
-      'passwordResetTokens.hashedToken': { $in: hashedToken },
-    })
-      .select({ passwordResetTokens: 1 })
-      .exec();
+      passwordResetToken: hashedToken,
+    }).exec();
 
     if (!user) {
       throw Error('User not found');
@@ -314,9 +314,7 @@ exports.resetPassword = async (req, res, next) => {
     // remove used verification code
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
-    user.passwordResetTokens = user.passwordResetTokens.filter(
-      passwordResetToken => passwordResetToken.hashedToken !== hashedToken
-    );
+    user.passwordResetToken = null;
     await user.save();
 
     res.status(httpStatus.OK).send();
@@ -329,5 +327,69 @@ exports.resetPassword = async (req, res, next) => {
         true
       )
     );
+  }
+};
+
+exports.requestUpdateEmail = async (req, res, next) => {
+  const { email } = req.query;
+  const { userId } = req;
+
+  try {
+    const existingUser = await User.findOne({ email }).exec();
+    if (existingUser) {
+      if (existingUser._id.equals(userId)) {
+        next(new APIError(`${email} is your current email`, httpStatus.BAD_REQUEST, true));
+        return;
+      }
+
+      next(new APIError(`${email} is taken`, httpStatus.BAD_REQUEST, true));
+      return;
+    }
+
+    const code = sixDigitsToken();
+    const hashedToken = await bcrypt.hash(code, process.env.BCRYPT_SALT);
+    const user = await User.findOne({ _id: userId }).exec();
+    user.emailUpdateToken = hashedToken;
+    await user.save();
+
+    sendUpdateEmailCodeEmail(email, code);
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    next(
+      new APIError(
+        `Couldn't send verification code to ${email}`,
+        httpStatus.INTERNAL_SERVER_ERROR,
+        true
+      )
+    );
+  }
+};
+
+exports.updateEmail = async (req, res, next) => {
+  const { email, code } = req.body;
+  const { userId } = req;
+
+  try {
+    const hashedToken = await bcrypt.hash(code, process.env.BCRYPT_SALT);
+
+    const user = await User.findOne({
+      _id: userId,
+      emailUpdateToken: hashedToken,
+    }).exec();
+
+    if (!user) {
+      throw Error('User not found');
+    }
+
+    user.email = email;
+    user.emailUpdateToken = null;
+    await user.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    next(new APIError(`Couldn't verify code for ${email}`, httpStatus.INTERNAL_SERVER_ERROR, true));
   }
 };

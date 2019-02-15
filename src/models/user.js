@@ -10,14 +10,13 @@ const userSchema = new mongoose.Schema(
       sparse: true, // email may be null, need sparse indexing here
       trim: true,
     },
+    emailUpdateToken: {
+      type: String,
+      select: false,
+    },
     password: { type: String, select: false },
-    passwordResetTokens: {
-      type: [
-        {
-          createdAt: { type: Date, required: true, default: Date.now },
-          hashedToken: { type: String, required: true },
-        },
-      ],
+    passwordResetToken: {
+      type: String,
       select: false,
     },
     phoneNumber: { type: String, trim: true },

@@ -7,6 +7,7 @@ const router = express.Router();
 
 const PhoneController = require('../controllers/phone');
 const AuthController = require('../controllers/auth');
+const { requireJWT } = require('../middleware/authenticate');
 
 const passwordSchema = Joi.string()
   .regex(/^(?=.*\d).{6,16}$/)
@@ -15,10 +16,10 @@ const passwordSchema = Joi.string()
     () => 'password must be between 4-8 characters long and include at least one numeric digit.'
   );
 
-const passwordResetCodeSchema = Joi.string()
+const verificationCodeSchema = Joi.string()
   .regex(/^[0-9]{6}$/)
   .required()
-  .error(() => 'Invalid password reset code.');
+  .error(() => 'Invalid verification code.');
 
 // verify phone code then sign up/in user
 router.post(
@@ -37,7 +38,7 @@ router.post(
 /**
  * POST /auth/email-verify
  *
- * @return { verified: true } if email is registered
+ * @return { displayName: nullable } if email is registered
  */
 router.post(
   '/email-verify',
@@ -132,7 +133,7 @@ router.post(
       email: Joi.string()
         .email()
         .required(),
-      code: passwordResetCodeSchema,
+      code: verificationCodeSchema,
     },
   }),
   AuthController.verifyPasswordResetCode
@@ -146,11 +147,42 @@ router.post(
       email: Joi.string()
         .email()
         .required(),
-      code: passwordResetCodeSchema,
+      code: verificationCodeSchema,
       password: passwordSchema,
     },
   }),
   AuthController.resetPassword
+);
+
+// GET /auth/update-email
+// request update email verification code
+router.get(
+  '/update-email',
+  validate({
+    query: {
+      email: Joi.string()
+        .email()
+        .required(),
+    },
+  }),
+  requireJWT,
+  AuthController.requestUpdateEmail
+);
+
+// POST /auth/update-email
+// verify update email code and set the new email if validated
+router.post(
+  '/update-email',
+  validate({
+    body: {
+      email: Joi.string()
+        .email()
+        .required(),
+      code: verificationCodeSchema,
+    },
+  }),
+  requireJWT,
+  AuthController.updateEmail
 );
 
 module.exports = router;
