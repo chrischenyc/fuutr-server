@@ -13,14 +13,45 @@ exports.getProfile = async (req, res) => {
     return;
   }
 
-  const user = await User.findOne({ _id }).exec();
+  const user = await User.findOne({ _id })
+    .select({
+      displayName: 1,
+      email: 1,
+      countryCode: 1,
+      phoneNumber: 1,
+      password: 1,
+      photo: 1,
+      balance: 1,
+      canReserveVehicleAfter: 1,
+    })
+    .exec();
 
   if (!user) {
     res.status(httpStatus.UNAUTHORIZED).send();
     return;
   }
 
-  res.json(user);
+  const {
+    displayName,
+    email,
+    countryCode,
+    phoneNumber,
+    password,
+    photo,
+    balance,
+    canReserveVehicleAfter,
+  } = user;
+
+  res.json({
+    displayName,
+    email,
+    countryCode,
+    phoneNumber,
+    hasPassword: !_.isNil(password),
+    photo,
+    balance,
+    canReserveVehicleAfter,
+  });
 };
 
 exports.updateProfile = async (req, res) => {
