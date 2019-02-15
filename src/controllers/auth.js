@@ -330,6 +330,42 @@ exports.resetPassword = async (req, res, next) => {
   }
 };
 
+exports.updatePassword = async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+  const { userId } = req;
+
+  try {
+    if (currentPassword === newPassword) {
+      throw Error('same password');
+    }
+
+    const user = await User.findOne({ _id: userId })
+      .select({ password: 1 })
+      .exec();
+
+    if (!user) {
+      throw Error('User not found');
+    }
+
+    if (user.password) {
+      const samePassword = await bcrypt.compare(currentPassword, user.password);
+
+      if (!samePassword) {
+        throw Error('wrong current password');
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    next(new APIError("Couldn't change password", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
 exports.requestUpdateEmail = async (req, res, next) => {
   const { email } = req.query;
   const { userId } = req;

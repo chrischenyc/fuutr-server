@@ -16,6 +16,13 @@ const passwordSchema = Joi.string()
     () => 'password must be between 4-8 characters long and include at least one numeric digit.'
   );
 
+const optionalPasswordSchema = Joi.string()
+  .allow('')
+  .regex(/^(?=.*\d).{6,16}$/)
+  .error(
+    () => 'password must be between 4-8 characters long and include at least one numeric digit.'
+  );
+
 const verificationCodeSchema = Joi.string()
   .regex(/^[0-9]{6}$/)
   .required()
@@ -152,6 +159,19 @@ router.post(
     },
   }),
   AuthController.resetPassword
+);
+
+// POST /auth/update-password
+router.post(
+  '/update-password',
+  validate({
+    body: {
+      currentPassword: optionalPasswordSchema,
+      newPassword: passwordSchema,
+    },
+  }),
+  requireJWT,
+  AuthController.updatePassword
 );
 
 // GET /auth/update-email
