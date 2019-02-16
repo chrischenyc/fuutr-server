@@ -1,10 +1,12 @@
+const formatVehicleCode = require('./format-vehicle-code');
+
 // convert mongo document object to an object to be returned
 module.exports = (vehicle, user) => {
   let result = {
     _id: vehicle._id,
     powerPercent: vehicle.powerPercent,
     remainingRange: vehicle.remainingRange,
-    vehicleCode: `xxxx-${vehicle.vehicleCode.slice(-4)}`,
+    vehicleCode: formatVehicleCode(vehicle.vehicleCode),
     longitude: vehicle.location.coordinates[0],
     latitude: vehicle.location.coordinates[1],
     address: vehicle.address,

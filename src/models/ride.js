@@ -5,7 +5,7 @@ const rideSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, required: true },
     vehicle: { type: mongoose.Schema.Types.ObjectId, required: true },
-
+    vehicleCode: { type: String },
     unlockCost: { type: Number, required: true },
     rideMinuteCost: { type: Number, required: true },
     pauseMinuteCost: { type: Number, required: true },

@@ -12,6 +12,7 @@ const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { unlockVehicle, lockVehicle } = require('./segway');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
+const formatVehicleCode = require('../helpers/format-vehicle-code');
 
 exports.startRide = async (req, res, next) => {
   const { unlockCode } = req.body;
@@ -120,6 +121,7 @@ exports.startRide = async (req, res, next) => {
     const ride = new Ride({
       user: userId,
       vehicle: vehicle._id,
+      vehicleCode: formatVehicleCode(vehicle.vehicleCode),
       unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
       rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
       pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
