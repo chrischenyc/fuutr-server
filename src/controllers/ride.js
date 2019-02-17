@@ -13,6 +13,7 @@ const logger = require('../helpers/logger');
 const { unlockVehicle, lockVehicle } = require('./segway');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 const formatVehicleCode = require('../helpers/format-vehicle-code');
+const routeDistance = require('../helpers/route-distance');
 
 exports.startRide = async (req, res, next) => {
   const { unlockCode } = req.body;
@@ -381,6 +382,9 @@ const finishRide = async (req, res, next) => {
       ride.encodedPath = polyline.encode(
         ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
       );
+
+      // calculate distance
+      ride.distance = routeDistance(ride.route.coordinates);
     }
 
     await ride.save();
