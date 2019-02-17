@@ -375,3 +375,48 @@ exports.bindVehicle = async (iotCode, vehicleCode, qrCode) => {
     return null;
   }
 };
+
+// api.segway.pt/doc/index.html#api-Control-VehicleToot
+exports.toot = async (iotCode, vehicleCode) => {
+  try {
+    const data = {
+      iotCode,
+      vehicleCode,
+    };
+
+    const response = await segwayClient({
+      method: 'post',
+      data,
+      url: '/api/vehicle/control/toot',
+    });
+
+    return response.data;
+  } catch (error) {
+    logger.error(error.response.data.message);
+
+    return null;
+  }
+};
+
+// https://api.segway.pt/doc/index.html#api-Control-VehicleHeadlight
+exports.headlight = async (iotCode, vehicleCode, on) => {
+  try {
+    const data = {
+      iotCode,
+      vehicleCode,
+      controlType: on ? 1 : 0,
+    };
+
+    const response = await segwayClient({
+      method: 'post',
+      data,
+      url: '/api/vehicle/control/headlight',
+    });
+
+    return response.data;
+  } catch (error) {
+    logger.error(error.response.data.message);
+
+    return null;
+  }
+};

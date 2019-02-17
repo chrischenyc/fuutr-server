@@ -1,5 +1,4 @@
 const httpStatus = require('http-status');
-
 const moment = require('moment');
 
 const Vehicle = require('../models/vehicle');
@@ -7,10 +6,9 @@ const User = require('../models/user');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
-
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
-
 const normalizeVehicle = require('../helpers/normalize-vehicle');
+const { toot } = require('./segway');
 
 exports.reserveVehicle = async (req, res, next) => {
   const { _id } = req.params;
@@ -110,6 +108,36 @@ exports.reserveVehicle = async (req, res, next) => {
     await vehicle.save();
 
     res.json(normalizeVehicle(vehicle, user));
+  } catch (error) {
+    logger.error(JSON.stringify(error));
+    next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
+exports.tootVehicle = async (req, res, next) => {
+  const { _id } = req.params;
+
+  try {
+    const vehicle = await Vehicle.findOne({ _id }).exec();
+
+    if (!vehicle) {
+      next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.BAD_REQUEST, true));
+      return;
+    }
+
+    // a flag to bypass actual IoT unlock/lock
+    if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
+      const segwayResult = await toot(vehicle.iotCode, vehicle.vehicleCode);
+
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${JSON.stringify(segwayResult)}`);
+
+        next(new APIError("couldn't toot scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        return;
+      }
+    }
+
+    res.status(httpStatus.OK).send();
   } catch (error) {
     logger.error(JSON.stringify(error));
     next(new APIError(error.message, httpStatus.INTERNAL_SERVER_ERROR, true));

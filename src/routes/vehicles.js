@@ -21,4 +21,15 @@ router.patch(
   VehicleController.reserveVehicle
 );
 
+router.post(
+  '/:_id/toot',
+  requireJWT,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  VehicleController.tootVehicle
+);
+
 module.exports = router;
