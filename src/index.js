@@ -14,9 +14,6 @@ const { requestAccessToken, segwayClient } = require('./controllers/segway');
 // // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
 
-const Ride = require('./models/ride');
-const routeDistance = require('./helpers/route-distance');
-
 // // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;
 
@@ -52,14 +49,6 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => {
   logger.info(`server started on port ${port}`);
   requestAccessToken();
-
-  Ride.find({ route: { $exists: true } }).then((rides) => {
-    rides.forEach((ride) => {
-      ride.distance = routeDistance(ride.route.coordinates);
-      ride.save();
-      logger.info(`Ride: ${ride._id}`);
-    });
-  });
 });
 
 module.exports = app;
