@@ -123,8 +123,8 @@ exports.startRide = async (req, res, next) => {
         vehicle.location.coordinates[1],
         vehicle.location.coordinates[1]
       );
-      logger.info(`sunsetstart: ${sunlightTimes.sunsetStart}`);
-      if (now < sunlightTimes.sunsetStart) {
+
+      if (now >= sunlightTimes.sunsetStart) {
         await headlight(vehicle.iotCode, vehicle.vehicleCode, true);
       }
 
