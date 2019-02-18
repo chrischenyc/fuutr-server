@@ -28,6 +28,16 @@ router.post(
     params: {
       _id: Joi.string().required(),
     },
+    data: {
+      latitude: Joi.number()
+        .min(-90)
+        .max(90)
+        .required(),
+      longitude: Joi.number()
+        .min(-180)
+        .max(180)
+        .required(),
+    },
   }),
   VehicleController.tootVehicle
 );

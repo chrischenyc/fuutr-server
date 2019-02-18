@@ -116,12 +116,27 @@ exports.reserveVehicle = async (req, res, next) => {
 
 exports.tootVehicle = async (req, res, next) => {
   const { _id } = req.params;
+  const { latitude, longitude } = req.body;
 
   try {
-    const vehicle = await Vehicle.findOne({ _id }).exec();
+    const vehicle = await Vehicle.findOne({
+      _id,
+      location: {
+        $nearSphere: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: process.env.APP_VEHICLE_ENABLE_TOOT_RADIUS,
+        },
+      },
+    }).exec();
 
     if (!vehicle) {
-      next(new APIError(`Vehicle id ${_id} doesn't exist`, httpStatus.BAD_REQUEST, true));
+      next(
+        new APIError(
+          'To use ring function, you need to be close enough to the scooter.',
+          httpStatus.BAD_REQUEST,
+          true
+        )
+      );
       return;
     }
 
