@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const polyline = require('@mapbox/polyline');
+const SunCalc = require('suncalc');
 
 const Ride = require('../models/ride');
 const User = require('../models/user');
@@ -115,8 +116,16 @@ exports.startRide = async (req, res, next) => {
         return;
       }
 
-      // TODO: turn on headlight after dark
-      await headlight(vehicle.iotCode, vehicle.vehicleCode, true);
+      // turn on headlight after dark
+      const now = new Date();
+      const sunlightTimes = SunCalc.getTimes(
+        now,
+        vehicle.location.coordinates[1],
+        vehicle.location.coordinates[1]
+      );
+      if (now >= sunlightTimes.sunsetStart) {
+        await headlight(vehicle.iotCode, vehicle.vehicleCode, true);
+      }
 
       logger.info(`Start Ride: Vehicle ${vehicle._id} unlocked by user ${userId}`);
     }

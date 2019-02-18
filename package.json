@@ -61,6 +61,7 @@
     "qrcode": "^1.3.3",
     "querystring": "^0.2.0",
     "stripe": "^6.23.1",
+    "suncalc": "^1.8.0",
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "winston-aws-cloudwatch": "^3.0.0"
