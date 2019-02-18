@@ -10,7 +10,7 @@ const Zone = require('../models/zone');
 const secondsBetweenDates = require('../helpers/seconds-between-dates');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
-const { unlockVehicle, lockVehicle } = require('./segway');
+const { unlockVehicle, lockVehicle, headlight } = require('./segway');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 const formatVehicleCode = require('../helpers/format-vehicle-code');
 const routeDistance = require('../helpers/route-distance');
@@ -114,6 +114,9 @@ exports.startRide = async (req, res, next) => {
         next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
         return;
       }
+
+      // TODO: turn on headlight after dark
+      await headlight(vehicle.iotCode, vehicle.vehicleCode, true);
 
       logger.info(`Start Ride: Vehicle ${vehicle._id} unlocked by user ${userId}`);
     }
@@ -333,6 +336,9 @@ const finishRide = async (req, res, next) => {
 
         return;
       }
+
+      // TODO: turn off headlight after dark
+      await headlight(vehicle.iotCode, vehicle.vehicleCode, false);
 
       logger.info(`Finish Ride: Vehicle ${vehicle._id} locked by user ${userId}`);
     }
