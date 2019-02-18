@@ -41,6 +41,8 @@ const rideSchema = new mongoose.Schema(
     completedPhoto: { type: String }, // URL to the uploaded image
 
     initialRemainingRange: { type: Number }, // initial range when vehicle is unlocked, unit metre
+
+    rating: { type: Number, min: 1, max: 5 }, // user rating after ride finishes
   },
   { timestamps: true, versionKey: false }
 ).index({ lockLocation: '2dsphere', unlockLocation: '2dsphere', route: '2dsphere' });

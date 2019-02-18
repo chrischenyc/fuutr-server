@@ -86,6 +86,28 @@ router.post(
 );
 
 /**
+ * POST /rides/:id/rate
+ * rate a finished ride
+ *
+ */
+router.post(
+  '/:_id/rate',
+  requireJWT,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+    data: {
+      rating: Joi.number()
+        .min(1)
+        .max(5)
+        .required(),
+    },
+  }),
+  RideController.rateRide
+);
+
+/**
  * GET /rides/me
  * get history rides of current user
  *

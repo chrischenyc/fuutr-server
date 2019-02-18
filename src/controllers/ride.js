@@ -429,6 +429,35 @@ const finishRide = async (req, res, next) => {
 
 exports.finishRide = finishRide;
 
+exports.rateRide = async (req, res, next) => {
+  const { userId } = req;
+  const { _id } = req.params;
+  const { rating } = req.body;
+
+  try {
+    const ride = await Ride.findOne({
+      _id,
+      user: userId,
+      completed: true,
+      rating: { $exists: false },
+    }).exec();
+
+    if (!ride) {
+      next(new APIError('Invalid request', httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
+    }
+
+    // update ride
+    ride.rating = rating;
+    await ride.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(`Ride.rate error: ${JSON.stringify(error)}`);
+    next(new APIError("couldn't rate the ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
+
 exports.pastRides = async (req, res, next) => {
   const { userId } = req;
 
