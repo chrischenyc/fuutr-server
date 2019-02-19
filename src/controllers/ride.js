@@ -146,14 +146,23 @@ exports.startRide = async (req, res, next) => {
 
     await ride.save();
 
-    // TODO: defer updating Vehicle object
     vehicle.reserved = false;
     vehicle.reservedBy = undefined;
     vehicle.reserveTimeoutKey = undefined;
     vehicle.reservedUntil = undefined;
     vehicle.locked = false;
     vehicle.inRide = true;
-    await vehicle.save();
+    await vehicle.save(); // TODO: defer this DB operation
+
+    const otherReservedVehicles = await Vehicle.find({ reserved: true, reservedBy: userId });
+    otherReservedVehicles.forEach(async (otherReservedVehicle) => {
+      otherReservedVehicle.reserved = false;
+      otherReservedVehicle.reservedBy = undefined;
+      otherReservedVehicle.reserveTimeoutKey = undefined;
+      otherReservedVehicle.reservedUntil = undefined;
+
+      otherReservedVehicle.save(); // TODO: defer this DB operation
+    });
 
     res.json(ride);
   } catch (error) {
