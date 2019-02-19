@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const polyline = require('@mapbox/polyline');
 const SunCalc = require('suncalc');
+const moment = require('moment');
 
 const Ride = require('../models/ride');
 const User = require('../models/user');
@@ -123,8 +124,14 @@ exports.startRide = async (req, res, next) => {
         vehicle.location.coordinates[1],
         vehicle.location.coordinates[1]
       );
+      const halfHourAfterSunrise = moment(sunlightTimes.sunrise)
+        .add(30, 'm')
+        .toDate();
+      const halfHourBeforeSunset = moment(sunlightTimes.sunset)
+        .subtract(30, 'm')
+        .toDate();
 
-      if (now < sunlightTimes.sunrise || now > sunlightTimes.sunsetStart) {
+      if (now < halfHourAfterSunrise || now > halfHourBeforeSunset) {
         // TODO: make this an async call
         logger(
           `current time ${now} is before ${sunlightTimes.sunrise} or after ${
