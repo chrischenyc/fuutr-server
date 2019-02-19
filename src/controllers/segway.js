@@ -107,7 +107,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
     }
 
     // print raw data
-    logger.info(JSON.stringify(req.body));
+    // logger.info(JSON.stringify(req.body));
 
     let {
       iotCode,
@@ -242,6 +242,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
           ride.route.coordinates.map(coordinate => [coordinate[1], coordinate[0]])
         );
 
+        // TODO: async call
         await ride.save();
       } else {
         logger.error(`couldn't find ride with vehicle ${vehicle._id}`);
@@ -272,6 +273,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       }
     }
 
+    // TODO: async call
     await Vehicle.update(
       { vehicleCode, iotCode },
       {
