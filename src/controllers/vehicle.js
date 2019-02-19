@@ -124,7 +124,7 @@ exports.tootVehicle = async (req, res, next) => {
       location: {
         $nearSphere: {
           $geometry: { type: 'Point', coordinates: [longitude, latitude] },
-          $maxDistance: process.env.APP_VEHICLE_ENABLE_TOOT_RADIUS,
+          $maxDistance: process.env.APP_VEHICLE_OPERATION_RADIUS,
         },
       },
     }).exec();
