@@ -131,6 +131,10 @@ exports.startRide = async (req, res, next) => {
         .subtract(30, 'm')
         .toDate();
 
+      logger.info(`now: ${now}`);
+      logger.info(`halfHourAfterSunrise: ${halfHourAfterSunrise}`);
+      logger.info(`halfHourBeforeSunset: ${halfHourBeforeSunset}`);
+
       if (now < halfHourAfterSunrise || now > halfHourBeforeSunset) {
         // TODO: make this an async call
         await headlight(vehicle.iotCode, vehicle.vehicleCode, true);
