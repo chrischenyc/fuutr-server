@@ -124,8 +124,13 @@ exports.startRide = async (req, res, next) => {
         vehicle.location.coordinates[1]
       );
 
-      if (now <= sunlightTimes.sunrise || now >= sunlightTimes.sunsetStart) {
+      if (now < sunlightTimes.sunrise || now > sunlightTimes.sunsetStart) {
         // TODO: make this an async call
+        logger(
+          `current time ${now} is before ${sunlightTimes.sunrise} or after ${
+            sunlightTimes.sunsetStart
+          }, turn on headlight`
+        );
         await headlight(vehicle.iotCode, vehicle.vehicleCode, true);
       }
 
