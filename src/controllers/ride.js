@@ -116,7 +116,7 @@ exports.startRide = async (req, res, next) => {
         return;
       }
 
-      // turn on headlight after dark
+      // turn on headlight before or after daylight time
       const now = new Date();
       const sunlightTimes = SunCalc.getTimes(
         now,
@@ -124,7 +124,8 @@ exports.startRide = async (req, res, next) => {
         vehicle.location.coordinates[1]
       );
 
-      if (now >= sunlightTimes.sunsetStart) {
+      if (now <= sunlightTimes.sunrise || now >= sunlightTimes.sunsetStart) {
+        // TODO: make this an async call
         await headlight(vehicle.iotCode, vehicle.vehicleCode, true);
       }
 
@@ -356,7 +357,7 @@ const finishRide = async (req, res, next) => {
         return;
       }
 
-      // TODO: turn off headlight after dark
+      // TODO: make this an async call
       await headlight(vehicle.iotCode, vehicle.vehicleCode, false);
 
       logger.info(`Finish Ride: Vehicle ${vehicle._id} locked by user ${userId}`);
