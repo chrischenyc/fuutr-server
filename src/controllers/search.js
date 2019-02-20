@@ -42,7 +42,7 @@ exports.search = async (req, res, next) => {
         inRide: false,
         charging: false,
         reserved: false,
-        powerPercent: { $gt: 10 },
+        powerPercent: { $gte: 10 },
         location: {
           $nearSphere: {
             $geometry: { type: 'Point', coordinates: [longitude, latitude] },

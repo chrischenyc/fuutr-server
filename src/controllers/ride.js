@@ -93,6 +93,17 @@ exports.startRide = async (req, res, next) => {
       );
       return;
     }
+    if (vehicle.powerPercent < 10) {
+      logger.error(`Start Ride: Vehicle ${vehicle._id} is low on battery`);
+      next(
+        new APIError(
+          "Couldn't unlock this vehicle, its battery is running low",
+          httpStatus.INTERNAL_SERVER_ERROR,
+          true
+        )
+      );
+      return;
+    }
     if (vehicle.reserved && !vehicle.reservedBy.equals(userId)) {
       logger.error(`Start Ride: Vehicle ${vehicle._id} is being reserved`);
 
