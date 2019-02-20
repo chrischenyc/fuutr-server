@@ -281,7 +281,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
       }
     );
 
-    logger.info(`Vehicle code ${vehicleCode} status updated`);
+    // logger.info(`Vehicle code ${vehicleCode} status updated`);
 
     res.status(httpStatus.OK).send();
   } catch (error) {
