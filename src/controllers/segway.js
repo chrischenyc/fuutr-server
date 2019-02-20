@@ -269,7 +269,7 @@ exports.receiveVehicleStatusPush = async (req, res) => {
 
         valuesToUpdate.address = address;
 
-        logger.info(`Update vehicle ${vehicle._id} address to ${address}`);
+        // logger.info(`Update vehicle ${vehicle._id} address to ${address}`);
       }
     }
 
