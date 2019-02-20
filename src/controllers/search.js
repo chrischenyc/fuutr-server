@@ -34,7 +34,7 @@ exports.search = async (req, res, next) => {
       }
     }
 
-    // otherwise, return all nearby vehicles
+    // otherwise, return all nearby vehicles that meet the criteria
     if (vehicles.length === 0) {
       vehicles = await Vehicle.find({
         online: true,
@@ -42,6 +42,7 @@ exports.search = async (req, res, next) => {
         inRide: false,
         charging: false,
         reserved: false,
+        powerPercent: { $gt: 10 },
         location: {
           $nearSphere: {
             $geometry: { type: 'Point', coordinates: [longitude, latitude] },
