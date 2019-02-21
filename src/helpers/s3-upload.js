@@ -1,6 +1,8 @@
 const AWS = require('aws-sdk');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
 
 const logger = require('./logger');
 
@@ -12,11 +14,11 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-const S3Upload = async (filePath) => {
+exports.uploadToS3 = async (filePath, bucket) => {
   const params = {
     Body: fs.createReadStream(filePath),
     Key: path.basename(filePath),
-    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Bucket: bucket,
   };
 
   try {
@@ -39,11 +41,24 @@ const S3Upload = async (filePath) => {
     const s3Host = `${params.Bucket}.s3.amazonaws.com`;
 
     // save cloud front url
-    return result.Location.replace(s3Host, process.env.AWS_S3_CLOUD_FRONT_NAME);
+    return result.Location.replace(s3Host, process.env.AWS_S3_CLOUD_FRONT_QR);
   } catch (error) {
     logger.err(`S3 Upload error: ${error}`);
     return null;
   }
 };
 
-module.exports = S3Upload;
+exports.riderUpload = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.AWS_S3_BUCKET_RIDER,
+    metadata(req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key(req, file, cb) {
+      const { userId } = req;
+      // file name on S3
+      cb(null, `${Date.now().toString()}_${userId}_${file.originalname}`);
+    },
+  }),
+});

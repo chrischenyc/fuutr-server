@@ -56,6 +56,8 @@
     "mongoose": "^5.4.11",
     "mongoose-geojson-schema": "^2.1.3",
     "morgan": "^1.9.1",
+    "multer": "^1.4.1",
+    "multer-s3": "^2.9.0",
     "passport": "^0.4.0",
     "passport-facebook-token": "^3.3.0",
     "qrcode": "^1.3.3",

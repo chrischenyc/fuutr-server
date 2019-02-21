@@ -9,6 +9,7 @@ const issueSchema = new mongoose.Schema(
     location: { type: mongoose.Schema.Types.Point },
     vehicle: { type: mongoose.Schema.Types.ObjectId },
     ride: { type: mongoose.Schema.Types.ObjectId },
+    photo: { type: String },
   },
   { timestamps: true, versionKey: false }
 ).index({ location: '2dsphere' });

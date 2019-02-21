@@ -8,7 +8,7 @@ const Vehicle = require('../models/vehicle');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
-const S3Upload = require('../helpers/s3-upload');
+const { uploadToS3 } = require('../helpers/s3-upload');
 
 const {
   bindVehicle, queryVehicle, lockVehicle, unlockVehicle,
@@ -88,7 +88,7 @@ const generateUnlockCodeQRImage = async (vehicleCode, iotCode, unlockCode) => {
   await QRCode.toFile(imageFilePath, unlockCode, { width: 640 });
 
   // upload to S3
-  const imageUrl = await S3Upload(imageFilePath);
+  const imageUrl = await uploadToS3(imageFilePath, process.env.AWS_S3_BUCKET_QR);
 
   // remove tmp image file
   fs.unlinkSync(imageFilePath);

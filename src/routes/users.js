@@ -7,20 +7,22 @@ const router = express.Router();
 const UserController = require('../controllers/user');
 const PhoneController = require('../controllers/phone');
 const { requireJWT } = require('../middleware/authenticate');
+const { riderUpload } = require('../helpers/s3-upload');
 
 // fetch user info
 router.get('/me', requireJWT, UserController.getProfile);
 
-// update user info, such as displayName and other non-critical info
-router.patch(
+// POST /users/me
+// update user info, such as displayName and avatar
+router.post(
   '/me',
   requireJWT,
   validate({
     body: {
-      email: Joi.string().email(),
       displayName: Joi.string().allow(''),
     },
   }),
+  riderUpload.single('image'),
   UserController.updateProfile
 );
 

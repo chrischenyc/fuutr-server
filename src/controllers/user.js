@@ -55,7 +55,7 @@ exports.getProfile = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  const { userId: _id } = req;
+  const { userId: _id, file } = req;
   if (!_id) {
     res.status(httpStatus.UNAUTHORIZED);
   }
@@ -72,6 +72,11 @@ exports.updateProfile = async (req, res) => {
 
     if (!_.isNil(displayName)) {
       user.displayName = displayName;
+    }
+
+    if (!_.isNil(file.location)) {
+      const s3Host = `${process.env.AWS_S3_BUCKET_RIDER}.s3.amazonaws.com`;
+      user.photo = file.location.replace(s3Host, process.env.AWS_S3_CLOUD_FRONT_RIDER);
     }
 
     await user.save();
