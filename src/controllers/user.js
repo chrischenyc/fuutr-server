@@ -4,6 +4,7 @@ const _ = require('lodash');
 const User = require('../models/user');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
+const { s3ToCouldFront } = require('../helpers/s3-cloud-front');
 
 exports.getProfile = async (req, res) => {
   const { userId: _id } = req;
@@ -75,8 +76,11 @@ exports.updateProfile = async (req, res) => {
     }
 
     if (!_.isNil(file.location)) {
-      const s3Host = `${process.env.AWS_S3_BUCKET_RIDER}.s3.amazonaws.com`;
-      user.photo = file.location.replace(s3Host, process.env.AWS_S3_CLOUD_FRONT_RIDER);
+      user.photo = s3ToCouldFront(
+        file.location,
+        process.env.AWS_S3_BUCKET_RIDER,
+        process.env.AWS_S3_CLOUD_FRONT_RIDER
+      );
     }
 
     await user.save();

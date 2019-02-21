@@ -5,6 +5,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 
 const logger = require('./logger');
+const { s3ToCouldFront } = require('./s3-cloud-front');
 
 // configuring the AWS environment
 AWS.config.update({
@@ -36,12 +37,7 @@ exports.uploadToS3 = async (filePath, bucket) => {
       });
     });
 
-    logger.debug('S3 Uploaded:', result.Location);
-
-    const s3Host = `${params.Bucket}.s3.amazonaws.com`;
-
-    // save cloud front url
-    return result.Location.replace(s3Host, process.env.AWS_S3_CLOUD_FRONT_QR);
+    return s3ToCouldFront(result.Location, params.Bucket, process.env.AWS_S3_CLOUD_FRONT_QR);
   } catch (error) {
     logger.err(`S3 Upload error: ${error}`);
     return null;
