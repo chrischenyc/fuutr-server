@@ -72,7 +72,7 @@ exports.updateProfile = async (req, res) => {
       user.displayName = displayName;
     }
 
-    if (!_.isNil(file.location)) {
+    if (!_.isNil(file) && !_.isNil(file.location)) {
       if (!_.isNil(user.photo)) {
         // delete previous upload from S3
         deleteFromS3(

@@ -16,6 +16,7 @@ const { unlockVehicle, lockVehicle, headlight } = require('./segway');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
 const formatVehicleCode = require('../helpers/format-vehicle-code');
 const routeDistance = require('../helpers/route-distance');
+const { s3ToCouldFront } = require('../helpers/s3');
 
 exports.startRide = async (req, res, next) => {
   const { unlockCode } = req.body;
@@ -454,6 +455,38 @@ const finishRide = async (req, res, next) => {
 };
 
 exports.finishRide = finishRide;
+
+exports.sendParkedPhoto = async (req, res, next) => {
+  const { userId, file } = req;
+  const { _id } = req.params;
+
+  try {
+    const ride = await Ride.findOne({
+      _id,
+      user: userId,
+      completed: true,
+      parkedPhoto: { $exists: false },
+    }).exec();
+
+    if (!ride || !file) {
+      next(new APIError('Cannot upload parked photo', httpStatus.INTERNAL_SERVER_ERROR, true));
+      return;
+    }
+
+    // update ride
+    ride.parkedPhoto = s3ToCouldFront(
+      file.location,
+      process.env.AWS_S3_BUCKET_RIDER,
+      process.env.AWS_S3_CLOUD_FRONT_RIDER
+    );
+    await ride.save();
+
+    res.status(httpStatus.OK).send();
+  } catch (error) {
+    logger.error(`Ride.rate error: ${JSON.stringify(error)}`);
+    next(new APIError("couldn't rate the ride", httpStatus.INTERNAL_SERVER_ERROR, true));
+  }
+};
 
 exports.rateRide = async (req, res, next) => {
   const { userId } = req;

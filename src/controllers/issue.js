@@ -27,7 +27,7 @@ exports.addIssue = async (req, res, next) => {
       ride,
     });
 
-    if (!_.isNil(file.location)) {
+    if (!_.isNil(file) && !_.isNil(file.location)) {
       issue.photo = s3ToCouldFront(
         file.location,
         process.env.AWS_S3_BUCKET_RIDER,

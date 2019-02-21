@@ -4,6 +4,7 @@ const Joi = require('joi');
 
 const RideController = require('../controllers/ride');
 const { requireJWT } = require('../middleware/authenticate');
+const { riderUpload } = require('../helpers/s3');
 
 const router = express.Router();
 
@@ -83,6 +84,23 @@ router.post(
     },
   }),
   RideController.finishRide
+);
+
+/**
+ * POST /rides/:id/parked
+ * post parked photo
+ *
+ */
+router.post(
+  '/:_id/parked',
+  requireJWT,
+  validate({
+    params: {
+      _id: Joi.string().required(),
+    },
+  }),
+  riderUpload.single('image'),
+  RideController.sendParkedPhoto
 );
 
 /**
