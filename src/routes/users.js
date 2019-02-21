@@ -7,7 +7,7 @@ const router = express.Router();
 const UserController = require('../controllers/user');
 const PhoneController = require('../controllers/phone');
 const { requireJWT } = require('../middleware/authenticate');
-const { riderUpload } = require('../helpers/s3-upload');
+const { riderUpload } = require('../helpers/s3');
 
 // fetch user info
 router.get('/me', requireJWT, UserController.getProfile);

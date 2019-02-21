@@ -5,7 +5,6 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 
 const logger = require('./logger');
-const { s3ToCouldFront } = require('./s3-cloud-front');
 
 // configuring the AWS environment
 AWS.config.update({
@@ -14,6 +13,12 @@ AWS.config.update({
 });
 
 const s3 = new AWS.S3();
+
+const s3ToCouldFront = (link, bucket, cloudFrontBase) => {
+  const s3Host = `${bucket}.s3.amazonaws.com`;
+  return link.replace(s3Host, cloudFrontBase);
+};
+exports.s3ToCouldFront = s3ToCouldFront;
 
 exports.uploadToS3 = async (filePath, bucket) => {
   const params = {
@@ -41,6 +46,24 @@ exports.uploadToS3 = async (filePath, bucket) => {
   } catch (error) {
     logger.err(`S3 Upload error: ${error}`);
     return null;
+  }
+};
+
+exports.deleteFromS3 = async (link, bucket, cloudFrontBase) => {
+  const key = link.replace(`https://${cloudFrontBase}/`, '');
+
+  const params = { Bucket: bucket, Key: key };
+
+  try {
+    await new Promise((resolve, reject) => {
+      s3.deleteObject(params, (err) => {
+        if (err) {
+          reject(err);
+        } else resolve();
+      });
+    });
+  } catch (error) {
+    logger.err(`S3 Upload error: ${error}`);
   }
 };
 

@@ -8,7 +8,7 @@ const Vehicle = require('../models/vehicle');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { adminTablePaginationLimit } = require('../helpers/constants');
-const { uploadToS3 } = require('../helpers/s3-upload');
+const { uploadToS3 } = require('../helpers/s3');
 
 const {
   bindVehicle, queryVehicle, lockVehicle, unlockVehicle,

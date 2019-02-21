@@ -4,7 +4,7 @@ const _ = require('lodash');
 const User = require('../models/user');
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
-const { s3ToCouldFront } = require('../helpers/s3-cloud-front');
+const { s3ToCouldFront, deleteFromS3 } = require('../helpers/s3');
 
 exports.getProfile = async (req, res) => {
   const { userId: _id } = req;
@@ -76,6 +76,15 @@ exports.updateProfile = async (req, res) => {
     }
 
     if (!_.isNil(file.location)) {
+      if (!_.isNil(user.photo)) {
+        // delete previous upload from S3
+        await deleteFromS3(
+          user.photo,
+          process.env.AWS_S3_BUCKET_RIDER,
+          process.env.AWS_S3_CLOUD_FRONT_RIDER
+        );
+      }
+
       user.photo = s3ToCouldFront(
         file.location,
         process.env.AWS_S3_BUCKET_RIDER,
