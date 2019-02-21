@@ -78,7 +78,7 @@ exports.updateProfile = async (req, res) => {
     if (!_.isNil(file.location)) {
       if (!_.isNil(user.photo)) {
         // delete previous upload from S3
-        await deleteFromS3(
+        deleteFromS3(
           user.photo,
           process.env.AWS_S3_BUCKET_RIDER,
           process.env.AWS_S3_CLOUD_FRONT_RIDER
