@@ -12,9 +12,9 @@ const { riderUpload } = require('../helpers/s3');
 // fetch user info
 router.get('/me', requireJWT, UserController.getProfile);
 
-// POST /users/me
+// PATCH /users/me
 // update user info, such as displayName and avatar
-router.post(
+router.patch(
   '/me',
   requireJWT,
   validate({

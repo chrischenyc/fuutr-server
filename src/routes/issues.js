@@ -5,6 +5,7 @@ const Joi = require('joi');
 const router = express.Router();
 const IssueController = require('../controllers/issue');
 const { requireJWT } = require('../middleware/authenticate');
+const { riderUpload } = require('../helpers/s3');
 
 /**
  * POST /issues
@@ -30,6 +31,7 @@ router.post(
     },
   }),
   requireJWT,
+  riderUpload.single('image'),
   IssueController.addIssue
 );
 

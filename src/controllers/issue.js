@@ -1,15 +1,17 @@
 const httpStatus = require('http-status');
+const _ = require('lodash');
 
 const Issue = require('../models/issue');
 
 const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
+const { s3ToCouldFront } = require('../helpers/s3');
 
 exports.addIssue = async (req, res, next) => {
   const {
     type, description, latitude, longitude, vehicle, ride,
   } = req.body;
-  const { userId } = req;
+  const { userId, file } = req;
 
   try {
     // create Issue object
@@ -19,11 +21,19 @@ exports.addIssue = async (req, res, next) => {
       description,
       location: {
         type: 'Point',
-        coordinates: [longitude, latitude],
+        coordinates: [parseFloat(longitude), parseFloat(latitude)],
       },
       vehicle,
       ride,
     });
+
+    if (!_.isNil(file.location)) {
+      issue.photo = s3ToCouldFront(
+        file.location,
+        process.env.AWS_S3_BUCKET_RIDER,
+        process.env.AWS_S3_CLOUD_FRONT_RIDER
+      );
+    }
 
     await issue.save();
 

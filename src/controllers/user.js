@@ -56,15 +56,12 @@ exports.getProfile = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  const { userId: _id, file } = req;
-  if (!_id) {
-    res.status(httpStatus.UNAUTHORIZED);
-  }
+  const { userId, file } = req;
 
   const { displayName } = req.body;
 
   try {
-    const user = await User.findOne({ _id }).exec();
+    const user = await User.findOne({ _id: userId }).exec();
 
     if (!user) {
       res.status(httpStatus.NO_CONTENT).send();
