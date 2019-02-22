@@ -14,8 +14,6 @@ const { requestAccessToken, segwayClient } = require('./controllers/segway');
 // // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
 
-const Zone = require('./models/zone.js');
-
 // // plugin bluebird promise in mongoose
 mongoose.Promise = Promise;
 
@@ -51,13 +49,6 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => {
   logger.info(`server started on port ${port}`);
   requestAccessToken();
-
-  Zone.find({}).then((zones) => {
-    zones.forEach((zone) => {
-      zone.riding = true;
-      zone.save();
-    });
-  });
 });
 
 module.exports = app;
