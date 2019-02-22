@@ -35,17 +35,24 @@ exports.getZones = async (req, res, next) => {
 };
 
 exports.addZone = async (req, res, next) => {
-  const {
-    polygon, active, parking, speedMode, note,
+  let {
+    polygon, active, parking, speedMode, note, riding,
   } = req.body;
 
   try {
+    // safe guard no-riding zone's parking and speed limit attributes
+    if (!riding) {
+      speedMode = 1;
+      parking = false;
+    }
+
     const zone = new Zones({
       polygon,
       active,
       parking,
       speedMode,
       note,
+      riding,
     });
 
     await zone.save();
@@ -59,8 +66,8 @@ exports.addZone = async (req, res, next) => {
 
 exports.editZone = async (req, res, next) => {
   const { _id } = req.params;
-  const {
-    active, parking, speedMode, note,
+  let {
+    active, parking, speedMode, note, riding,
   } = req.body;
 
   try {
@@ -68,6 +75,12 @@ exports.editZone = async (req, res, next) => {
 
     if (!existingZone) {
       next(new APIError(`Zone id ${_id} doesn't exist`, httpStatus.INTERNAL_SERVER_ERROR, true));
+    }
+
+    // safe guard no-riding zone's parking and speed limit attributes
+    if (!riding) {
+      speedMode = 1;
+      parking = false;
     }
 
     existingZone.active = active;
