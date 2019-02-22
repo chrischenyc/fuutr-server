@@ -4,12 +4,19 @@ module.exports = (zone) => {
   polygon.pop();
 
   let result = {
+    riding: zone.riding,
     parking: zone.parking,
     speedMode: zone.speedMode,
     polygon,
   };
 
-  if (!zone.parking) {
+  if (!zone.riding) {
+    result = {
+      ...result,
+      title: 'No-Riding Zone',
+      message: 'You cannot ride or park the scooter in this area.',
+    };
+  } else if (!zone.parking) {
     result = {
       ...result,
       title: 'No-Parking Zone',
