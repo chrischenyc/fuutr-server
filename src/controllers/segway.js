@@ -186,21 +186,27 @@ exports.receiveVehicleStatusPush = async (req, res) => {
     // update vehicle's speed mode during a ride if necessary
 
     if (!_.isNil(location) && inRide && !locked) {
-      // geo-fenced speed limit
+      // geo-fence speed limit zones or no-riding zones
       const insideSpeedZones = await Zone.find({
         active: true,
-        speedMode: { $in: [1, 2] }, // 1 and 2 are low and middle speed mode
+        $or: [{ speedMode: { $in: [1, 2] } }, { riding: false }],
         polygon: {
           $geoIntersects: { $geometry: location },
         },
-      }).sort({ speedMode: 1 });
+      }).sort({ riding: 1, speedMode: 1 });
 
       let newSpeedMode = speedMode;
 
       if (insideSpeedZones.length > 0) {
-        newSpeedMode = insideSpeedZones[0].speedMode;
+        const zone = insideSpeedZones[0];
+        if (!zone.riding) {
+          newSpeedMode = 1; // enforce slowest speed inside no-riding zone
+          // TODO: alert rider by periodically ring and flashlight
+        } else {
+          newSpeedMode = zone.speedMode;
+        }
       } else {
-        // use 3 the fastest speed mode if vehicle is outside any speed zone
+        // use the fastest speed mode if vehicle is outside any speed limit zone
         newSpeedMode = 3;
       }
 
