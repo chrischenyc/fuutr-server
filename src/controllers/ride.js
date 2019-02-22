@@ -207,7 +207,7 @@ exports.pauseRide = async (req, res, next) => {
     // validate current locking position, geo-fence for illegal parking area
     const noParkingZones = await Zone.find({
       active: true,
-      parking: false,
+      $or: [{ parking: false }, { riding: false }],
       polygon: {
         $geoIntersects: { $geometry: vehicle.location },
       },
@@ -353,7 +353,7 @@ const finishRide = async (req, res, next) => {
     // validate current locking position, geo-fence for illegal parking area
     const noParkingZones = await Zone.find({
       active: true,
-      parking: false,
+      $or: [{ parking: false }, { riding: false }],
       polygon: {
         $geoIntersects: { $geometry: vehicle.location },
       },
