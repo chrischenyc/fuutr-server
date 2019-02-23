@@ -10,6 +10,7 @@ const transactions = require('./transactions');
 const vehicles = require('./vehicles');
 const contacts = require('./contacts');
 const zones = require('./zones');
+const issues = require('./issues');
 
 router.use('/auth', auth);
 router.use('/payments', payments);
@@ -19,5 +20,6 @@ router.use('/users', users);
 router.use('/vehicles', vehicles);
 router.use('/contacts', contacts);
 router.use('/zones', zones);
+router.use('/issues', issues);
 
 module.exports = router;

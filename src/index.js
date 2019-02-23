@@ -10,7 +10,7 @@ require('./config/passport');
 const app = require('./app');
 const logger = require('./helpers/logger');
 const { requestAccessToken, segwayClient } = require('./controllers/segway');
-
+const Issue = require('./models/issue');
 // // debug output with nice prefix
 const { databaseDebug, axiosDebug } = require('./helpers/debug-loggers');
 
@@ -49,6 +49,13 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => {
   logger.info(`server started on port ${port}`);
   requestAccessToken();
+
+  Issue.find({}).then((issues) => {
+    issues.forEach((issue) => {
+      issue.status = 'new';
+      issue.save();
+    });
+  });
 });
 
 module.exports = app;
