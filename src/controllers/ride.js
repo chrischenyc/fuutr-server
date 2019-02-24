@@ -120,15 +120,14 @@ exports.startRide = async (req, res, next) => {
 
     // a flag to bypass actual IoT unlock/lock
     if (process.env.APP_VIRTUAL_VEHICLE_LOCK_UNLOCK !== 'true') {
-      // const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
-      unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
+      const segwayResult = await unlockVehicle(vehicle.iotCode, vehicle.vehicleCode);
 
-      // if (!segwayResult.success) {
-      //   logger.error(`Segway API error: ${JSON.stringify(segwayResult)}`);
+      if (!segwayResult.success) {
+        logger.error(`Segway API error: ${JSON.stringify(segwayResult)}`);
 
-      //   next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
-      //   return;
-      // }
+        next(new APIError("couldn't unlock scooter", httpStatus.INTERNAL_SERVER_ERROR, true));
+        return;
+      }
 
       // turn on headlight before or after daylight time
       const now = new Date();
