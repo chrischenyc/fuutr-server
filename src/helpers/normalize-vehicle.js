@@ -1,5 +1,3 @@
-const formatVehicleCode = require('./format-vehicle-code');
-
 // convert mongo document object to an object to be returned
 module.exports = (vehicle, user) => {
   // TODO: need to localise pricing
@@ -7,16 +5,16 @@ module.exports = (vehicle, user) => {
     _id: vehicle._id,
     powerPercent: vehicle.powerPercent,
     remainingRange: vehicle.remainingRange,
-    vehicleCode: formatVehicleCode(vehicle.vehicleCode),
+    unlockCode: `#${vehicle.unlockCode}`,
     longitude: vehicle.location.coordinates[0],
     latitude: vehicle.location.coordinates[1],
     address: vehicle.address,
     reserved: vehicle.reserved,
     locked: vehicle.locked,
     inRide: vehicle.inRide,
-    unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
-    rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
-    pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
+    unlockCost: parseFloat(process.env.APP_UNLOCK_COST_NZ),
+    rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST_NZ),
+    pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST_NZ),
   };
 
   if (vehicle.reservedUntil) {

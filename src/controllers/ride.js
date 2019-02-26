@@ -14,7 +14,6 @@ const APIError = require('../helpers/api-error');
 const logger = require('../helpers/logger');
 const { unlockVehicle, lockVehicle, headlight } = require('./segway');
 const { addTimer, clearTimer } = require('../helpers/timer-manager');
-const formatVehicleCode = require('../helpers/format-vehicle-code');
 const routeDistance = require('../helpers/route-distance');
 const { s3ToCouldFront } = require('../helpers/s3');
 
@@ -149,10 +148,10 @@ exports.startRide = async (req, res, next) => {
     const ride = new Ride({
       user: userId,
       vehicle: vehicle._id,
-      vehicleCode: formatVehicleCode(vehicle.vehicleCode),
-      unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
-      rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
-      pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
+      unlockCode: `#${vehicle.unlockCode}`,
+      unlockCost: parseFloat(process.env.APP_UNLOCK_COST_NZ),
+      rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST_NZ),
+      pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST_NZ),
       segments: [{ start: Date.now(), paused: false }],
       initialRemainingRange: vehicle.remainingRange,
       unlockLocation: vehicle.location,
