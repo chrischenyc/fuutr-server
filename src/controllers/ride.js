@@ -144,6 +144,8 @@ exports.startRide = async (req, res, next) => {
     }
 
     // create Ride object
+    // TODO: need to localise pricing
+
     const ride = new Ride({
       user: userId,
       vehicle: vehicle._id,

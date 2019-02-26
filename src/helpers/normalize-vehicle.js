@@ -2,6 +2,7 @@ const formatVehicleCode = require('./format-vehicle-code');
 
 // convert mongo document object to an object to be returned
 module.exports = (vehicle, user) => {
+  // TODO: need to localise pricing
   let result = {
     _id: vehicle._id,
     powerPercent: vehicle.powerPercent,
