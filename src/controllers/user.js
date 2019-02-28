@@ -74,10 +74,22 @@ exports.updateProfile = async (req, res) => {
 
     if (!_.isNil(oneSignalPlayerId)) {
       user.oneSignalPlayerId = oneSignalPlayerId;
+
+      // in case another user shares the same OneSignal PlayerId
+      User.update(
+        { _id: { $ne: userId }, oneSignalPlayerId },
+        { $unset: { oneSignalPlayerId: '' } }
+      );
     }
 
     if (!_.isNil(applePushDeviceToken)) {
       user.applePushDeviceToken = applePushDeviceToken;
+
+      // in case another user shares the same apple push device token
+      User.update(
+        { _id: { $ne: userId }, applePushDeviceToken },
+        { $unset: { applePushDeviceToken: '' } }
+      );
     }
 
     if (!_.isNil(file) && !_.isNil(file.location)) {
