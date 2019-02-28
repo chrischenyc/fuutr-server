@@ -58,7 +58,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   const { userId, file } = req;
 
-  const { displayName } = req.body;
+  const { displayName, oneSignalPlayerId, applePushDeviceToken } = req.body;
 
   try {
     const user = await User.findOne({ _id: userId }).exec();
@@ -70,6 +70,14 @@ exports.updateProfile = async (req, res) => {
 
     if (!_.isNil(displayName)) {
       user.displayName = displayName;
+    }
+
+    if (!_.isNil(oneSignalPlayerId)) {
+      user.oneSignalPlayerId = oneSignalPlayerId;
+    }
+
+    if (!_.isNil(applePushDeviceToken)) {
+      user.applePushDeviceToken = applePushDeviceToken;
     }
 
     if (!_.isNil(file) && !_.isNil(file.location)) {

@@ -20,6 +20,8 @@ router.patch(
   validate({
     body: {
       displayName: Joi.string().allow(''),
+      oneSignalPlayerId: Joi.string().allow(''),
+      applePushDeviceToken: Joi.string().allow(''),
     },
   }),
   riderUpload.single('image'),

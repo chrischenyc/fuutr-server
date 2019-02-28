@@ -35,6 +35,8 @@ const userSchema = new mongoose.Schema(
       sparse: true, // stripeCustomerId may be null, need sparse indexing here
     },
     canReserveVehicleAfter: { type: Date }, // user needs to wait for 15 mins before next reserve
+    oneSignalPlayerId: { type: String }, // OneSignal as push notification service
+    applePushDeviceToken: { type: String }, // opted-in iOS devices
   },
   { timestamps: true, versionKey: false }
 );
