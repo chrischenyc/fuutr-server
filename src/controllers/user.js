@@ -76,7 +76,7 @@ exports.updateProfile = async (req, res) => {
       user.oneSignalPlayerId = oneSignalPlayerId;
 
       // in case another user shares the same OneSignal PlayerId
-      User.update(
+      await User.update(
         { _id: { $ne: userId }, oneSignalPlayerId },
         { $unset: { oneSignalPlayerId: '' } }
       );
@@ -86,7 +86,7 @@ exports.updateProfile = async (req, res) => {
       user.applePushDeviceToken = applePushDeviceToken;
 
       // in case another user shares the same apple push device token
-      User.update(
+      await User.update(
         { _id: { $ne: userId }, applePushDeviceToken },
         { $unset: { applePushDeviceToken: '' } }
       );
