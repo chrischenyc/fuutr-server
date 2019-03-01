@@ -12,9 +12,9 @@ module.exports = (vehicle, user) => {
     reserved: vehicle.reserved,
     locked: vehicle.locked,
     inRide: vehicle.inRide,
-    unlockCost: parseFloat(process.env.APP_UNLOCK_COST_NZ),
-    rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST_NZ),
-    pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST_NZ),
+    unlockCost: parseFloat(process.env.APP_UNLOCK_COST),
+    rideMinuteCost: parseFloat(process.env.APP_RIDE_MINUTE_COST),
+    pauseMinuteCost: parseFloat(process.env.APP_PAUSE_MINUTE_COST),
   };
 
   if (vehicle.reservedUntil) {
