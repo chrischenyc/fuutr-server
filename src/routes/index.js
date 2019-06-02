@@ -14,6 +14,10 @@ const transactions = require('./transactions');
 const search = require('./search');
 const issues = require('./issues');
 
+router.get('/health-check', (req, res) => {
+  res.status(200);
+});
+
 router.use('/remoteConfig', remoteConfig);
 router.use('/auth', auth);
 router.use('/payments', payments);
