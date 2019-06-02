@@ -4,7 +4,6 @@ const Joi = require('joi');
 
 const router = express.Router();
 
-const VehicleController = require('../controllers/vehicle');
 const SegwayController = require('../controllers/segway');
 
 /**
