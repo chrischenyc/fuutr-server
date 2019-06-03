@@ -15,7 +15,7 @@ const search = require('./search');
 const issues = require('./issues');
 
 router.get('/health-check', (req, res) => {
-  res.status(200).send();
+  res.json({ message: 'server is up' });
 });
 
 router.use('/remoteConfig', remoteConfig);
