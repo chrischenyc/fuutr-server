@@ -32,7 +32,7 @@
     "@mapbox/polyline": "^1.0.0",
     "@sendgrid/mail": "^6.3.1",
     "aws-sdk": "^2.400.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.2",
     "bcrypt": "^3.0.4",
     "bluebird": "^3.5.3",
     "compression": "^1.7.3",
