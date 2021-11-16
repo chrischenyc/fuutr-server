@@ -31,7 +31,7 @@
   "dependencies": {
     "@mapbox/polyline": "^1.0.0",
     "@sendgrid/mail": "^6.3.1",
-    "aws-sdk": "^2.400.0",
+    "aws-sdk": "^2.814.0",
     "axios": "^0.18.0",
     "bcrypt": "^3.0.4",
     "bluebird": "^3.5.3",
